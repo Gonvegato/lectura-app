@@ -12,5 +12,10 @@
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
+    <!-- El lector: sin la pantalla de espera gris de Android al abrirlo (la ventana sale ya con el fondo del tema) -->
+    <style name="Lector" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
     <color name="paper">#0B0C10</color>
 </resources>

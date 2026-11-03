@@ -23,6 +23,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- El lector: la página de lectura (foliate-js y pdf.js) en una pantalla propia -->
+        <activity android:name=".LectorActivity" android:exported="false" android:theme="@style/Lector"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|uiMode|density" />
+        <!-- Compartir una cita como imagen -->
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.archivos" android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/archivos" />
+        </provider>
         <receiver android:name=".ActualizadorReceiver" android:exported="false" />
         <receiver android:name=".ActualizadorReabrir" android:exported="true">
             <intent-filter><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter>

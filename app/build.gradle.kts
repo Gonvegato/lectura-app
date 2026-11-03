@@ -11,8 +11,8 @@ android {
         applicationId = "com.gonzalo.lectura"
         minSdk = 29
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
     }
     // Firma fija: cada versión nueva se instala encima de la anterior sin borrar tus libros.
     signingConfigs {
@@ -59,6 +59,9 @@ dependencies {
     implementation("androidx.webkit:webkit:1.11.0")
     implementation("androidx.documentfile:documentfile:1.0.1")
     implementation("io.coil-kt:coil-compose:2.6.0")
+    // Diccionario del lector: idioma de la frase y traducción (el idioma se baja la primera vez, ~30 MB)
+    implementation("com.google.mlkit:translate:17.0.3")
+    implementation("com.google.mlkit:language-id:17.0.6")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation("androidx.lifecycle:lifecycle-process:2.8.3")
     testImplementation("junit:junit:4.13.2")

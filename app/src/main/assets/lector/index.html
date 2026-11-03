@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Lector de Atrio</title>
+<link rel="stylesheet" href="lector.css">
+<script src="polyfills.js"></script>
+</head>
+<body data-theme="papel">
+<script>
+// El tema desde antes de pintar nada (el módulo del lector tarda un poco en arrancar): sin destello claro con Negro
+try {
+  const s = JSON.parse(window.Atrio.state()).settings || {}, h = new Date().getHours()
+  let t = s.theme || 'papel'
+  if (s.nightAuto && (h >= 21 || h < 7) && !['gris', 'noche', 'negro'].includes(t)) t = 'noche'
+  document.body.dataset.theme = t
+} catch (e) { }
+</script>
+<div id="libro"></div>
+<!-- Abajo de la página: lo que queda del capítulo y el % (se esconde con el menú) -->
+<!-- Arriba, donde estaba la barra de estado de Android (oculta): la hora a la izquierda y la batería a la derecha -->
+<div id="reloj" class="reloj"><span id="r-hora"></span><span id="r-bat"></span></div>
+<div id="estado" class="estado"><span id="e-izq"></span><span id="e-der"></span></div>
+<!-- Cinta del marcador cuando la página está marcada -->
+<div id="b-marca-cinta" class="cinta oculta"></div>
+
+<!-- Cargando / error -->
+<div id="carga" class="carga"><div class="gira"></div><p id="carga-txt">Abriendo el libro…</p></div>
+
+<!-- Barra de arriba -->
+<header id="arriba" class="barra oculta">
+  <button class="ico" id="b-cerrar" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <div class="titulo"><b id="t-libro"></b><small id="t-cap"></small></div>
+  <button class="ico" id="b-buscar" aria-label="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+  <button class="ico" id="b-marca" aria-label="Marcador"><svg viewBox="0 0 24 24"><path d="M7 4h10v16l-5-4-5 4z"/></svg></button>
+</header>
+
+<!-- Barra de abajo -->
+<footer id="abajo" class="barra oculta">
+  <div class="prog">
+    <span id="p-pct">0%</span>
+    <input type="range" id="p-barra" min="0" max="1" step="0.0005" value="0">
+    <span id="p-pag"></span>
+  </div>
+  <nav class="botones">
+    <button id="b-indice"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span>Índice</span></button>
+    <button id="b-notas"><svg viewBox="0 0 24 24"><path d="M5 19l3.5-.8L19 7.7 16.3 5 5.8 15.5z"/></svg><span>Notas</span></button>
+    <button id="b-ajustes"><svg viewBox="0 0 24 24"><text x="3" y="18" font-size="15" font-weight="700" stroke="none" fill="currentColor">Aa</text></svg><span>Letra</span></button>
+    <button id="b-voz"><svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg><span>Voz</span></button>
+  </nav>
+</footer>
+
+<!-- Un subrayado: su nota, copiarlo, compartirlo, buscarlo o quitarlo -->
+<div id="sel" class="sel oculta">
+  <div class="sel-cita"><div id="s-cita"></div><div id="s-txt" class="oculta"></div></div>
+  <div class="acc">
+    <button id="s-nota">Añadir nota</button>
+    <button id="s-copiar">Copiar</button>
+    <button id="s-buscar">Buscar</button>
+    <button id="s-compartir">Compartir</button>
+    <button id="s-borrar" class="peligro">Quitar</button>
+  </div>
+</div>
+
+<!-- Mantener pulsada una palabra: su significado, traducirla y subrayar desde ella -->
+<div id="palabra" class="pal oculta">
+  <div class="pal-cab"><b id="pal-w"></b><span id="pal-lang"></span></div>
+  <div id="pal-def" class="pal-def"></div>
+  <div id="pal-tr" class="pal-tr oculta"></div>
+  <div class="pal-links"><button id="pal-trad" class="oculta">Traducir al español</button><button id="pal-rae">RAE</button><button id="pal-wik">Wikcionario</button></div>
+  <div class="acc">
+    <button id="p-subrayar">Subrayar</button>
+    <button id="p-nota">Nota</button>
+    <button id="p-copiar">Copiar</button>
+    <button id="p-compartir">Compartir</button>
+  </div>
+</div>
+<!-- Subrayado en marcha: falta la última palabra -->
+<div id="pend" class="pend oculta">
+  <span>Mantén pulsada la <b>última palabra</b> del subrayado</span>
+  <button id="pend-una">Solo esta</button>
+  <button id="pend-no">Cancelar</button>
+</div>
+
+<!-- Notas al pie: una hoja abajo con la nota -->
+<section id="pie" class="pie">
+  <div class="pie-cab"><b id="pie-tipo">Nota</b><button id="pie-cerrar">Cerrar</button></div>
+  <div id="pie-cuerpo"></div>
+</section>
+
+<!-- Una imagen del libro a pantalla completa -->
+<div id="imagen" class="imagen oculta"><img alt=""><button id="imagen-cerrar">Cerrar</button></div>
+
+<!-- Leyendo en voz alta -->
+<div id="voz" class="voz oculta">
+  <span class="voz-t">Leyendo en voz alta</span>
+  <button id="v-pausa">Pausa</button>
+  <button id="v-sig">Siguiente frase</button>
+  <button id="v-vel">1×</button>
+  <button id="v-tempo">Temporizador</button>
+  <button id="v-parar" class="peligro">Parar</button>
+</div>
+
+<!-- Paneles -->
+<div id="velo" class="velo"></div>
+<section id="panel" class="panel">
+  <div class="asa"></div>
+  <div id="panel-cuerpo"></div>
+</section>
+
+<div id="aviso" class="aviso"></div>
+
+<script type="module" src="lector.js"></script>
+</body>
+</html>
