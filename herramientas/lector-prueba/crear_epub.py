@@ -1,0 +1,8 @@
+import os, zipfile
+os.makedirs('/tmp/lt', exist_ok=True)
+def cap(n): return '<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>c%d</title></head><body><h1>Capitulo %d</h1>%s</body></html>' % (n, n, ''.join('<p>Parrafo %d del capitulo %d. %s</p>' % (i, n, 'Lorem ipsum dolor sit amet consectetur. ' * 8) for i in range(40)))
+with zipfile.ZipFile('/tmp/lt/t.epub', 'w') as z:
+    z.writestr('mimetype', 'application/epub+zip', compress_type=zipfile.ZIP_STORED)
+    z.writestr('META-INF/container.xml', '<?xml version="1.0"?><container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>')
+    z.writestr('OEBPS/content.opf', '<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="id">x</dc:identifier><dc:title>T</dc:title><dc:language>es</dc:language></metadata><manifest>%s</manifest><spine>%s</spine></package>' % (''.join('<item id="c%d" href="c%d.xhtml" media-type="application/xhtml+xml"/>' % (i, i) for i in (1, 2, 3)), ''.join('<itemref idref="c%d"/>' % i for i in (1, 2, 3))))
+    for i in (1, 2, 3): z.writestr('OEBPS/c%d.xhtml' % i, cap(i))

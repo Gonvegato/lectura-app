@@ -1,0 +1,10 @@
+<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0"><script type="module">
+import '/lector/foliate/view.js'
+window.log=[]
+const view=document.createElement('foliate-view'); view.style.cssText='display:block;width:100vw;height:100vh'; document.body.append(view)
+const blob=await (await fetch('/t.epub')).blob()
+await view.open(new File([blob],'t.epub',{type:'application/epub+zip'}))
+view.renderer.setAttribute('flow','scrolled'); view.renderer.setAttribute('margin','24px'); view.renderer.setAttribute('gap','5%')
+view.addEventListener('relocate',e=>{window.log.push({i:e.detail.section?.current??e.detail.index,f:+(e.detail.fraction||0).toFixed(3),r:e.detail.reason})})
+await view.goTo(0); window.view=view; window.ready=true
+</script>

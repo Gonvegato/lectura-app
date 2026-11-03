@@ -231,6 +231,8 @@ async function abrir() {
 function volumen() { try { A.volumeKeys?.(S.volPages !== false && !haciaAbajo() && !vozOn) } catch (e) { } }
 /** PDF o cómic leyendo hacia abajo (las páginas una debajo de otra). */
 const haciaAbajo = () => isPDF && view?.renderer?.localName === 'foliate-fxl-scroll'
+/** Leyendo deslizando (PDF o cómic hacia abajo, o «Desplazamiento continuo»): ahí mantener pulsado estorba al deslizar, así que se usa el doble toque. */
+const desplaza = () => haciaAbajo() || (S.flow === 'scrolled' && (!isPDF || reflow))
 /** Cambiar entre página a página y hacia abajo: se vuelve a abrir el libro en la misma página. */
 async function reabrir() {
     const loc = last?.cfi
@@ -507,6 +509,8 @@ function paginas(detail) {
 const pags = n => n === 1 ? '1 pág.' : `${n} págs.`
 function drawStatus(detail) {
     const el = $('#estado')
+    // Leyendo deslizando, la línea de abajo (lo que queda y el %) se solaparía con el texto: no se enseña
+    document.body.classList.toggle('desplaza', desplaza())
     if (!el || !detail) return
     let left = '', right = pct(detail.fraction)
     if (isPDF) {
@@ -610,6 +614,8 @@ function onLoad({ detail: { doc, index } }) {
 
     // Mantener pulsado (sin mover el dedo): la palabra de debajo. Mientras, la página NO se mueve.
     let t0 = null, holding = false, holdTimer = 0, swiped = false, held = false
+    // Deslizando: dos toques seguidos = la palabra (en vez de mantener pulsado). tapT: el toque suelto espera por si viene otro
+    let ultimoToque = null, tapT = 0
     // Brillo: deslizar arriba o abajo por el borde izquierdo de la pantalla (como en los lectores de tinta)
     let edge = false, glow = null, glowY = 0, glowV = -1
     // Pellizcar con dos dedos (libros de texto): la letra más grande o más pequeña
@@ -630,7 +636,7 @@ function onLoad({ detail: { doc, index } }) {
         edge = !!t && e.touches.length === 1 && topX(t.clientX) < Math.min(32, window.innerWidth * 0.06) && !haciaAbajo() && !chromeOn
         glow = null
         clearTimeout(holdTimer)
-        if (t && e.touches.length === 1) holdTimer = setTimeout(() => {
+        if (t && e.touches.length === 1 && !desplaza()) holdTimer = setTimeout(() => {
             holding = true; held = true
             onHold(doc, index, t0.x, t0.y)
         }, 450)
@@ -669,6 +675,15 @@ function onLoad({ detail: { doc, index } }) {
             return
         }
         const t = e.changedTouches[0]
+        // Deslizando: un toque corto y quieto; si llega otro enseguida y cerca, es la palabra
+        if (desplaza() && t0 && t && !holding && e.touches.length === 0) {
+            const corto = e.timeStamp - t0.time < 300 && Math.hypot(t.clientX - t0.x, t.clientY - t0.y) < 14
+            if (!corto) ultimoToque = null
+            else if (ultimoToque && e.timeStamp - ultimoToque.time < 350 && Math.hypot(t.clientX - ultimoToque.x, t.clientY - ultimoToque.y) < 40) {
+                ultimoToque = null; clearTimeout(tapT); held = true
+                onHold(doc, index, t.clientX, t.clientY)
+            } else ultimoToque = { x: t.clientX, y: t.clientY, time: e.timeStamp }
+        }
         // (el touchend sí le llega a foliate: así la página vuelve a su sitio si se llegó a mover un poco al empezar)
         if (glow !== null) { glow = null; edge = false; swiped = true; holding = false; brilloAlMovil(glowV); return }
         // Deslizar hacia arriba abre el menú (y hacia abajo lo cierra). Leyendo hacia abajo no: ahí deslizar mueve el libro
@@ -743,7 +758,9 @@ function onLoad({ detail: { doc, index } }) {
             if (src && (img.naturalWidth || 200) >= 120) { showImage(typeof src === 'string' ? src : src.baseVal); return }
         }
         const hit = noteAt(doc, index, e.clientX, e.clientY)
-        setTimeout(() => {
+        // (deslizando, el toque suelto espera un poco por si es el primero de dos)
+        clearTimeout(tapT)
+        tapT = setTimeout(() => {
             if (!$('#palabra').classList.contains('oculta')) { hideWord(); return }
             if (selection) { hideSel(); return }
             if ($('#panel').classList.contains('on')) { closePanel(); return }
@@ -765,7 +782,7 @@ function onLoad({ detail: { doc, index } }) {
             const fr2 = doc.defaultView.frameElement?.getBoundingClientRect()
             const cx = e.clientX + (fr2 ? fr2.left : 0), cy = e.clientY + (fr2 ? fr2.top : 0)
             if (cx > window.innerWidth * 0.3 && cx < window.innerWidth * 0.7 && cy > window.innerHeight * 0.25 && cy < window.innerHeight * 0.75) showChrome(true)
-        }, 40)
+        }, desplaza() ? 380 : 40)
     })
 }
 

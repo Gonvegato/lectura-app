@@ -558,6 +558,19 @@ export class Paginator extends HTMLElement {
 
         this.#observer.observe(this.#container)
         this.#container.addEventListener('scroll', () => this.dispatchEvent(new Event('scroll')))
+        // Atrio: leyendo deslizando, si el impulso del dedo llega al final (o al principio) del capítulo, se sigue en el de al lado, sin tener que volver a empezar
+        this.#container.addEventListener('scroll', () => {
+            if (!this.scrolled || this.#locked) return
+            const ahora = performance.now()
+            if (ahora - this.#touchEndedAt > 700 || ahora - this.#navAt < 1200) return
+            if (this.viewSize - this.end <= 2 && this.#adjacentIndex(1) != null) this.next()
+            else if (this.start <= 2 && this.#adjacentIndex(-1) != null && this.#scrollDir < 0) this.prev()
+        })
+        this.#container.addEventListener('scroll', () => {
+            const s = this.#container[this.scrollProp]
+            this.#scrollDir = s === this.#lastScroll ? this.#scrollDir : Math.sign(s - this.#lastScroll)
+            this.#lastScroll = s
+        }, { passive: true })
         this.#container.addEventListener('scroll', debounce(() => {
             if (this.scrolled) {
                 if (this.#justAnchored) this.#justAnchored = false
@@ -848,10 +861,31 @@ export class Paginator extends HTMLElement {
             m0, p0: m0 == null || !this.size ? null : Math.floor(m0 / this.size), sx: 0, sy: 0,
         }
     }
+    #touchEndedAt = 0
+    #navAt = 0
+    #lastScroll = 0
+    #scrollDir = 0
+    // Atrio: leyendo deslizando, al llegar al final (o al principio) del capítulo, seguir arrastrando pasa al siguiente (o al anterior)
+    #overscroll(e, state) {
+        if (e.touches.length > 1 || this.#locked) return
+        const y = e.changedTouches[0]?.screenY
+        if (y == null) return
+        const alFinal = this.viewSize - this.end <= 2 && this.#adjacentIndex(1) != null
+        const alPrincipio = this.start <= 2 && this.#adjacentIndex(-1) != null
+        if (alFinal) {
+            if (state.finY == null) state.finY = y
+            if (state.finY - y > 60) { state.finY = null; this.next() }
+        } else state.finY = null
+        if (alPrincipio) {
+            if (state.iniY == null) state.iniY = y
+            if (y - state.iniY > 60) { state.iniY = null; this.prev() }
+        } else state.iniY = null
+    }
     #onTouchMove(e) {
         const state = this.#touchState
         if (state.pinched) return
         state.pinched = globalThis.visualViewport.scale > 1
+        if (this.scrolled && !state.pinched) this.#overscroll(e, state)
         if (this.scrolled || state.pinched) return
         if (e.touches.length > 1) {
             if (this.#touchScrolled) e.preventDefault()
@@ -874,6 +908,7 @@ export class Paginator extends HTMLElement {
     }
     #onTouchEnd() {
         this.#touchScrolled = false
+        this.#touchEndedAt = performance.now()
         if (this.scrolled) return
 
         // XXX: Firefox seems to report scale as 1... sometimes...?
@@ -991,6 +1026,7 @@ export class Paginator extends HTMLElement {
         this.dispatchEvent(new CustomEvent('relocate', { detail }))
     }
     async #display(promise) {
+        this.#navAt = performance.now(); this.#touchEndedAt = 0
         const { index, src, anchor, onLoad, select } = await promise
         this.#index = index
         const hasFocus = this.#view?.document?.hasFocus()

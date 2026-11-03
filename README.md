@@ -159,3 +159,9 @@ Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuen
 - **Portada**: además de la galería, iTunes y Open Library, el buscador de imágenes de Atrio con **Pinterest** en cuadrados (`Internet.kt`).
 - **Abandonados** como estado propio (y un abandonado que vuelves a leer pasa a Leyendo).
 - **Widgets**: las etiquetas llevan siempre la negrita de la app, como en Atrio.
+
+## Marfil 0.8.1: leer deslizando
+
+- Deslizando (PDF o cómic «hacia abajo», o «Desplazamiento continuo»): en vez de mantener pulsado, **dos toques seguidos** seleccionan la palabra (subrayar, nota, diccionario); un toque suelto espera una fracción de segundo por si es el primero de dos.
+- La línea de abajo (lo que queda y el %) no se enseña en ese modo: se solapaba con el texto.
+- Al llegar al final de un capítulo se puede **seguir deslizando**: arrastrar o el impulso del dedo pasa al siguiente capítulo (y al principio, al anterior). Probado con un navegador con pantalla táctil: `herramientas/lector-prueba`.
