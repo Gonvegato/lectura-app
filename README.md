@@ -132,3 +132,7 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). El APK 
   de tus archivos** llega a ese servidor. Se apaga en Estilo → «Portadas automáticas».
 - Los juegos web guardan cookies (también de terceros: muchos inician sesión en otro dominio) dentro del WebView de Marfil.
 - Si vinculas tu cuenta de Atrio, tu biblioteca (títulos, notas, horas, favoritos…) se sube a tu base de datos de Firebase, legible por ti y por tu pareja de Atrio. Sin vincular, nada más sale del móvil.
+
+## Lo leído entre dispositivos
+
+Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuenta: `/users/<uid>/marfil/lec/<libro>/<dispositivo>` (el estado entero) y `/lstamps/<libro>/<dispositivo>` (su hora, que es lo que se escucha en directo). Se une así (ver `MezclaLectura`): posición, la más reciente; «lo más lejos que has llegado», el mayor; ajustes del libro, los últimos; subrayados, notas y marcadores se juntan (los quitados viajan como borrados con hora); el tiempo leído se suma por dispositivo. Al abrir un libro se baja antes lo último de los demás (hasta 2,5 s de espera) y al salir se sube.

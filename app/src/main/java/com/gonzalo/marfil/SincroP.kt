@@ -43,6 +43,84 @@ object SincroP {
         private set
 
     private fun prefs(c: Context) = c.getSharedPreferences("marfil_sync", Context.MODE_PRIVATE)
+    private val pendientes = java.util.Collections.synchronizedSet(HashSet<String>())
+    private var escuchaLec: FbStream? = null
+
+    // ---- el estado de lectura de cada libro: /lec/<libro>/<dispositivo> (el estado entero) y /lstamps/<libro>/<dispositivo> (su hora)
+    private fun vistosLec(c: Context): JSONObject = runCatching { JSONObject(prefs(c).getString("vistosLec", "{}")!!) }.getOrDefault(JSONObject())
+
+    /** Ha cambiado lo leído de un libro: se sube en [ms] (varias páginas seguidas se juntan en una sola subida). */
+    fun cambioLectura(c: Context, id: String, ms: Long = 4000L) {
+        val a = app ?: run { iniciar(c); app }
+        if (a == null || !Cuenta.vinculada) return
+        if (!pendientes.add(id)) { if (ms > 0) return }
+        scope.launch {
+            delay(ms)
+            withContext(NonCancellable) { subirLectura(a, id) }
+        }
+    }
+
+    /** Sube el estado de lectura de un libro (si ha cambiado desde la última vez). */
+    suspend fun subirLectura(c: Context, id: String): Boolean = candado.withLock {
+        pendientes.remove(id)
+        if (!Cuenta.vinculada) return@withLock true
+        val l = Biblioteca.por(id) ?: return@withLock true
+        val st = EstadoLectura.estado(c, id)
+        if (st.length() == 0) return@withLock true
+        try {
+            val kid = MezclaLectura.kid(l.clave)
+            val cuerpo = JSONObject(st.toString()).apply { remove("syncAt") }.toString()
+            val hash = cuerpo.hashCode().toString() + ":" + cuerpo.length
+            val p = prefs(c)
+            if (p.getString("hashLec:$kid", "") == hash) return@withLock true
+            val nodo = JSONObject().put("t", l.titulo).put("u", JSONObject().put(".sv", "timestamp")).put("s", st)
+            Cuenta.db("PUT", "${Cuenta.raiz}/lec/$kid/${Cuenta.dispositivo}", nodo.toString(), "print=silent")
+            val ts = Cuenta.db("GET", "${Cuenta.raiz}/lec/$kid/${Cuenta.dispositivo}/u", null)?.toLongOrNull() ?: throw Cuenta.Fail("Firebase no ha guardado lo leído.")
+            Cuenta.db("PUT", "${Cuenta.raiz}/lstamps/$kid/${Cuenta.dispositivo}", ts.toString(), "print=silent")
+            p.edit().putString("hashLec:$kid", hash).apply()
+            guardaVistosLec(c, vistosLec(c).put("$kid/${Cuenta.dispositivo}", ts))
+            bien(c); true
+        } catch (e: Exception) { mal(c, e); cambioLectura(c, id, 15_000L); false }
+    }
+
+    private fun guardaVistosLec(c: Context, o: JSONObject) = prefs(c).edit().putString("vistosLec", o.toString()).apply()
+
+    /** Baja y mezcla lo leído en tus otros dispositivos ([soloId]: solo de ese libro). Sin candado: lo llaman quienes ya lo tienen. */
+    private fun bajarLecturaYa(c: Context, soloId: String? = null): Boolean {
+        val libros = Biblioteca.libros.toList()
+        val porKid = libros.associateBy { MezclaLectura.kid(it.clave) }
+        val solo = soloId?.let { id -> libros.firstOrNull { it.id == id }?.let { MezclaLectura.kid(it.clave) } }
+        if (soloId != null && solo == null) return false
+        val raw = Cuenta.db("GET", if (solo != null) "${Cuenta.raiz}/lstamps/$solo" else "${Cuenta.raiz}/lstamps", null) ?: return false
+        val t = runCatching { JSONObject(raw) }.getOrNull() ?: return false
+        val sellos = if (solo != null) JSONObject().put(solo, t) else t
+        val vistas = vistosLec(c)
+        val nuevas = JSONObject(vistas.toString())
+        var cambio = false
+        for (kid in sellos.keys()) {
+            val libro = porKid[kid] ?: continue            // aún no hay ese libro aquí: se mirará cuando llegue
+            val devs = sellos.optJSONObject(kid) ?: continue
+            for (dev in devs.keys()) {
+                val ts = devs.optLong(dev, 0L)
+                if (dev == Cuenta.dispositivo || ts <= vistas.optLong("$kid/$dev", 0L)) continue
+                val s = Cuenta.db("GET", "${Cuenta.raiz}/lec/$kid/$dev/s", null) ?: continue
+                val remoto = runCatching { JSONObject(s) }.getOrNull() ?: continue
+                val local = EstadoLectura.estado(c, libro.id)
+                val unido = MezclaLectura.mezclar(local, remoto, Cuenta.dispositivo)
+                if (!MezclaLectura.igual(unido, local)) { EstadoLectura.ponerSinAvisar(c, libro.id, unido); cambio = true }
+                nuevas.put("$kid/$dev", ts)
+            }
+        }
+        guardaVistosLec(c, nuevas)
+        // Si al unir salió algo que los demás no tienen (tus subrayados, tras mezclar), se sube
+        return cambio
+    }
+
+    /** Al abrir un libro: lo último leído en otros dispositivos, antes de que el lector lo pida. Con un tope de tiempo. */
+    suspend fun alAbrir(c: Context, id: String, tope: Long = 2500L) {
+        if (!Cuenta.vinculada) return
+        kotlinx.coroutines.withTimeoutOrNull(tope) { withContext(Dispatchers.IO) { candado.withLock { runCatching { bajarLecturaYa(c, id) } } } }
+    }
 
     fun iniciar(c: Context) {
         app = c.applicationContext
@@ -119,6 +197,7 @@ object SincroP {
                 if (r.cambio) { Biblioteca.aplicarMezcla(r.libros, r.borrados); cambio = true }
             }
             guardaVistos(c, vistosNuevos)
+            if (runCatching { bajarLecturaYa(c) }.getOrDefault(false)) cambio = true
             bien(c)
             cambio
         } catch (e: Exception) { mal(c, e); false }
@@ -129,6 +208,8 @@ object SincroP {
         if (desdeCero) olvidarVistos()
         bajar(c)
         val ok = subir(c, forzar = true)
+        // Lo leído de cada libro que aún no esté en la cuenta (los que ya están se saltan solos)
+        Biblioteca.libros.toList().forEach { runCatching { subirLectura(c, it.id) } }
         portadas(c)
         return ok
     }
@@ -152,9 +233,12 @@ object SincroP {
         val f = FbStream("marfil", { renovar -> Cuenta.urlFlujo("${Cuenta.raiz}/stamps", renovar) }, { _, _ -> bajarPronto() }, { })
         escucha = f
         f.start(scope)
+        val g = FbStream("marfil-lec", { renovar -> Cuenta.urlFlujo("${Cuenta.raiz}/lstamps", renovar) }, { _, _ -> bajarPronto() }, { })
+        escuchaLec = g
+        g.start(scope)
     }
 
-    fun parar() { escucha?.stop(); escucha = null }
+    fun parar() { escucha?.stop(); escucha = null; escuchaLec?.stop(); escuchaLec = null }
 
     private fun bien(c: Context) {
         fallos = 0

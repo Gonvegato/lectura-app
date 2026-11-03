@@ -28,6 +28,7 @@ object EstadoLectura {
         o.put("syncAt", System.currentTimeMillis())
         prefs(ctx).edit().putString(id, o.toString()).apply()
         alDia(ctx, id, o)
+        SincroP.cambioLectura(ctx, id)
     }
 
     /** Lo que llega de otro dispositivo: se guarda sin volver a subirlo. */

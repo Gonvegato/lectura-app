@@ -1,5 +1,6 @@
 package com.gonzalo.marfil
 
+import kotlinx.coroutines.launch
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
@@ -121,6 +122,8 @@ class LectorActivity : ComponentActivity() {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
+    private val ambito = kotlinx.coroutines.MainScope()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         id = intent.getStringExtra("id").orEmpty()
@@ -194,7 +197,11 @@ class LectorActivity : ComponentActivity() {
             this, "Tu WebView es antiguo (versión $major): actualiza «Android System WebView» en Google Play si el libro no se abre.",
             android.widget.Toast.LENGTH_LONG
         ).show()
-        web.loadUrl("https://appassets.androidplatform.net/assets/lector/index.html")
+        // Antes de abrir: lo último que leíste, subrayaste o marcaste en otro dispositivo (como mucho 2,5 s de espera)
+        ambito.launch {
+            SincroP.alAbrir(applicationContext, id)
+            web.loadUrl("https://appassets.androidplatform.net/assets/lector/index.html")
+        }
         // Atrás cierra primero lo que haya abierto encima (una nota, un panel, el menú); con nada encima, pulsado dos
         // veces seguidas sale del libro (una sola vez no, para no salir sin querer)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -364,9 +371,11 @@ class LectorActivity : ComponentActivity() {
         confirmarMasLejos()
         // Al dejar de leer, lo leído sube ya: en la tablet sigues por la misma página sin tocar nada
         SincroP.cambio(applicationContext, 0)
+        SincroP.cambioLectura(applicationContext, id, 0)
     }
 
     override fun onDestroy() {
+        ambito.coroutineContext[kotlinx.coroutines.Job]?.cancel()
         tts?.stop(); tts?.shutdown(); tts = null
         (web.parent as? android.view.ViewGroup)?.removeView(web)
         web.destroy()
@@ -425,12 +434,12 @@ class LectorActivity : ComponentActivity() {
         /** Los ajustes valen para este libro y como punto de partida para los siguientes. */
         @JavascriptInterface
         fun saveSettings(json: String) {
-            edit { it.put("settings", JSONObject(json)) }
+            edit { it.put("settings", JSONObject(json)).put("settingsAt", System.currentTimeMillis()) }
             getSharedPreferences("lector", MODE_PRIVATE).edit().putString("ajustes", runCatching { JSONObject(json).apply { remove("pdfTexto"); remove("pdfForzar") }.toString() }.getOrDefault(json)).apply()
         }
 
         @JavascriptInterface
-        fun saveAnnotations(json: String) = edit { it.put("notes", org.json.JSONArray(json)) }
+        fun saveAnnotations(json: String) = edit { MezclaLectura.actualizar(it, "notes", org.json.JSONArray(json)) }
 
         /** Lo que llevas leído de este libro (tiempo total y por día). */
         @JavascriptInterface
@@ -448,7 +457,7 @@ class LectorActivity : ComponentActivity() {
         fun stopSpeaking() = runOnUiThread { pending = null; tts?.stop() }
 
         @JavascriptInterface
-        fun saveBookmarks(json: String) = edit { it.put("marks", org.json.JSONArray(json)) }
+        fun saveBookmarks(json: String) = edit { MezclaLectura.actualizar(it, "marks", org.json.JSONArray(json)) }
 
         /** El brillo de la ventana mientras deslizas (o el de esta lectura, sin permiso); -1: el del móvil. */
         @JavascriptInterface
