@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono de Pórtico: el marco de Atrio (la puerta), pero bajo y cuadrado, y con la luz roja por dentro en vez de arena.
+     Mismo trazo claro, mismo difuminado interior (de transparente a color) y la misma base, dentro de la zona segura. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- La luz roja que llena el marco: se difumina de transparente (arriba) a rojo (abajo) -->
+    <path android:pathData="M29.5,43.5 H78.5 V64.5 H29.5 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="54" android:startY="43.5" android:endX="54" android:endY="64.5"
+                android:startColor="#00F0503C" android:endColor="#E6F0503C" />
+        </aapt:attr>
+    </path>
+    <!-- El marco -->
+    <path android:strokeColor="#EEF1F5" android:strokeWidth="5" android:strokeLineJoin="miter" android:strokeLineCap="butt" android:pathData="M27,41 H81 V67 H27 Z" />
+    <!-- La base -->
+    <path android:strokeColor="#8FB3D9" android:strokeWidth="3.2" android:strokeLineCap="butt" android:pathData="M24,71 H84" />
+</vector>
