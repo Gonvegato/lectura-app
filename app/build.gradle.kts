@@ -4,19 +4,19 @@ plugins {
     id("io.github.takahirom.roborazzi")
 }
 android {
-    namespace = "com.gonzalo.lectura"
+    namespace = "com.gonzalo.marfil"
     compileSdk = 34
     defaultConfig {
         // Convive con Atrio (com.gonzalo.gamerate) y Pórtico: otro paquete, otra app, misma familia visual.
-        applicationId = "com.gonzalo.lectura"
+        applicationId = "com.gonzalo.marfil"
         minSdk = 29
         targetSdk = 34
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.3.0"
     }
     // Firma fija: cada versión nueva se instala encima de la anterior sin borrar tus libros.
     signingConfigs {
-        create("release") { storeFile = file("lectura.keystore"); storePassword = "lectura"; keyAlias = "lectura"; keyPassword = "lectura" }
+        create("release") { storeFile = file("marfil.keystore"); storePassword = "marfil"; keyAlias = "marfil"; keyPassword = "marfil" }
     }
     buildTypes {
         getByName("release") {

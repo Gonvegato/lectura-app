@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Fondo del arranque oscuro, igual que el papel de Vitrina: sin destello blanco al abrir -->
-    <style name="Lectura" parent="android:Theme.Material.NoActionBar">
+    <style name="Marfil" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/paper</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>

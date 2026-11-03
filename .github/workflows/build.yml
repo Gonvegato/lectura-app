@@ -12,9 +12,9 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Pruebas
         run: ./gradlew :app:testDebugUnitTest
-      - name: APK de release (firmado con la clave de lectura.keystore)
+      - name: APK de release (firmado con la clave de marfil.keystore)
         run: ./gradlew :app:assembleRelease
       - uses: actions/upload-artifact@v4
         with:
-          name: Lectura-apk
+          name: Marfil-apk
           path: app/build/outputs/apk/release/*.apk

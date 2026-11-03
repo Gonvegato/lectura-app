@@ -10,10 +10,10 @@
         <provider android:authorities="com.gonzalo.gamerate.tema" />
     </queries>
     <application
-        android:label="Lectura"
+        android:label="Marfil"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
-        android:theme="@style/Lectura"
+        android:theme="@style/Marfil"
         android:allowBackup="true">
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
