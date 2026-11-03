@@ -126,7 +126,7 @@ object Skin {
     /** Tamaño del texto en por ciento. */
     var escala by mutableStateOf(100)
     /** Colores invertidos: el fondo con el color del texto y el texto con el del fondo; el acento se mantiene. */
-    var invertido by mutableStateOf(true)
+    var invertido by mutableStateOf(false)
     /** Colores de Atrio (los que tienes puestos allí) en lugar de los de la paleta de Lectura. */
     var origenAtrio by mutableStateOf(true)
     /** Colores elegidos a mano, como «A tu manera» de Atrio (0 = automático): por encima de todo lo demás. */
@@ -219,9 +219,9 @@ object Skin {
         forma = FORMAS.firstOrNull { it.id == p.getString("forma", "revista") } ?: forma
         accentId = p.getString("acento", "paleta")?.takeIf { id -> id == "paleta" || ACCENT_COLORS.any { it.id == id } } ?: "paleta"
         escala = p.getInt("escala", 100).coerceIn(80, 140)
-        // La primera vez con esta versión: los colores de Atrio, invertidos
-        if (!p.getBoolean("atrio_v1", false)) p.edit().putBoolean("atrio_v1", true).putBoolean("invertido", true).putBoolean("origen_atrio", true).apply()
-        invertido = p.getBoolean("invertido", true)
+        // La primera vez: los colores de Atrio (sin invertir)
+        if (!p.getBoolean("atrio_v1", false)) p.edit().putBoolean("atrio_v1", true).putBoolean("invertido", false).putBoolean("origen_atrio", true).apply()
+        invertido = p.getBoolean("invertido", false)
         origenAtrio = p.getBoolean("origen_atrio", true)
         Modo.eleccion = p.getInt("modo", 0).coerceIn(0, 2)
         fondoId = p.getString("fondo_id", "")?.takeIf { id -> FONDOS.any { it.id == id } } ?: ""
@@ -264,7 +264,7 @@ object Skin {
     }
 
     private fun persistir(c: Context) {
-        Widgets.pedir(c)
+        // (los widgets de lectura se repintarán aquí cuando existan)
         p(c).edit().putLong("ajustes_at", ajustesAt).putString("paleta", palette.id).putString("display", display).putString("body", body).putString("forma", forma.id)
             .putString("acento", accentId).putBoolean("invertido", invertido).putBoolean("origen_atrio", origenAtrio).putInt("escala", escala).putInt("modo", Modo.eleccion)
             .putString("fondo_id", fondoId).putLong("fondo_propio", fondoPropio).putLong("tinta_propia", tintaPropia).putLong("acento_propio", acentoPropio).apply()

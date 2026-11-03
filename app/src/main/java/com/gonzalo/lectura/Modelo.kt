@@ -23,6 +23,8 @@ data class Libro(
     val id: String,
     val titulo: String,
     val autor: String = "",
+    /** Lo que identifica al libro en todos tus dispositivos: se fija al crearlo (título y autor de entonces) y NO cambia si luego editas el título o el autor. */
+    val clave: String = claveDe(titulo, autor),
     /** Portada elegida o sacada del libro (archivo de la app); "" = sin portada. */
     val portada: String = "",
     /** Dirección del archivo en este dispositivo ("" = aún no está aquí). */
@@ -42,7 +44,6 @@ data class Libro(
     val msPropios: Long = 0L,
     val ajenosMs: Map<String, Long> = emptyMap(),
 ) {
-    val clave: String get() = claveDe(titulo, autor)
     val msLeidos: Long get() = msPropios + ajenosMs.values.sum()
     /** El libro viene de otro dispositivo y aquí aún no tiene archivo. */
     val enOtroDispositivo: Boolean get() = uri.isBlank()
@@ -126,14 +127,14 @@ object Biblioteca {
     }
 
     fun aJson(l: Libro) = JSONObject().apply {
-        put("id", l.id); put("titulo", l.titulo); put("autor", l.autor); put("portada", l.portada); put("uri", l.uri); put("archivo", l.archivo)
+        put("id", l.id); put("clave", l.clave); put("titulo", l.titulo); put("autor", l.autor); put("portada", l.portada); put("uri", l.uri); put("archivo", l.archivo)
         put("favorito", l.favorito); put("estado", l.estado.name); put("anadido", l.anadido); put("ultima", l.ultima); put("fraccion", l.fraccion.toDouble())
         put("mod", l.mod); put("msp", l.msPropios)
         put("ajms", JSONObject().also { o -> l.ajenosMs.forEach { (k, v) -> o.put(k, v) } })
     }
 
     fun aLibro(o: JSONObject) = Libro(
-        id = o.optString("id").ifBlank { nuevoId() }, titulo = o.optString("titulo"), autor = o.optString("autor"), portada = o.optString("portada"),
+        id = o.optString("id").ifBlank { nuevoId() }, titulo = o.optString("titulo"), autor = o.optString("autor"), clave = o.optString("clave").ifBlank { claveDe(o.optString("titulo"), o.optString("autor")) }, portada = o.optString("portada"),
         uri = o.optString("uri"), archivo = o.optString("archivo"), favorito = o.optBoolean("favorito"),
         estado = Estado.entries.firstOrNull { it.name == o.optString("estado") } ?: Estado.PENDIENTE,
         anadido = o.optLong("anadido"), ultima = o.optLong("ultima"), fraccion = o.optDouble("fraccion", 0.0).toFloat(), mod = o.optLong("mod"),

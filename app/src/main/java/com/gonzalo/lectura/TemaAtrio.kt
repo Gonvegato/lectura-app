@@ -52,7 +52,7 @@ object TemaAtrio {
         val nuevos = tonosDe(v)
         val cambio = tonos != nuevos
         tonos = nuevos; aviso = ""
-        if (cambio) Widgets.pedir(c)
+        // (los widgets de lectura se repintarán aquí cuando existan)
         guardado(c).edit().putString("atrio", JSONObject().also { o -> COLUMNAS.forEachIndexed { i, k -> o.put(k, v[i]) } }.toString()).apply()
         return true
     }

@@ -108,7 +108,7 @@ object Mezcla {
     private fun crear(rs: List<Pair<String, LibroSync>>, id: String): Libro {
         val g = rs.maxByOrNull { it.second.mod }!!.second
         return Libro(
-            id = id, titulo = g.titulo, autor = g.autor, uri = "", archivo = g.archivo, favorito = g.favorito, estado = g.estado,
+            id = id, titulo = g.titulo, autor = g.autor, clave = g.clave, uri = "", archivo = g.archivo, favorito = g.favorito, estado = g.estado,
             anadido = rs.map { it.second.anadido }.filter { it > 0 }.minOrNull() ?: g.anadido, ultima = rs.maxOf { it.second.ultima },
             fraccion = rs.maxOf { it.second.fraccion }, mod = g.mod, msPropios = 0L, ajenosMs = rs.associate { it.first to it.second.msp }
         )
