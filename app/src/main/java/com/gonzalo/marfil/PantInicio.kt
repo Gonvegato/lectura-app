@@ -80,13 +80,13 @@ fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -
         }
 
         // ---- Ahora: el libro en curso, enmarcado (un cuadrado del color del texto alrededor, como «En portada» de Atrio)
-        if (ahora != null) Column(Modifier.fillMaxWidth().border(1.5.dp, Charcoal).padding(20.dp)) {
+        if (ahora != null) Column(Modifier.fillMaxWidth().border(1.5.dp, Charcoal).clickable { alAbrir(ahora) }.padding(20.dp)) {
             Antetitulo("Ahora", Modifier.padding(bottom = 12.dp))
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
-                PortadaLibro(ahora, Modifier.width(112.dp).aspectRatio(0.68f).combinedClickable(onClick = { alAbrir(ahora) }))
+                PortadaLibro(ahora, Modifier.width(112.dp).aspectRatio(0.68f))
                 Column(Modifier.weight(1f).padding(start = 18.dp).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
                     Column {
-                        FitTitle(ahora.titulo, 30.sp, 32.sp, maxLines = 3, minSize = 16f, letterSpacing = (-0.5).sp, modifier = Modifier.clickable { alAbrir(ahora) })
+                        FitTitle(ahora.titulo, 30.sp, 32.sp, maxLines = 3, minSize = 16f, letterSpacing = (-0.5).sp)
                         if (ahora.autor.isNotBlank()) Text(ahora.autor, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp, modifier = Modifier.padding(top = 2.dp))
                     }
                     Column {

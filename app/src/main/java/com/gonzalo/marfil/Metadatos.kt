@@ -43,6 +43,34 @@ object Metadatos {
         return registrar(ctx, destino, nombre, id)
     }
 
+    /**
+     * Pone el archivo [uri] como el de un libro que ya está en la biblioteca (el que estaba «en otro dispositivo» o uno que quieras cambiar):
+     * se copia a la app y el libro sigue siendo el mismo (misma clave, mismo estado, lo leído). Devuelve el libro, o null si no se pudo leer.
+     */
+    fun adjuntar(ctx: Context, l: Libro, uri: Uri): Libro? {
+        val nombre = nombreDe(ctx, uri)
+        val ext = nombre.substringAfterLast('.', "").lowercase()
+        if (ext !in FORMATOS) return null
+        val destino = File(dirLibros(ctx), "${l.id}.$ext")
+        val tmp = File(destino.path + ".tmp")
+        try { ctx.contentResolver.openInputStream(uri)?.use { i -> tmp.outputStream().use { o -> i.copyTo(o) } } ?: return null }
+        catch (e: Exception) { tmp.delete(); return null }
+        // Si había otro archivo de otro formato, se borra
+        dirLibros(ctx).listFiles { f -> f.name.startsWith(l.id + ".") && f != destino && !f.name.endsWith(".tmp") }?.forEach { it.delete() }
+        destino.delete(); tmp.renameTo(destino)
+        val ahora = Biblioteca.por(l.id) ?: l
+        val conArchivo = ahora.copy(uri = Uri.fromFile(destino).toString(), archivo = nombre)
+        Biblioteca.poner(conArchivo)
+        // Si el libro no tiene portada, se saca la del archivo
+        return if (conArchivo.portada.isBlank()) (Portadas.delLibro(ctx, conArchivo) ?: conArchivo) else conArchivo
+    }
+
+    /** Borra el archivo de este dispositivo; el libro se queda en la biblioteca (con lo leído) y se puede volver a bajar o a elegir. */
+    fun quitarArchivo(ctx: Context, l: Libro): Libro {
+        runCatching { File(Uri.parse(l.uri).path.orEmpty()).takeIf { it.exists() }?.delete() }
+        return (Biblioteca.por(l.id) ?: l).copy(uri = "").also { Biblioteca.poner(it) }
+    }
+
     /** Pone en la biblioteca un archivo que ya está en la app (también al bajarlo de tu kDrive). */
     fun registrar(ctx: Context, archivo: File, nombre: String, idNuevo: String = Biblioteca.nuevoId()): Libro {
         val m = leer(archivo, nombre)

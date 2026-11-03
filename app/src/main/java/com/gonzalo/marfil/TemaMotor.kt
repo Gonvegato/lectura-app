@@ -264,7 +264,7 @@ object Skin {
     }
 
     private fun persistir(c: Context) {
-        // (los widgets de lectura se repintarán aquí cuando existan)
+        Widgets.pedir(c)
         p(c).edit().putLong("ajustes_at", ajustesAt).putString("paleta", palette.id).putString("display", display).putString("body", body).putString("forma", forma.id)
             .putString("acento", accentId).putBoolean("invertido", invertido).putBoolean("origen_atrio", origenAtrio).putInt("escala", escala).putInt("modo", Modo.eleccion)
             .putString("fondo_id", fondoId).putLong("fondo_propio", fondoPropio).putLong("tinta_propia", tintaPropia).putLong("acento_propio", acentoPropio).apply()

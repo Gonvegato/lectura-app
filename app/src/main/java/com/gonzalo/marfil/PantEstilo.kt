@@ -36,7 +36,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.6.0"
+const val VERSION = "0.7.0"
 
 /** «Ajustes»: Apariencia (como la de Atrio), cuenta de Atrio, actualizaciones y copias. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -134,7 +134,7 @@ private fun SeccionCuenta() {
     var ocupado by remember { mutableStateOf(false) }
     var aviso by remember { mutableStateOf<String?>(null) }
     if (!Cuenta.vinculada) {
-        Text("Entra con la misma cuenta que usas en Atrio y tus juegos, horas, notas y diseños de ficha se sincronizan entre tus Marfiles. Las ROMs, los guardados y las imágenes no se suben (todavía).",
+        Text("Entra con la misma cuenta que usas en Atrio y tus libros, lo que llevas leído, tus subrayados, tus portadas y tus ajustes se sincronizan entre tus dispositivos. Los archivos de los libros viajan por tu kDrive (Actualizaciones, más abajo).",
             color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
         CampoRevista("Usuario", usuario, "tu usuario de Atrio") { usuario = it }
         CampoRevista("Contraseña", clave, "••••••••", secreto = true) { clave = it }
@@ -155,7 +155,7 @@ private fun SeccionCuenta() {
         Text(listOf(SincroP.estado.ifBlank { "Sin sincronizar todavía" }, cuando?.let { "última vez $it" }).filterNotNull().joinToString(" · "),
             color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(top = 2.dp))
         Spacer(Modifier.height(6.dp))
-        MagLink(if (ocupado) "Sincronizando…" else "Sincronizar ahora", "Baja lo de tus otros Marfiles y sube lo de este") {
+        MagLink(if (ocupado) "Sincronizando…" else "Sincronizar ahora", "Baja lo de tus otros dispositivos y sube lo de este") {
             if (!ocupado) { ocupado = true; ambito.launch { SincroP.sincronizar(ctx, desdeCero = true); ocupado = false } }
         }
         Filete(1.dp, Line)
@@ -256,6 +256,9 @@ fun SeccionLibros() {
         else "$enNube libros en tu kDrive" + if (sinArchivo > 0) " · $sinArchivo sin archivo en este dispositivo (se bajan al abrirlos)" else "",
         color = Muted, fontFamily = Body, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.padding(bottom = 4.dp)
     )
+    var auto by remember { mutableStateOf(NubeLibros.autoBajar(ctx)) }
+    Fila("Tener todos mis libros aquí", "Con Wi-Fi, Marfil baja en segundo plano los libros de tu kDrive que falten en este dispositivo. Si prefieres bajarlos uno a uno al abrirlos, apágalo.", final = { Interruptor(auto) { auto = it; NubeLibros.ponAutoBajar(ctx, it) } })
+    Filete(1.dp, Line)
     MagLink(if (ocupado) "Un momento…" else "Traer mis libros de Atrio", "Solo lee tu cuenta: no cambia nada en Atrio. Trae fichas, lo leído, subrayados y dónde están los archivos") {
         if (ocupado) return@MagLink
         if (!Cuenta.vinculada) { estado = "Primero vincula tu cuenta (Cuenta de Atrio)."; return@MagLink }

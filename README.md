@@ -141,3 +141,10 @@ Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuen
 
 - Cada libro que añades se sube solo (con Wi-Fi) a `Mi carpeta/Marfil/Libros/<título>/`; el índice (`/users/<uid>/marfil/nube/<libro>`: id de kDrive, nombre, tamaño) viaja por tu cuenta. En otro dispositivo el libro sale «sin archivo» y se baja al abrirlo (hace falta conectar el kDrive en Ajustes → Actualizaciones).
 - Ajustes → Libros → «Traer mis libros de Atrio»: lee (sin cambiar nada en Atrio) lo que Atrio subió a tu cuenta y crea cada libro con su ficha, lo leído (posición, subrayados, notas, marcadores, tiempo) y, si Atrio lo subió a kDrive, el enlace a su archivo (no se duplica). Los «abandonados» de Atrio entran como pendientes. Se puede repetir sin duplicar.
+
+## Portadas, ficha y widgets (0.7)
+
+- **Ficha** con la estética de la de Atrio: titular, línea en cursiva, acciones (Leer / Bajar y leer / Elegir archivo, Portada, Editar, Archivo), estante y tiempo, subrayados y notas, datos. Se puede cambiar el título y el autor, elegir o cambiar el archivo, quitar el archivo de este dispositivo y quitar el libro.
+- **Portada**: de la galería, de internet (iTunes Libros y Open Library, sin clave), la del propio libro, o ninguna (entonces, una tapa de tela con el título; en pequeño, la inicial). La que eliges se sube a `Marfil/Portadas/` de tu kDrive (`/marfil/portadas/<libro>` en la cuenta) y sale en tus otros dispositivos.
+- **Tus libros en todos tus dispositivos**: un trabajo en segundo plano (WorkManager, con Wi-Fi) sube libros y portadas y, si lo dejas activo (Ajustes → Libros), baja los que faltan.
+- **Widgets** (los mismos de Atrio y Carmesí, con libros): Sigue leyendo, En la mesilla, En portada, ¿Y ahora qué?, Lectura de la semana (con tu objetivo), Una cita (de tus subrayados; un toque abre el libro en esa frase) y la cabecera (sola o en papel). Vista previa en `docs/widgets/hoja.png`.

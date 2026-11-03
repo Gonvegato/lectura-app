@@ -102,7 +102,7 @@ object Biblioteca {
     fun guardar() {
         val f = archivo ?: return
         runCatching { val t = File(f.path + ".tmp"); t.writeText(aTexto()); t.renameTo(f) }
-        appCtx?.let { c -> SincroP.cambio(c) }
+        appCtx?.let { c -> Widgets.pedir(c); SincroP.cambio(c) }
     }
 
     /** Guarda un libro. Solo cambiar la ficha (título, autor, favorito, estante) cuenta como «cambio»: leer no, para que un dispositivo que solo lee no pise lo editado en otro. */

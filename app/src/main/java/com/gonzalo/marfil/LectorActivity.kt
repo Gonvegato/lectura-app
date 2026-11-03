@@ -126,6 +126,8 @@ class LectorActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // (si se abre desde un widget con la app cerrada, hay que cargar la biblioteca y la cuenta antes)
+        iniciar(applicationContext)
         id = intent.getStringExtra("id").orEmpty()
         uri = EstadoLectura.archivo(this, id)?.let { Uri.parse(it) }
         WindowCompat.setDecorFitsSystemWindows(window, false)

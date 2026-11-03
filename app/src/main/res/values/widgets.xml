@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Con el tema «como el sistema», el widget lleva los dos dibujos y se ve el que toca (0 visible, 2 oculto: el orden del atributo visibility) -->
+    <integer name="w_dia">0</integer>
+    <integer name="w_noche">2</integer>
+    <string name="w_leyendo">Sigue leyendo</string>
+    <string name="w_leyendo_d">El libro que estás leyendo, con su portada y lo que llevas. Un toque y sigues donde lo dejaste.</string>
+    <string name="w_estante">En la mesilla</string>
+    <string name="w_estante_d">Lo que lees y lo que tienes pendiente, en fila como una estantería.</string>
+    <string name="w_portada">En portada</string>
+    <string name="w_portada_d">La portada de tu revista: tu libro de ahora, a toda página.</string>
+    <string name="w_siguiente">¿Y ahora qué?</string>
+    <string name="w_siguiente_d">Un libro pendiente para empezar hoy, con su portada. «Otro» para cambiar.</string>
+    <string name="w_semana">Lectura de la semana</string>
+    <string name="w_semana_d">Lo que has leído hoy, tus días seguidos y la semana en barras, con tu objetivo.</string>
+    <string name="w_cita">Una cita</string>
+    <string name="w_cita_d">Uno de tus subrayados, un día cada uno. Un toque y abres el libro en esa frase.</string>
+    <string name="w_marca">MARFIL</string>
+    <string name="w_marca_d">La cabecera de Marfil, sola sobre tu fondo. Un toque y estás en la portada.</string>
+    <string name="w_marcapapel">MARFIL en papel</string>
+    <string name="w_marcapapel_d">La cabecera de Marfil en su papel: el número del día y la fecha. Un toque y estás en la portada.</string>
+</resources>

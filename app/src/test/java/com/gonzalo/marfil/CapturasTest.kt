@@ -7,10 +7,15 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
@@ -99,5 +104,56 @@ class CapturasTest {
     @Test fun vacia() {
         org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
         Skin.cargar(ctx); Biblioteca.cargada = true; Biblioteca.libros.clear(); montar(false); foto("5_portada_vacia")
+    }
+
+    @Test fun fichaCompleta() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra(); montar(false)
+        rule.onNodeWithText("LEYENDO").performClick()
+        rule.onNodeWithText("Dune", useUnmergedTree = true).performClick(); foto("4_ficha")
+        rule.onNodeWithText("Quitar de la biblioteca", substring = true, useUnmergedTree = true).performScrollTo(); foto("4b_ficha_abajo")
+    }
+
+    @Test fun fichaSinArchivoNiPortada() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra(); montar(false)
+        rule.onNodeWithText("PENDIENTES").performClick()
+        rule.onNodeWithText("Los pilares de la Tierra", useUnmergedTree = true).performClick(); foto("4c_ficha_sin_archivo")
+    }
+
+    @Test fun tapas() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        Skin.cargar(ctx)
+        rule.setContent { MarfilTheme { Surface(Modifier.fillMaxSize(), color = Paper) {
+            androidx.compose.foundation.layout.Column(Modifier.padding(20.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
+                androidx.compose.foundation.layout.Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(14.dp)) {
+                    listOf("Los pilares de la Tierra" to "Ken Follett", "La sombra del viento" to "Carlos Ruiz Zafón", "Cien años de soledad" to "Gabriel García Márquez").forEach { (t, a) ->
+                        PortadaLibro(Libro("x", t, a), Modifier.width(104.dp).aspectRatio(0.68f))
+                    }
+                }
+                androidx.compose.foundation.layout.Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(14.dp)) {
+                    listOf("Dune", "1984", "Ulises", "Fahrenheit 451", "Don Quijote de la Mancha", "El Principito").forEach { t -> PortadaLibro(Libro("x", t), Modifier.width(50.dp).aspectRatio(0.68f)) }
+                }
+                PortadaLibro(Libro("x", "El nombre de la rosa", "Umberto Eco"), Modifier.width(210.dp).aspectRatio(0.68f))
+            }
+        } } }
+        foto("6_tapas")
+    }
+
+    @Test fun selectorDePortada() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra(); Skin.cargar(ctx)
+        val c = listOf("Rosa" to 0xFF8C2A22.toInt(), "Dune" to 0xFFD9A53A.toInt(), "Cien" to 0xFF2F5D8A.toInt(), "F451" to 0xFFE0603A.toInt(), "Otra" to 0xFF35523F.toInt(), "Mas" to 0xFF5B3F6B.toInt())
+            .mapIndexed { i, (n, col) -> portada(n, col, col and 0x7f7f7f).let { Candidata(it, it, if (i % 2 == 0) "iTunes" else "Open Library", "El nombre de la rosa · Umberto Eco") } }
+        coil.Coil.setImageLoader(coil.ImageLoader.Builder(ctx).dispatcher(Dispatchers.Unconfined).allowHardware(false).build())
+        rule.setContent { MarfilTheme { Surface(Modifier.fillMaxSize(), color = Paper) { ContenidoSelectorPortada(Biblioteca.libros.first(), {}, hallados = c) } } }
+        foto("7_selector_portada")
+    }
+
+    @Test fun ajustesLibros() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra(); montar(false)
+        rule.onNodeWithContentDescription("Ajustes").performClick()
+        rule.onNodeWithText("Tener todos mis libros aquí", useUnmergedTree = true).performScrollTo(); foto("8_ajustes_libros")
     }
 }

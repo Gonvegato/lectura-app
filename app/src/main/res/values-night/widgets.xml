@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- De noche, al revés: se ve el dibujo oscuro -->
+    <integer name="w_dia">2</integer>
+    <integer name="w_noche">0</integer>
+</resources>
