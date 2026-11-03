@@ -11,8 +11,8 @@ android {
         applicationId = "com.gonzalo.marfil"
         minSdk = 29
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0"
     }
     // Firma fija: cada versión nueva se instala encima de la anterior sin borrar tus libros.
     signingConfigs {

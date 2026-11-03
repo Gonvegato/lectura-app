@@ -168,7 +168,7 @@ object SincroP {
     }
 
     /** Lo que va por kDrive (los libros): se hace aparte y sus errores no estropean la sincronización. */
-    private fun portadas(c: Context) { /* los libros por kDrive: ver NubeL */ }
+    private fun portadas(c: Context) { NubeLibros.subirEnSegundoPlano(c) }
 
     /** Baja y mezcla lo nuevo de tus otros dispositivos. Devuelve true si ha cambiado algo aquí. */
     suspend fun bajar(c: Context): Boolean = candado.withLock {

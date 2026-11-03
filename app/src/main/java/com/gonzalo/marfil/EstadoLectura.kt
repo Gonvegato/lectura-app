@@ -46,14 +46,18 @@ object EstadoLectura {
         val l = Biblioteca.por(id) ?: return
         val fr = maxOf(o.optDouble("fraction", 0.0), o.optDouble("bestFrac", 0.0)).toFloat().coerceIn(0f, 1f)
         val ms = o.optJSONObject("stats")?.optJSONObject("dev")?.optJSONObject(Cuenta.dispositivo)?.optLong("total", 0L) ?: 0L
+        // El tiempo de los demás dispositivos (y el que trajo la importación de Atrio) viaja dentro del estado: se muestra sumado
+        val dev = o.optJSONObject("stats")?.optJSONObject("dev")
+        val ajenos = HashMap(l.ajenosMs)
+        if (dev != null) for (k in dev.keys()) if (k != Cuenta.dispositivo) ajenos[k] = maxOf(ajenos[k] ?: 0L, dev.optJSONObject(k)?.optLong("total", 0L) ?: 0L)
         val ultima = o.optLong("read", l.ultima).coerceAtLeast(l.ultima)
         val estado = when { fr >= 0.985f -> Estado.LEIDO; l.estado == Estado.PENDIENTE && (fr > 0.003f || ms >= 60_000L) -> Estado.LEYENDO; else -> l.estado }
         val ahora = System.currentTimeMillis()
-        val cambioGrande = estado != l.estado || kotlin.math.abs(fr - l.fraccion) >= 0.004f
+        val cambioGrande = estado != l.estado || kotlin.math.abs(fr - l.fraccion) >= 0.004f || ajenos != l.ajenosMs
         // No se reescribe la biblioteca en cada página: solo si cambia algo de peso o han pasado 20 s
         if (!forzar && !cambioGrande && ahora - (ultimaVez[id] ?: 0L) < 20_000L) return
         ultimaVez[id] = ahora
-        val n = l.copy(fraccion = maxOf(fr, l.fraccion), ultima = ultima, msPropios = maxOf(ms, 0L).takeIf { it > 0 } ?: l.msPropios, estado = estado)
+        val n = l.copy(fraccion = maxOf(fr, l.fraccion), ultima = ultima, msPropios = maxOf(ms, 0L).takeIf { it > 0 } ?: l.msPropios, ajenosMs = ajenos, estado = estado)
         if (n != l) Biblioteca.poner(n)
     }
 

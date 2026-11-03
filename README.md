@@ -136,3 +136,8 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). El APK 
 ## Lo leído entre dispositivos
 
 Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuenta: `/users/<uid>/marfil/lec/<libro>/<dispositivo>` (el estado entero) y `/lstamps/<libro>/<dispositivo>` (su hora, que es lo que se escucha en directo). Se une así (ver `MezclaLectura`): posición, la más reciente; «lo más lejos que has llegado», el mayor; ajustes del libro, los últimos; subrayados, notas y marcadores se juntan (los quitados viajan como borrados con hora); el tiempo leído se suma por dispositivo. Al abrir un libro se baja antes lo último de los demás (hasta 2,5 s de espera) y al salir se sube.
+
+## Libros por kDrive e importar de Atrio
+
+- Cada libro que añades se sube solo (con Wi-Fi) a `Mi carpeta/Marfil/Libros/<título>/`; el índice (`/users/<uid>/marfil/nube/<libro>`: id de kDrive, nombre, tamaño) viaja por tu cuenta. En otro dispositivo el libro sale «sin archivo» y se baja al abrirlo (hace falta conectar el kDrive en Ajustes → Actualizaciones).
+- Ajustes → Libros → «Traer mis libros de Atrio»: lee (sin cambiar nada en Atrio) lo que Atrio subió a tu cuenta y crea cada libro con su ficha, lo leído (posición, subrayados, notas, marcadores, tiempo) y, si Atrio lo subió a kDrive, el enlace a su archivo (no se duplica). Los «abandonados» de Atrio entran como pendientes. Se puede repetir sin duplicar.

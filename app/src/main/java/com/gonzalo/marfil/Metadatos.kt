@@ -57,6 +57,8 @@ object Metadatos {
         return libro
     }
 
+    fun guardarPortadaPublica(ctx: Context, id: String, bytes: ByteArray): String? = guardarPortada(ctx, id, bytes)
+
     private fun guardarPortada(ctx: Context, id: String, bytes: ByteArray): String? = runCatching {
         val o = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, o)

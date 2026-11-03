@@ -36,7 +36,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.4.0"
+const val VERSION = "0.5.0"
 
 /** «Ajustes»: Apariencia (como la de Atrio), cuenta de Atrio, actualizaciones y copias. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -76,8 +76,14 @@ fun PantEstilo(alVolver: () -> Unit) {
         Spacer(Modifier.height(14.dp))
         Filete(2.dp)
         Spacer(Modifier.height(12.dp))
+        Antetitulo("Libros", Modifier.padding(bottom = 4.dp))
+        SeccionLibros()
+
+        Spacer(Modifier.height(14.dp))
+        Filete(2.dp)
+        Spacer(Modifier.height(12.dp))
         Antetitulo("Copias", Modifier.padding(bottom = 4.dp))
-        MagLink("Guardar copia de la biblioteca", "Un archivo con tus libros y estantes (no incluye los archivos de los libros)") { exportar.launch("lectura-biblioteca.json") }
+        MagLink("Guardar copia de la biblioteca", "Un archivo con tus libros y estantes (no incluye los archivos de los libros)") { exportar.launch("marfil-biblioteca.json") }
         Filete(1.dp, Line)
         MagLink("Importar copia", "Suma los libros de una copia a los que ya tienes") { importar.launch(arrayOf("application/json", "*/*")) }
         mensaje?.let { Text(it, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp)) }
@@ -86,7 +92,7 @@ fun PantEstilo(alVolver: () -> Unit) {
         Filete(3.dp)
         Spacer(Modifier.height(10.dp))
         Etiqueta("Marfil $VERSION")
-        Text("Hermana de Atrio. Los comandos para abrir emuladores salen de ES-DE Frontend (licencia MIT, © Northwestern Software AB, Leon Styhre y Alec Lofquist). Las portadas, de libretro.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
+        Text("Marfil es hermana de Atrio. El lector usa foliate-js (MIT) y pdf.js (Apache 2.0); sus licencias van en la app.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 13.sp, lineHeight = 18.sp)
         Spacer(Modifier.height(30.dp))
     }
 }
@@ -223,4 +229,71 @@ fun AvisoActualizacion() {
         }) { Text(if (Actualizador.faltaPermiso) "PERMITIR" else "ACTUALIZAR AHORA", color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp) } },
         dismissButton = { TextButton({ luego = true }) { Text("LUEGO", color = Charcoal, fontFamily = Body, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp) } }
     )
+}
+
+
+/** «Libros»: traer los de Atrio y tenerlos en tu kDrive (se suben solos con Wi-Fi; aquí, a mano). */
+@Composable
+fun SeccionLibros() {
+    val ctx = LocalContext.current
+    val ambito = rememberCoroutineScope()
+    var estado by remember { mutableStateOf("") }
+    var ocupado by remember { mutableStateOf(false) }
+    var hallados by remember { mutableStateOf<List<ImportarAtrio.Candidato>?>(null) }
+    val enNube = NubeLibros.indice(ctx).size
+    val sinArchivo = Biblioteca.libros.count { it.enOtroDispositivo }
+    Text(
+        if (!KDrive.on(ctx)) "kDrive sin conectar (Ajustes → Actualizaciones): los libros no se suben ni se bajan."
+        else "$enNube libros en tu kDrive" + if (sinArchivo > 0) " · $sinArchivo sin archivo en este dispositivo (se bajan al abrirlos)" else "",
+        color = Muted, fontFamily = Body, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.padding(bottom = 4.dp)
+    )
+    MagLink(if (ocupado) "Un momento…" else "Traer mis libros de Atrio", "Solo lee tu cuenta: no cambia nada en Atrio. Trae fichas, lo leído, subrayados y dónde están los archivos") {
+        if (ocupado) return@MagLink
+        if (!Cuenta.vinculada) { estado = "Primero vincula tu cuenta (Cuenta de Atrio)."; return@MagLink }
+        ocupado = true; estado = "Leyendo lo que Atrio tiene en tu cuenta…"
+        ambito.launch {
+            val r = withContext(Dispatchers.IO) { runCatching { ImportarAtrio.leer() } }
+            ocupado = false
+            r.onSuccess { l -> if (l.isNullOrEmpty()) estado = "No he encontrado libros de Atrio en tu cuenta." else { hallados = l; estado = "" } }
+                .onFailure { estado = it.message ?: "No he podido leer tu cuenta." }
+        }
+    }
+    Filete(1.dp, Line)
+    MagLink(if (ocupado) "Un momento…" else "Subir mis libros a kDrive ahora", "Normalmente se suben solos con Wi-Fi") {
+        if (ocupado) return@MagLink
+        if (!KDrive.on(ctx)) { estado = "Conecta antes tu kDrive (Ajustes → Actualizaciones)."; return@MagLink }
+        ocupado = true; estado = "Subiendo…"
+        ambito.launch {
+            val n = withContext(Dispatchers.IO) { runCatching { NubeLibros.subirPendientes(ctx, aMano = true) { m -> estado = m } } }
+            ocupado = false
+            estado = n.fold({ if (it == 0) "Todos tus libros ya están en tu kDrive." else "Subidos $it libros." }, { it.message ?: "No he podido subirlos." })
+        }
+    }
+    if (estado.isNotBlank()) Text(estado, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp))
+    hallados?.let { l ->
+        val n = { e: Estado -> l.count { it.libro.estado == e } }
+        AlertDialog(
+            onDismissRequest = { hallados = null },
+            title = { Text("${l.size} libros en Atrio", color = Charcoal, fontFamily = Display, fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "${n(Estado.LEIDO)} leídos, ${n(Estado.LEYENDO)} leyendo, ${n(Estado.PENDIENTE)} pendientes. ${l.count { it.nube != null }} tienen su archivo en tu kDrive." +
+                        (l.count { it.abandonado }.let { if (it > 0) " $it están abandonados en Atrio: Marfil no tiene ese estante, entran como pendientes." else "" }) +
+                        " Los que ya tengas aquí no se duplican; lo leído se mezcla.", color = Charcoal, fontFamily = Body, fontSize = 14.sp, lineHeight = 20.sp
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val cands = l; hallados = null; ocupado = true; estado = "Importando…"
+                    ambito.launch {
+                        val r = withContext(Dispatchers.IO) { runCatching { ImportarAtrio.importar(ctx, cands) { i, t -> estado = "Importando $i de $t…" } } }
+                        ocupado = false
+                        estado = r.fold({ "Hecho: ${it.nuevos} libros nuevos, ${it.yaEstaban} que ya tenías, ${it.conArchivo} con archivo en kDrive." }, { e -> e.message ?: "No he podido importar." })
+                    }
+                }) { Text("Importar", color = Acento, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = { TextButton(onClick = { hallados = null }) { Text("Cancelar", color = Muted) } },
+            containerColor = Paper
+        )
+    }
 }
