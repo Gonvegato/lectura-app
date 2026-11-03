@@ -27,7 +27,7 @@ class ImportarAtrioTest {
         assertEquals("https://x/c1.jpg", c["Dune"]!!.libro.portada)
         assertEquals(Estado.LEYENDO, c["Ubik"]!!.libro.estado); assertEquals(0.42f, c["Ubik"]!!.libro.fraccion, 0.001f)
         assertEquals(Estado.PENDIENTE, c["Neuromante"]!!.libro.estado)
-        assertEquals(Estado.PENDIENTE, c["Solaris"]!!.libro.estado); assertTrue("el abandonado se avisa", c["Solaris"]!!.abandonado)
+        assertEquals(Estado.ABANDONADO, c["Solaris"]!!.libro.estado); assertTrue(c["Solaris"]!!.abandonado)
         assertEquals(4243L, c["Dune"]!!.nube!!.f); assertEquals("Libro 3.epub", c["Ubik"]!!.nube!!.n)
         assertNull(c["1984"]!!.nube)
         assertEquals(c["Ubik"]!!.libro.autor, "Philip K. Dick")

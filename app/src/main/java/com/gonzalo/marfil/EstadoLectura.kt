@@ -51,7 +51,13 @@ object EstadoLectura {
         val ajenos = HashMap(l.ajenosMs)
         if (dev != null) for (k in dev.keys()) if (k != Cuenta.dispositivo) ajenos[k] = maxOf(ajenos[k] ?: 0L, dev.optJSONObject(k)?.optLong("total", 0L) ?: 0L)
         val ultima = o.optLong("read", l.ultima).coerceAtLeast(l.ultima)
-        val estado = when { fr >= 0.985f -> Estado.LEIDO; l.estado == Estado.PENDIENTE && (fr > 0.003f || ms >= 60_000L) -> Estado.LEYENDO; else -> l.estado }
+        val estado = when {
+            fr >= 0.985f -> Estado.LEIDO
+            l.estado == Estado.PENDIENTE && (fr > 0.003f || ms >= 60_000L) -> Estado.LEYENDO
+            // Un abandonado que vuelves a leer (avanzas) pasa otra vez a «Leyendo»
+            l.estado == Estado.ABANDONADO && fr > l.fraccion + 0.003f -> Estado.LEYENDO
+            else -> l.estado
+        }
         val ahora = System.currentTimeMillis()
         val cambioGrande = estado != l.estado || kotlin.math.abs(fr - l.fraccion) >= 0.004f || ajenos != l.ajenosMs
         // No se reescribe la biblioteca en cada página: solo si cambia algo de peso o han pasado 20 s
@@ -67,7 +73,7 @@ object EstadoLectura {
         if (!ReadStats.cuenta(st.optJSONObject("stats"), hoy.toString())) return false
         st.put("autoLeyendo", hoy.toString())
         val l = Biblioteca.por(id) ?: return false
-        if (l.estado != Estado.PENDIENTE) return false
+        if (l.estado != Estado.PENDIENTE && l.estado != Estado.ABANDONADO) return false
         Biblioteca.poner(l.copy(estado = Estado.LEYENDO))
         return true
     }

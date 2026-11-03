@@ -148,3 +148,14 @@ Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuen
 - **Portada**: de la galería, de internet (iTunes Libros y Open Library, sin clave), la del propio libro, o ninguna (entonces, una tapa de tela con el título; en pequeño, la inicial). La que eliges se sube a `Marfil/Portadas/` de tu kDrive (`/marfil/portadas/<libro>` en la cuenta) y sale en tus otros dispositivos.
 - **Tus libros en todos tus dispositivos**: un trabajo en segundo plano (WorkManager, con Wi-Fi) sube libros y portadas y, si lo dejas activo (Ajustes → Libros), baja los que faltan.
 - **Widgets** (los mismos de Atrio y Carmesí, con libros): Sigue leyendo, En la mesilla, En portada, ¿Y ahora qué?, Lectura de la semana (con tu objetivo), Una cita (de tus subrayados; un toque abre el libro en esa frase) y la cabecera (sola o en papel). Vista previa en `docs/widgets/hoja.png`.
+
+## Marfil 0.8
+
+- **Secciones como páginas**: Leyendo, Pendientes, Leídos, Abandonados y Autores se recorren con el dedo (o con las pestañas); Buscar mira en todos los estantes.
+- **Sagas** (las de Atrio, de vuelta): en las listas los libros de una saga salen juntos (un toque los abre; «Ver la saga →» va a su página, con lo que toca leer ahora, ordenar, añadir y quitar libros). Se crean desde la ficha («Saga →»), viajan con tu cuenta y se traen de Atrio al importar.
+- **Inicio**: «Ahora» (lo último que abriste), «En la mesilla» (lo que lees a medias, menos «Ahora») y «En la estantería» (lo pendiente). A la derecha, en acento, las páginas del libro (`320 págs`; `118/320` si lo llevas empezado).
+- **Páginas de cada libro**, de la fuente más fiable: lo que escribes tú → Atrio / el PDF → Open Library → calculadas por el texto del EPUB. Ver `Paginas`.
+- **Ficha** con la casilla de lectura de Atrio (cuadrados anchos: «Bajar de tu kDrive», «Elegir archivo», «Seguir leyendo»).
+- **Portada**: además de la galería, iTunes y Open Library, el buscador de imágenes de Atrio con **Pinterest** en cuadrados (`Internet.kt`).
+- **Abandonados** como estado propio (y un abandonado que vuelves a leer pasa a Leyendo).
+- **Widgets**: las etiquetas llevan siempre la negrita de la app, como en Atrio.

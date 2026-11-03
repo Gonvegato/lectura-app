@@ -59,7 +59,8 @@ object Metadatos {
         dirLibros(ctx).listFiles { f -> f.name.startsWith(l.id + ".") && f != destino && !f.name.endsWith(".tmp") }?.forEach { it.delete() }
         destino.delete(); tmp.renameTo(destino)
         val ahora = Biblioteca.por(l.id) ?: l
-        val conArchivo = ahora.copy(uri = Uri.fromFile(destino).toString(), archivo = nombre)
+        var conArchivo = ahora.copy(uri = Uri.fromFile(destino).toString(), archivo = nombre)
+        Paginas.deArchivo(destino, nombre)?.let { (n, o) -> conArchivo = Paginas.conPaginas(conArchivo, n, o) }
         Biblioteca.poner(conArchivo)
         // Si el libro no tiene portada, se saca la del archivo
         return if (conArchivo.portada.isBlank()) (Portadas.delLibro(ctx, conArchivo) ?: conArchivo) else conArchivo
@@ -80,7 +81,8 @@ object Metadatos {
         val id = previo?.id ?: idNuevo
         val portada = m.portada?.let { guardarPortada(ctx, id, it) } ?: previo?.portada.orEmpty()
         val ahora = System.currentTimeMillis()
-        val libro = (previo ?: Libro(id, titulo, autor, anadido = ahora)).copy(uri = android.net.Uri.fromFile(archivo).toString(), archivo = nombre, portada = portada)
+        var libro = (previo ?: Libro(id, titulo, autor, anadido = ahora)).copy(uri = android.net.Uri.fromFile(archivo).toString(), archivo = nombre, portada = portada)
+        Paginas.deArchivo(archivo, nombre)?.let { (n, o) -> libro = Paginas.conPaginas(libro, n, o) }
         Biblioteca.poner(libro)
         return libro
     }

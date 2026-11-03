@@ -154,7 +154,7 @@ object SincroP {
     suspend fun subir(c: Context, forzar: Boolean = false): Boolean = candado.withLock {
         if (!Cuenta.vinculada) return@withLock true
         try {
-            val blob = Mezcla.aJson(Mezcla.aBlob(Cuenta.dispositivo, Biblioteca.libros.toList(), HashMap(Biblioteca.borrados), if (Skin.ajustesAt > 0L) Skin.ajustesJson().toString() else ""))
+            val blob = Mezcla.aJson(Mezcla.aBlob(Cuenta.dispositivo, Biblioteca.libros.toList(), HashMap(Biblioteca.borrados), if (Skin.ajustesAt > 0L) Skin.ajustesJson().toString() else "", Sagas.lista.toList(), HashMap(Sagas.borradas)))
             val hash = blob.hashCode().toString() + ":" + blob.length
             val p = prefs(c)
             if (!forzar && p.getString("hash", "") == hash) return@withLock true
@@ -189,7 +189,7 @@ object SincroP {
                 if (dev == Cuenta.dispositivo || ts <= vistas.optLong(dev, 0L) || ahora - ts > Cuenta.STALE) continue
                 val raw = Cuenta.db("GET", "${Cuenta.raiz}/dev/$dev/data", null) ?: continue
                 val datos = JSONTokener(raw).nextValue() as? String ?: continue
-                Mezcla.deJson(datos)?.let { nuevos += Blob(dev, it.libros, it.borrados, it.ajustes) }
+                Mezcla.deJson(datos)?.let { nuevos += Blob(dev, it.libros, it.borrados, it.ajustes, it.sagas, it.sagasBorradas) }
                 vistosNuevos.put(dev, ts)
             }
             var cambio = false
@@ -199,6 +199,8 @@ object SincroP {
             if (nuevos.isNotEmpty()) {
                 val r = Mezcla.mezclar(Biblioteca.libros.toList(), HashMap(Biblioteca.borrados), nuevos, Cuenta.dispositivo)
                 if (r.cambio) { Biblioteca.aplicarMezcla(r.libros, r.borrados); cambio = true }
+                val rs = Mezcla.mezclarSagas(Sagas.lista.toList(), HashMap(Sagas.borradas), nuevos, Cuenta.dispositivo)
+                if (rs.cambio) { Sagas.aplicarMezcla(rs.sagas, rs.borradas); cambio = true }
             }
             guardaVistos(c, vistosNuevos)
             if (runCatching { bajarLecturaYa(c) }.getOrDefault(false)) cambio = true

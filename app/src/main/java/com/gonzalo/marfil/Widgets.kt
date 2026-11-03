@@ -311,8 +311,9 @@ class WDatos(val ctx: Context) {
     val pendientes: List<Libro> = todos.filter { it.estado == Estado.PENDIENTE }.sortedByDescending { it.anadido }
     /** Lo último que has abierto (y, si aún no has abierto nada, lo último que has añadido). */
     val recientes: List<Libro> = porReciente(todos.filter { it.ultima > 0 }.ifEmpty { todos })
-    /** La mesilla: lo que lees y, detrás, lo que tienes pendiente. */
-    val mesilla: List<Libro> = leyendo + pendientes
+    /** La mesilla: lo que lees a medias, menos lo último que abriste. La estantería: lo pendiente. */
+    val mesilla: List<Libro> = leyendo.drop(1)
+    val estanteria: List<Libro> = pendientes
     /** Tus subrayados de un tamaño que se lee bien en un widget. */
     val citas: List<CitaW> by lazy {
         todos.flatMap { l -> notasDe(EstadoLectura.estado(ctx, l.id)).filter { it.texto.length in 20..420 }.map { CitaW(l, it.texto, it.nota, it.value) } }
@@ -320,9 +321,10 @@ class WDatos(val ctx: Context) {
 
     /** «37 % · 3 h 20 min», «Pendiente», «Leído»… */
     fun estado(l: Libro): String = when (l.estado) {
-        Estado.LEYENDO -> listOfNotNull(porcentaje(l.fraccion), if (l.msLeidos >= 60_000) tiempoDe(l.msLeidos) else null).joinToString(" · ")
+        Estado.LEYENDO -> listOfNotNull(porcentaje(l.fraccion), Paginas.texto(l).ifBlank { null }).joinToString(" · ")
         Estado.LEIDO -> "Leído"
         Estado.PENDIENTE -> "Pendiente"
+        Estado.ABANDONADO -> "Abandonado"
     }
 
     /** El autor o, si no se sabe, el formato. */
@@ -374,7 +376,8 @@ object Widgets {
         letras = Letras(
             titular = titular ?: d.titular,
             cursiva = cursiva ?: if (dis == "Atrio" || titular == null) d.cursiva else titular,
-            negrita = tipografia(ctx, cue, 700, false, BODY_FONTS) ?: d.negrita,
+            // Las etiquetas (SEGUIR →, las horas, los antetítulos) llevan siempre la negrita de la app, como en Atrio: la del tema, bajada de Google Fonts, salía más fina
+            negrita = d.negrita,
             texto = tipografia(ctx, cue, 500, false, BODY_FONTS) ?: d.texto
         )
     }
@@ -691,8 +694,10 @@ object Widgets {
     private suspend fun estante(d: WDatos, w: Float, h: Float): Pagina {
         val ctx = d.ctx
         val pad = 14f
-        val todas = d.mesilla
-        if (todas.isEmpty()) return vacio(ctx, "En la mesilla", "Nada en la mesilla", "Lo que estés leyendo y lo que tengas pendiente aparecerá aquí en fila, como en una estantería.", w, h)
+        val enMesilla = d.mesilla.isNotEmpty()
+        val todas = if (enMesilla) d.mesilla else d.estanteria
+        val titulo = if (enMesilla) "En la mesilla" else "En la estantería"
+        if (todas.isEmpty()) return vacio(ctx, "En la mesilla", "Nada en la mesilla", "Los libros que leas a medias aparecerán aquí en fila; si no hay, los pendientes.", w, h)
         val bajo = h < 150f
         val n = ((w - 2 * pad) / (if (bajo) 140f else 78f)).toInt().coerceIn(1, 6).coerceAtMost(todas.size)
         val items = todas.take(n)
@@ -707,7 +712,7 @@ object Widgets {
         )
         return Pagina(zonas) {
             fondo()
-            seccion("En la mesilla", pad, pad, w - 2 * pad, tinta, acento)
+            seccion(titulo, pad, pad, w - 2 * pad, tinta, acento)
             pon(capa("Marfil", tp(fTitular, 13f, tinta), 80f, 1, 1f, Layout.Alignment.ALIGN_OPPOSITE), w - pad - 80f, pad - 3f)
             c.drawRect(pad, pad + 14.5f, w - pad, pad + 15.2f, lleno(linea))
             items.forEachIndexed { k, e ->

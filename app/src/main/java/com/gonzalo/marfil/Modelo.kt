@@ -12,7 +12,7 @@ import java.text.Normalizer
 import java.util.UUID
 
 /** En qué estante está un libro. */
-enum class Estado(val nombre: String) { PENDIENTE("Pendiente"), LEYENDO("Leyendo"), LEIDO("Leído") }
+enum class Estado(val nombre: String) { PENDIENTE("Pendiente"), LEYENDO("Leyendo"), LEIDO("Leído"), ABANDONADO("Abandonado") }
 
 /**
  * Un libro de tu biblioteca. El archivo (EPUB, PDF…) es de cada dispositivo ([uri] vacío = el libro viene de otro de tus dispositivos y aquí
@@ -43,6 +43,9 @@ data class Libro(
     /** Tiempo leído (ms): el de ESTE dispositivo y el de los demás (por dispositivo); el total es la suma. */
     val msPropios: Long = 0L,
     val ajenosMs: Map<String, Long> = emptyMap(),
+    /** Páginas del libro (0 = no se sabe) y de dónde sale ese número: ver [Paginas]. */
+    val paginas: Int = 0,
+    val paginasOrigen: String = "",
 ) {
     val msLeidos: Long get() = msPropios + ajenosMs.values.sum()
     /** El libro viene de otro dispositivo y aquí aún no tiene archivo. */
@@ -129,7 +132,7 @@ object Biblioteca {
     fun aJson(l: Libro) = JSONObject().apply {
         put("id", l.id); put("clave", l.clave); put("titulo", l.titulo); put("autor", l.autor); put("portada", l.portada); put("uri", l.uri); put("archivo", l.archivo)
         put("favorito", l.favorito); put("estado", l.estado.name); put("anadido", l.anadido); put("ultima", l.ultima); put("fraccion", l.fraccion.toDouble())
-        put("mod", l.mod); put("msp", l.msPropios)
+        put("mod", l.mod); put("msp", l.msPropios); put("pg", l.paginas); put("po", l.paginasOrigen)
         put("ajms", JSONObject().also { o -> l.ajenosMs.forEach { (k, v) -> o.put(k, v) } })
     }
 
@@ -138,7 +141,8 @@ object Biblioteca {
         uri = o.optString("uri"), archivo = o.optString("archivo"), favorito = o.optBoolean("favorito"),
         estado = Estado.entries.firstOrNull { it.name == o.optString("estado") } ?: Estado.PENDIENTE,
         anadido = o.optLong("anadido"), ultima = o.optLong("ultima"), fraccion = o.optDouble("fraccion", 0.0).toFloat(), mod = o.optLong("mod"),
-        msPropios = o.optLong("msp"), ajenosMs = o.optJSONObject("ajms")?.let { a -> a.keys().asSequence().associateWith { k -> a.optLong(k) } } ?: emptyMap()
+        msPropios = o.optLong("msp"), ajenosMs = o.optJSONObject("ajms")?.let { a -> a.keys().asSequence().associateWith { k -> a.optLong(k) } } ?: emptyMap(),
+        paginas = o.optInt("pg"), paginasOrigen = o.optString("po")
     )
 }
 

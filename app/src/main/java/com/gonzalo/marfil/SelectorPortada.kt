@@ -36,6 +36,7 @@ fun SelectorPortada(l: Libro, alCerrar: () -> Unit) {
 }
 
 /** Lo de dentro de la hoja (aparte, para poder verlo en las capturas). [hallados]: resultados ya hechos (para las capturas). */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ContenidoSelectorPortada(l: Libro, alCerrar: () -> Unit, hallados: List<Candidata>? = null) {
     val ctx = LocalContext.current
@@ -44,6 +45,7 @@ fun ContenidoSelectorPortada(l: Libro, alCerrar: () -> Unit, hallados: List<Cand
     var resultados by remember { mutableStateOf(hallados) }
     var buscando by remember { mutableStateOf(false) }
     var guardando by remember { mutableStateOf(false) }
+    var pinterest by remember { mutableStateOf(false) }
     val tieneArchivo = !l.enOtroDispositivo
     fun dice(t: String) = Toast.makeText(ctx, t, Toast.LENGTH_LONG).show()
 
@@ -56,9 +58,9 @@ fun ContenidoSelectorPortada(l: Libro, alCerrar: () -> Unit, hallados: List<Cand
             if (r.isEmpty()) dice("No he encontrado portadas. Prueba con otro título o con el autor.")
         }
     }
-    fun guardar(bytes: ByteArray?) {
+    suspend fun guardar(bytes: ByteArray?) {
         if (bytes == null) { dice("No he podido leer esa imagen."); guardando = false; return }
-        val n = Portadas.poner(ctx, l, bytes)
+        val n = withContext(Dispatchers.IO) { Portadas.poner(ctx, l, bytes) }
         guardando = false
         if (n == null) dice("Esa imagen no vale como portada.") else alCerrar()
     }
@@ -66,6 +68,7 @@ fun ContenidoSelectorPortada(l: Libro, alCerrar: () -> Unit, hallados: List<Cand
         if (u != null) { guardando = true; ambito.launch { guardar(withContext(Dispatchers.IO) { runCatching { ctx.contentResolver.openInputStream(u)?.use { it.readBytes() } }.getOrNull() }) } }
     }
     LaunchedEffect(Unit) { if (hallados == null) buscar() }
+    if (pinterest) InternetPicker(consulta, alElegir = { bytes -> pinterest = false; guardando = true; ambito.launch { guardar(bytes) } }, alCerrar = { pinterest = false })
 
     Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 20.dp)) {
         RevistaTopBar(alCerrar, "Cerrar")
@@ -73,8 +76,9 @@ fun ContenidoSelectorPortada(l: Libro, alCerrar: () -> Unit, hallados: List<Cand
         Antetitulo("Portada", Modifier.padding(top = 10.dp), color = Acento, conCuadro = false)
         FitTitle(l.titulo, 34.sp, 36.sp, letterSpacing = (-1).sp, maxLines = 2, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp))
         Filete(1.dp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        androidx.compose.foundation.layout.FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             EnlaceRevista("Galería →") { galeria.launch("image/*") }
+            EnlaceRevista("Pinterest →") { pinterest = true }
             if (tieneArchivo) EnlaceRevista("La del libro →") {
                 guardando = true
                 ambito.launch {

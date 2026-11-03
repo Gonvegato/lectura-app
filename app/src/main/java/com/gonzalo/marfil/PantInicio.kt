@@ -33,14 +33,16 @@ import java.util.Locale
  */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -> Unit, alIr: (Destino) -> Unit, alBuscar: () -> Unit) {
+fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -> Unit, alIr: (Destino) -> Unit, alBuscar: () -> Unit, alAbrirSaga: (Saga) -> Unit = {}) {
     val hoy = remember { Calendar.getInstance() }
     val libros = Biblioteca.libros.toList()
     val ahora = libros.filter { it.estado == Estado.LEYENDO }.maxByOrNull { it.ultima } ?: libros.firstOrNull { it.estado == Estado.LEYENDO }
-    val mesilla = libros.filter { it.estado == Estado.PENDIENTE }.sortedByDescending { it.anadido }.take(6)
-    val leidos = libros.filter { it.estado == Estado.LEIDO }
+    // En la mesilla: lo que estás leyendo, menos lo último que abriste (eso es «Ahora»). En la estantería: lo pendiente.
+    val mesilla = libros.filter { it.estado == Estado.LEYENDO && it.id != ahora?.id }.sortedByDescending { it.ultima }.take(6)
+    val estanteria = libros.filter { it.estado == Estado.PENDIENTE }.sortedByDescending { it.anadido }.take(6)
     val secciones = listOf<Pair<String, () -> Unit>>(
-        "Leyendo" to { alIr(Destino.Leyendo) }, "Pendientes" to { alIr(Destino.Pendientes) }, "Leídos" to { alIr(Destino.Leidos) }, "Autores" to { alIr(Destino.Autores) }
+        "Leyendo" to { alIr(Destino.Leyendo) }, "Pendientes" to { alIr(Destino.Pendientes) }, "Leídos" to { alIr(Destino.Leidos) },
+        "Abandonados" to { alIr(Destino.Abandonados) }, "Autores" to { alIr(Destino.Autores) }
     )
 
     // La cabecera y el menú, exactamente como en la portada de Atrio (RevistaHome): mismos márgenes, mismo tamaño de cabecera, de filetes y de letra
@@ -93,6 +95,8 @@ fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -
                         Row(verticalAlignment = Alignment.Bottom) {
                             Text("${(ahora.fraccion * 100).toInt().coerceIn(0, 100)}", color = Acento, fontFamily = Display, fontWeight = FontWeight.Bold, fontSize = 56.sp, lineHeight = 56.sp)
                             Text(" %", color = Muted, fontFamily = Body, fontSize = 14.sp, modifier = Modifier.padding(bottom = 10.dp))
+                            Spacer(Modifier.weight(1f))
+                            Paginas.texto(ahora).takeIf { it.isNotBlank() }?.let { Text(it, color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 14.sp, letterSpacing = 0.6.sp, modifier = Modifier.padding(bottom = 12.dp)) }
                         }
                         Barra(ahora.fraccion)
                         if (ahora.msLeidos >= 60_000) Text("${tiempoDe(ahora.msLeidos)} leídos".uppercase(), color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(top = 6.dp))
@@ -104,22 +108,23 @@ fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -
                 modifier = Modifier.clickable { alLeer(ahora) }.padding(vertical = 8.dp))
         }
 
-        // ---- En la mesilla: los pendientes, con la portada a la izquierda y el nombre a su derecha (más pequeños que «Ahora»)
+        // ---- En la mesilla: lo que lees a medias (menos el de «Ahora»)
         if (mesilla.isNotEmpty()) {
             Spacer(Modifier.height(30.dp))
             Antetitulo("En la mesilla", Modifier.padding(bottom = 6.dp))
             Filete(1.dp)
-            mesilla.forEach { l ->
-                Row(Modifier.fillMaxWidth().combinedClickable(onClick = { alAbrir(l) }).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PortadaLibro(l, Modifier.width(56.dp).aspectRatio(0.68f))
-                    Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                        Text(l.titulo, color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = 20.sp, maxLines = 2)
-                        if (l.autor.isNotBlank()) Text(l.autor, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 14.sp, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
-                    }
-                }
-                Filete(1.dp)
-            }
-            Text("VER TODOS →", color = Acento, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp,
+            mesilla.forEach { l -> FilaLibro(l, alAbrir, portada = 56.dp); Filete(1.dp, Line) }
+            Text("VER LOS QUE LEES →", color = Acento, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp,
+                modifier = Modifier.clickable { alIr(Destino.Leyendo) }.padding(vertical = 12.dp))
+        }
+
+        // ---- En la estantería: lo pendiente
+        if (estanteria.isNotEmpty()) {
+            Spacer(Modifier.height(30.dp))
+            Antetitulo("En la estantería", Modifier.padding(bottom = 6.dp))
+            Filete(1.dp)
+            estanteria.forEach { l -> FilaLibro(l, alAbrir, portada = 56.dp); Filete(1.dp, Line) }
+            Text("VER LOS PENDIENTES →", color = Acento, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.4.sp,
                 modifier = Modifier.clickable { alIr(Destino.Pendientes) }.padding(vertical = 12.dp))
         }
 

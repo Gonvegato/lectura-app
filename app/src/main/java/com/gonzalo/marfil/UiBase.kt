@@ -52,6 +52,24 @@ fun BotonAcento(texto: String, icono: ImageVector? = null, modifier: Modifier = 
     }
 }
 
+/**
+ * El botón ancho de la ficha de Atrio («BigAction»): ocupa todo el ancho, relleno del acento (o de la tinta, el secundario), con su icono y el texto en
+ * versalitas. Con las esquinas rectas de la revista son los «cuadrados anchos».
+ */
+@Composable
+fun AccionGrande(icono: ImageVector?, texto: String, modifier: Modifier = Modifier, acento: Boolean = true, enabled: Boolean = true, alHacer: () -> Unit) {
+    val fondo = if (acento) Acento else Charcoal
+    val letra = if (acento) SobreAcento else Paper
+    Row(
+        modifier.heightIn(min = 52.dp).clip(pildora()).background(if (enabled) fondo else fondo.copy(alpha = 0.35f)).clickable(enabled = enabled, onClick = alHacer)
+            .padding(horizontal = 22.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
+    ) {
+        if (icono != null) { Icon(icono, null, tint = letra, modifier = Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)) }
+        Text(texto.uppercase(), color = letra, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 13.sp, letterSpacing = 1.5.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+    }
+}
+
 /** Botón secundario: contorno de tinta, en versalitas. */
 @Composable
 fun BotonSuave(texto: String, icono: ImageVector? = null, modifier: Modifier = Modifier, peligro: Boolean = false, alHacer: () -> Unit) {

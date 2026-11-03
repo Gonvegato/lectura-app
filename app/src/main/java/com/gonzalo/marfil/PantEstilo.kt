@@ -36,7 +36,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.7.0"
+const val VERSION = "0.8.0"
 
 /** «Ajustes»: Apariencia (como la de Atrio), cuenta de Atrio, actualizaciones y copias. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -248,7 +248,7 @@ fun SeccionLibros() {
     val ambito = rememberCoroutineScope()
     var estado by remember { mutableStateOf("") }
     var ocupado by remember { mutableStateOf(false) }
-    var hallados by remember { mutableStateOf<List<ImportarAtrio.Candidato>?>(null) }
+    var hallados by remember { mutableStateOf<ImportarAtrio.Hallazgo?>(null) }
     val enNube = NubeLibros.indice(ctx).size
     val sinArchivo = Biblioteca.libros.count { it.enOtroDispositivo }
     Text(
@@ -266,7 +266,7 @@ fun SeccionLibros() {
         ambito.launch {
             val r = withContext(Dispatchers.IO) { runCatching { ImportarAtrio.leer() } }
             ocupado = false
-            r.onSuccess { l -> if (l.isNullOrEmpty()) estado = "No he encontrado libros de Atrio en tu cuenta." else { hallados = l; estado = "" } }
+            r.onSuccess { l -> if (l == null || l.candidatos.isEmpty()) estado = "No he encontrado libros de Atrio en tu cuenta." else { hallados = l; estado = "" } }
                 .onFailure { estado = it.message ?: "No he podido leer tu cuenta." }
         }
     }
@@ -282,25 +282,26 @@ fun SeccionLibros() {
         }
     }
     if (estado.isNotBlank()) Text(estado, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp))
-    hallados?.let { l ->
+    hallados?.let { h ->
+        val l = h.candidatos
         val n = { e: Estado -> l.count { it.libro.estado == e } }
         AlertDialog(
             onDismissRequest = { hallados = null },
             title = { Text("${l.size} libros en Atrio", color = Charcoal, fontFamily = Display, fontWeight = FontWeight.Bold) },
             text = {
                 Text(
-                    "${n(Estado.LEIDO)} leídos, ${n(Estado.LEYENDO)} leyendo, ${n(Estado.PENDIENTE)} pendientes. ${l.count { it.nube != null }} tienen su archivo en tu kDrive." +
-                        (l.count { it.abandonado }.let { if (it > 0) " $it están abandonados en Atrio: Marfil no tiene ese estante, entran como pendientes." else "" }) +
-                        " Los que ya tengas aquí no se duplican; lo leído se mezcla.", color = Charcoal, fontFamily = Body, fontSize = 14.sp, lineHeight = 20.sp
+                    "${n(Estado.LEIDO)} leídos, ${n(Estado.LEYENDO)} leyendo, ${n(Estado.PENDIENTE)} pendientes, ${n(Estado.ABANDONADO)} abandonados. ${l.count { it.nube != null }} tienen su archivo en tu kDrive." +
+                        "" +
+                        (if (h.sagas.isNotEmpty()) " Y ${h.sagas.size} ${if (h.sagas.size == 1) "saga" else "sagas"}." else "") + " Los que ya tengas aquí no se duplican; lo leído se mezcla.", color = Charcoal, fontFamily = Body, fontSize = 14.sp, lineHeight = 20.sp
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
-                    val cands = l; hallados = null; ocupado = true; estado = "Importando…"
+                    val cands = l; val sagasAImportar = h.sagas; hallados = null; ocupado = true; estado = "Importando…"
                     ambito.launch {
-                        val r = withContext(Dispatchers.IO) { runCatching { ImportarAtrio.importar(ctx, cands) { i, t -> estado = "Importando $i de $t…" } } }
+                        val r = withContext(Dispatchers.IO) { runCatching { ImportarAtrio.importar(ctx, cands, { i, t -> estado = "Importando $i de $t…" }, sagasAImportar) } }
                         ocupado = false
-                        estado = r.fold({ "Hecho: ${it.nuevos} libros nuevos, ${it.yaEstaban} que ya tenías, ${it.conArchivo} con archivo en kDrive." }, { e -> e.message ?: "No he podido importar." })
+                        estado = r.fold({ "Hecho: ${it.nuevos} libros nuevos, ${it.yaEstaban} que ya tenías, ${it.conArchivo} con archivo en kDrive" + (if (it.sagas > 0) " y ${it.sagas} sagas." else ".") }, { e -> e.message ?: "No he podido importar." })
                     }
                 }) { Text("Importar", color = Acento, fontWeight = FontWeight.Bold) }
             },

@@ -6,7 +6,7 @@ import android.content.Context
 object Lector {
     fun abrir(ctx: Context, l: Libro, goto: String? = null) {
         if (l.enOtroDispositivo) { NubeLibros.abrirBajando(ctx.applicationContext, l, goto); return }
-        Biblioteca.poner(l.copy(ultima = System.currentTimeMillis(), estado = if (l.estado == Estado.PENDIENTE) Estado.LEYENDO else l.estado))
+        Biblioteca.poner(l.copy(ultima = System.currentTimeMillis(), estado = if (l.estado == Estado.PENDIENTE || l.estado == Estado.ABANDONADO) Estado.LEYENDO else l.estado))
         LectorActivity.abrir(ctx, l.id, goto)
     }
 }
