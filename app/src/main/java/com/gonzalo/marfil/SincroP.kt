@@ -77,6 +77,10 @@ object SincroP {
             Cuenta.db("PUT", "${Cuenta.raiz}/lec/$kid/${Cuenta.dispositivo}", nodo.toString(), "print=silent")
             val ts = Cuenta.db("GET", "${Cuenta.raiz}/lec/$kid/${Cuenta.dispositivo}/u", null)?.toLongOrNull() ?: throw Cuenta.Fail("Firebase no ha guardado lo leído.")
             Cuenta.db("PUT", "${Cuenta.raiz}/lstamps/$kid/${Cuenta.dispositivo}", ts.toString(), "print=silent")
+            // El tiempo leído, sin subrayados ni notas (ligero): lo que el Diario de Azabache lee. Ver docs/CONTRATO-DATOS.md
+            st.optJSONObject("stats")?.optJSONObject("dev")?.let { d ->
+                Cuenta.db("PUT", "${Cuenta.raiz}/tiempo/$kid/${Cuenta.dispositivo}", JSONObject().put("t", l.titulo).put("a", l.autor).put("dev", d).toString(), "print=silent")
+            }
             p.edit().putString("hashLec:$kid", hash).apply()
             guardaVistosLec(c, vistosLec(c).put("$kid/${Cuenta.dispositivo}", ts))
             bien(c); true

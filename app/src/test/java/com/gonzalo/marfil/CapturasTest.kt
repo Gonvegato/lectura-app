@@ -58,6 +58,10 @@ class CapturasTest {
         // Unos días de lectura para que se vean las barras de la semana
         val hoy = java.time.LocalDate.now()
         val dias = org.json.JSONObject().apply { listOf(0 to 52, 1 to 35, 2 to 0, 3 to 70, 4 to 25, 5 to 41, 6 to 18).forEach { (atras, min) -> if (min > 0) put(hoy.minusDays(atras.toLong()).toString(), min * 60_000L) } }
+        val subr = org.json.JSONArray()
+            .put(org.json.JSONObject().put("value", "a").put("created", ahora - 5_000_000L).put("text", "El miedo es la pequeña muerte que conduce a la aniquilación total.").put("note", "Frase clave de la Letanía").put("label", "Capítulo 2").put("frac", 0.2))
+            .put(org.json.JSONObject().put("value", "b").put("created", ahora - 3_000_000L).put("text", "Quien controla la especia controla el universo.").put("note", "").put("label", "Capítulo 11").put("frac", 0.55))
+        EstadoLectura.ponerSinAvisar(ctx, "2", org.json.JSONObject().put("notes", subr))
         EstadoLectura.ponerSinAvisar(ctx, "1", org.json.JSONObject().put("stats", org.json.JSONObject().put("days", dias)))
     }
 

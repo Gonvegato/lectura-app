@@ -53,7 +53,7 @@ data class Libro(
 /** Lo que identifica a un libro en todos tus dispositivos (el id de cada uno es distinto): título y autor, sin tildes ni mayúsculas. */
 fun claveDe(titulo: String, autor: String) = "libro:" + norm(titulo) + ":" + norm(autor)
 
-fun norm(s: String): String = Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{M}+"), "").replace(Regex("[^a-z0-9]+"), " ").trim()
+fun norm(s: String): String = Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{M}+"), "").replace(Regex("[^\\p{L}\\p{N}]+"), " ").trim()
 
 /** Lo que se edita de un libro y viaja con la cuenta (gana el cambio más reciente). */
 fun compartidos(l: Libro) = listOf(l.titulo, l.autor, l.favorito, l.estado)

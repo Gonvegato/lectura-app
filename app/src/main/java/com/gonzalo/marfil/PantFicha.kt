@@ -49,6 +49,9 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
         Spacer(Modifier.height(10.dp))
         MagFact("Formato", l.formato.uppercase().ifBlank { "—" })
         MagFact("Archivo", if (l.enOtroDispositivo) "en otro de tus dispositivos" else l.archivo)
+        Spacer(Modifier.height(6.dp))
+        Filete(1.dp)
+        SeccionNotas(l)
         Spacer(Modifier.height(16.dp))
         Filete(1.dp, Line)
         MagLink("Quitar de la biblioteca", "El archivo se borra de este móvil") { quitar = true }

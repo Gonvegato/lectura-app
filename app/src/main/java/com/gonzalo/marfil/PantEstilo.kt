@@ -36,7 +36,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.5.0"
+const val VERSION = "0.6.0"
 
 /** «Ajustes»: Apariencia (como la de Atrio), cuenta de Atrio, actualizaciones y copias. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -72,6 +72,15 @@ fun PantEstilo(alVolver: () -> Unit) {
         Spacer(Modifier.height(12.dp))
         Antetitulo("Actualizaciones", Modifier.padding(bottom = 4.dp))
         SeccionActualizaciones()
+
+        Spacer(Modifier.height(14.dp))
+        Filete(2.dp)
+        Spacer(Modifier.height(12.dp))
+        Antetitulo("Lectura", Modifier.padding(bottom = 4.dp))
+        val metas = listOf(0, 10, 15, 20, 30, 45, 60)
+        var meta by remember { mutableIntStateOf(Ajustes.metaLectura(ctx)) }
+        MagChoice(metas.map { if (it == 0) "Sin objetivo" else "$it min" }, metas.indexOf(meta).coerceAtLeast(0), "Objetivo diario") { i -> meta = metas[i]; Ajustes.ponMetaLectura(ctx, meta) }
+        Text("Las barras de la portada marcan los días que lo cumples.", color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(bottom = 6.dp))
 
         Spacer(Modifier.height(14.dp))
         Filete(2.dp)

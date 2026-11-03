@@ -89,3 +89,11 @@ class MezclaLecturaTest {
         assertEquals(k, MezclaLectura.kid("libro:el nombre de la rosa:umberto eco"))
     }
 }
+
+class ClaveTest {
+    @Test fun titulosEnOtrosAlfabetosNoSeFunden() {
+        assertNotEquals(claveDe("Война и мир", "Лев Толстой"), claveDe("Преступление и наказание", "Фёдор Достоевский"))
+        assertNotEquals(claveDe("吾輩は猫である", "夏目漱石"), claveDe("こころ", "夏目漱石"))
+        assertEquals(claveDe("La sombra del viento", "Carlos Ruiz Zafón"), claveDe("la SOMBRA del viento!", "carlos ruiz zafon"))
+    }
+}
