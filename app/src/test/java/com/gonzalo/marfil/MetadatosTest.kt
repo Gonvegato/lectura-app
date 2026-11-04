@@ -51,7 +51,7 @@ class MetadatosTest {
         val archivo = epub("dune.epub", "Dune", "Frank Herbert")
         val l = Metadatos.registrar(ctx, archivo, "dune.epub")
         assertEquals("se une al que ya estaba (misma clave)", 1, Biblioteca.libros.size); assertEquals("x1", l.id)
-        assertFalse(l.enOtroDispositivo); assertEquals(0.5f, l.fraccion, 0.001f); assertEquals(Estado.LEYENDO, l.estado); assertTrue(File(l.portada).exists())
+        assertFalse(l.enOtroDispositivo); assertEquals(0.5f, l.fraccion, 0.001f); assertEquals(Estado.LEYENDO, l.estado); assertTrue("no saca portada del archivo", l.portada.isBlank())
         Biblioteca.libros.clear()
     }
 }

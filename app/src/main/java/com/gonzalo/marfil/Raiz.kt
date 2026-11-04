@@ -28,6 +28,8 @@ fun iniciar(c: Context) {
     Cuenta.cargar(c); SincroP.iniciar(c)
     // Las páginas de los libros que aún no las tienen (del archivo o de Open Library), sin molestar
     Paginas.enSegundoPlano(c)
+    // Una sola vez: fuera las portadas que no puso nadie (las sacadas de los archivos, y la primera página de los PDF)
+    kotlin.concurrent.thread(name = "portadas") { runCatching { NubeLibros.limpiarPortadasAutomaticas(c.applicationContext) } }
 }
 
 /** Dónde estás: la portada, las secciones (páginas por las que te mueves) y los ajustes. */

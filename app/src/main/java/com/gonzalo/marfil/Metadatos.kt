@@ -62,8 +62,8 @@ object Metadatos {
         var conArchivo = ahora.copy(uri = Uri.fromFile(destino).toString(), archivo = nombre)
         Paginas.deArchivo(destino, nombre)?.let { (n, o) -> conArchivo = Paginas.conPaginas(conArchivo, n, o) }
         Biblioteca.poner(conArchivo)
-        // Si el libro no tiene portada, se saca la del archivo
-        return if (conArchivo.portada.isBlank()) (Portadas.delLibro(ctx, conArchivo) ?: conArchivo) else conArchivo
+        // (la portada NO se saca del archivo: si no la has puesto tú, el libro lleva su tapa de color con la letra)
+        return conArchivo
     }
 
     /** Borra el archivo de este dispositivo; el libro se queda en la biblioteca (con lo leído) y se puede volver a bajar o a elegir. */
@@ -79,31 +79,17 @@ object Metadatos {
         val titulo = m.titulo.ifBlank { tFich }; val autor = m.autor.ifBlank { aFich }
         val previo = Biblioteca.existente(titulo, autor)
         val id = previo?.id ?: idNuevo
-        val portada = m.portada?.let { guardarPortada(ctx, id, it) } ?: previo?.portada.orEmpty()
         val ahora = System.currentTimeMillis()
-        var libro = (previo ?: Libro(id, titulo, autor, anadido = ahora)).copy(uri = android.net.Uri.fromFile(archivo).toString(), archivo = nombre, portada = portada)
+        var libro = (previo ?: Libro(id, titulo, autor, anadido = ahora)).copy(uri = android.net.Uri.fromFile(archivo).toString(), archivo = nombre)
         Paginas.deArchivo(archivo, nombre)?.let { (n, o) -> libro = Paginas.conPaginas(libro, n, o) }
         Biblioteca.poner(libro)
         return libro
     }
 
-    fun guardarPortadaPublica(ctx: Context, id: String, bytes: ByteArray): String? = guardarPortada(ctx, id, bytes)
-
-    private fun guardarPortada(ctx: Context, id: String, bytes: ByteArray): String? = runCatching {
-        val o = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, o)
-        if (o.outWidth <= 0) return@runCatching null
-        var s = 1; while (o.outWidth / s > 1000 || o.outHeight / s > 1500) s *= 2
-        val b = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = s }) ?: return@runCatching null
-        val f = File(dirPortadas(ctx), "$id.jpg")
-        f.outputStream().use { b.compress(Bitmap.CompressFormat.JPEG, 92, it) }
-        f.absolutePath
-    }.getOrNull()
-
     /** Los datos de un libro según su formato. */
     fun leer(f: File, nombre: String): Meta = when (nombre.substringAfterLast('.', "").lowercase()) {
         "epub" -> leerEpub(f)
-        "pdf" -> leerPdf(f)
+        "pdf" -> Meta()   // (un PDF no da ni título ni portada: la primera página como portada quedaba fatal)
         else -> Meta()
     }
 
@@ -133,22 +119,6 @@ object Metadatos {
                 ?: items.entries.firstOrNull { it.key.contains("cover", true) && it.value.first.substringAfterLast('.').lowercase() in setOf("jpg", "jpeg", "png", "webp") }?.value?.first
             val ruta = href?.let { java.net.URLDecoder.decode(if (base.isEmpty()) it else "$base/$it", "UTF-8").replace("/./", "/") }
             Meta(titulo, autor, ruta?.let { bytes(it) })
-        }
-    }.getOrDefault(Meta())
-
-    // ---- PDF: la primera página hace de portada
-    private fun leerPdf(f: File): Meta = runCatching {
-        ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
-            PdfRenderer(pfd).use { r ->
-                if (r.pageCount == 0) return@runCatching Meta()
-                r.openPage(0).use { p ->
-                    val ancho = 700; val alto = (ancho.toFloat() * p.height / p.width).toInt().coerceAtLeast(1)
-                    val bm = Bitmap.createBitmap(ancho, alto, Bitmap.Config.ARGB_8888).apply { eraseColor(android.graphics.Color.WHITE) }
-                    p.render(bm, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                    val out = java.io.ByteArrayOutputStream(); bm.compress(Bitmap.CompressFormat.JPEG, 90, out)
-                    Meta(portada = out.toByteArray())
-                }
-            }
         }
     }.getOrDefault(Meta())
 }

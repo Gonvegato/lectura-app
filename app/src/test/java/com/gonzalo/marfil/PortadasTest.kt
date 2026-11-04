@@ -79,12 +79,12 @@ class PortadasTest {
         return f
     }
 
-    @Test fun elegirArchivoDejaElMismoLibroConSuPortada() {
+    @Test fun elegirArchivoDejaElMismoLibroSinPortadaAutomatica() {
         val l = inicio()
         val n = Metadatos.adjuntar(ctx, l, Uri.fromFile(epub()))!!
         assertEquals("el libro sigue siendo el mismo (misma clave y misma ficha)", l.clave, n.clave); assertEquals("Dune", n.titulo)
         assertFalse(n.enOtroDispositivo); assertTrue(File(Uri.parse(n.uri).path!!).exists())
-        assertTrue("saca la portada del archivo", n.portada.isNotBlank() && File(n.portada).exists())
+        assertTrue("no saca portada del archivo: se queda la tela", n.portada.isBlank())
         assertEquals(1, Biblioteca.libros.size)
     }
 
@@ -105,5 +105,39 @@ class PortadasTest {
 
     @Test fun laTelaEsSiempreLaMismaParaUnTitulo() {
         assertEquals(telaDe("Dune"), telaDe("dune!")); assertEquals(telaDe("Los pilares de la Tierra"), telaDe("Los Pilares de la tierra"))
+    }
+
+    @Test fun unPdfNoDaPortadaNiPrimeraPagina() {
+        val f = File(ctx.cacheDir, "x.pdf").apply { writeBytes("%PDF-1.4\n%%EOF".toByteArray()) }
+        assertNull(Metadatos.leer(f, "x.pdf").portada)
+    }
+
+    @Test fun lasPortadasQueNoPusoNadieNoSeBajan() {
+        val E = NubeLibros::EntradaPortada
+        fun a(r: NubeLibros.EntradaPortada?, hay: Boolean = false, v: Long = 0, pend: Boolean = false, q: Boolean = false) = NubeLibros.accionPortada(r, hay, v, pend, q)
+        assertEquals("nada", a(E(5, 10, false, false)))
+        assertEquals("bajar", a(E(5, 10, true, false)))
+        assertEquals("nada", a(E(5, 10, true, false), hay = true, v = 10))
+        assertEquals("bajar", a(E(5, 11, true, false), hay = true, v = 10))
+        assertEquals("subir", a(null, hay = true, pend = true))
+        assertEquals("subir-quitada", a(null, q = true))
+        assertEquals("borrar-local", a(E(0, 11, true, true), hay = true, v = 10))
+        assertEquals("nada", a(E(0, 9, true, true), hay = true, v = 10))
+    }
+
+    @Test fun laLimpiezaQuitaLasAutomaticasYDejaLasTuyas() {
+        ctx.getSharedPreferences("marfil_nube", android.content.Context.MODE_PRIVATE).edit().clear().commit()
+        val l = inicio()
+        val dir = File(ctx.filesDir, "portadas").apply { mkdirs() }
+        val auto = File(dir, "abc.jpg").apply { writeBytes(png(0xFF111111.toInt())) }
+        Biblioteca.poner(l.copy(portada = auto.path))
+        assertEquals(1, NubeLibros.limpiarPortadasAutomaticas(ctx))
+        assertFalse(auto.exists()); assertTrue(Biblioteca.por("abc")!!.portada.isBlank())
+        assertEquals("solo se hace una vez", 0, NubeLibros.limpiarPortadasAutomaticas(ctx))
+        // Una puesta por ti sobrevive
+        ctx.getSharedPreferences("marfil_nube", android.content.Context.MODE_PRIVATE).edit().clear().commit()
+        val mia = Portadas.poner(ctx, Biblioteca.por("abc")!!, png(0xFF222222.toInt()))!!
+        assertEquals(0, NubeLibros.limpiarPortadasAutomaticas(ctx))
+        assertTrue(File(Biblioteca.por("abc")!!.portada).exists())
     }
 }

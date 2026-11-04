@@ -95,30 +95,82 @@ object NubeLibros {
     fun autoBajar(c: Context) = prefs(c).getBoolean("auto_bajar", true)
     fun ponAutoBajar(c: Context, v: Boolean) { prefs(c).edit().putBoolean("auto_bajar", v).apply(); if (v) programar(c) }
 
-    // ------------------------------------------------------------------ portadas (su índice: /marfil/portadas/<libro> = {f: id de kDrive, u: versión})
-    private fun idxPortadas(c: Context): Map<String, Pair<Long, Long>> {
-        val o = runCatching { JSONObject(prefs(c).getString("portadas", "{}")!!) }.getOrDefault(JSONObject())
-        return o.keys().asSequence().associateWith { k -> o.optJSONObject(k).let { it.optLong("f") to it.optLong("u") } }
+    // ------------------------------------------------------------------ portadas
+    // Solo viajan las portadas que PONES o QUITAS tú (galería, internet, Pinterest, «la del libro», «Quitar»). Las que no has puesto no existen:
+    // el libro lleva su tapa de color con la letra. Su índice en la cuenta: /marfil/portadas/<libro> = {f: id de kDrive, u: versión, p: 1 (puesta por ti), x: 1 (quitada)}.
+
+    /** Una entrada del índice de portadas. */
+    class EntradaPortada(val f: Long, val u: Long, val propia: Boolean, val quitada: Boolean)
+
+    /** Qué hacer con la portada de un libro: «subir», «subir-quitada», «bajar», «borrar-local» o «nada». Sin red: se puede probar. */
+    fun accionPortada(r: EntradaPortada?, hayLocal: Boolean, versionLocal: Long, pendiente: Boolean, quitadaPendiente: Boolean): String = when {
+        quitadaPendiente -> "subir-quitada"
+        pendiente && hayLocal -> "subir"
+        r == null || !r.propia -> "nada"        // (lo que no puso nadie a mano, no se baja)
+        r.quitada -> if (hayLocal && r.u > versionLocal) "borrar-local" else "nada"
+        r.f > 0 && (!hayLocal || r.u > versionLocal) -> "bajar"
+        else -> "nada"
     }
-    private fun guardaIdxPortadas(c: Context, m: Map<String, Pair<Long, Long>>) {
-        val o = JSONObject(); m.forEach { (k, v) -> o.put(k, JSONObject().put("f", v.first).put("u", v.second)) }
+
+    private fun idxPortadas(c: Context): Map<String, EntradaPortada> {
+        val o = runCatching { JSONObject(prefs(c).getString("portadas", "{}")!!) }.getOrDefault(JSONObject())
+        return o.keys().asSequence().mapNotNull { k -> o.optJSONObject(k)?.let { k to EntradaPortada(it.optLong("f"), it.optLong("u"), it.optInt("p") == 1, it.optInt("x") == 1) } }.toMap()
+    }
+    private fun guardaIdxPortadas(c: Context, m: Map<String, EntradaPortada>) {
+        val o = JSONObject(); m.forEach { (k, v) -> o.put(k, JSONObject().put("f", v.f).put("u", v.u).put("p", if (v.propia) 1 else 0).put("x", if (v.quitada) 1 else 0)) }
         prefs(c).edit().putString("portadas", o.toString()).apply()
     }
 
-    /** El usuario ha cambiado la portada de un libro: se anota (versión nueva, pendiente de subir) y se intenta subir ya. */
+    /** Has puesto o cambiado la portada de un libro: se anota (versión nueva, pendiente de subir) y se intenta subir ya. */
     fun portadaCambiada(c: Context, l: Libro) {
         val kid = MezclaLectura.kid(l.clave)
-        prefs(c).edit().putLong("pu:$kid", System.currentTimeMillis()).putBoolean("pup:$kid", true).apply()
+        prefs(c).edit().putLong("pu:$kid", System.currentTimeMillis()).putBoolean("pup:$kid", true).putBoolean("pux:$kid", false).apply()
         val app = c.applicationContext
         scope.launch { runCatching { sincronizarPortadas(app) } }
         programar(app)
+    }
+
+    /** Has quitado la portada de un libro: se anota para que se quite también en tus otros dispositivos. */
+    fun portadaQuitada(c: Context, l: Libro) {
+        val kid = MezclaLectura.kid(l.clave)
+        prefs(c).edit().putLong("pu:$kid", System.currentTimeMillis()).putBoolean("pux:$kid", true).putBoolean("pup:$kid", false).apply()
+        val app = c.applicationContext
+        scope.launch { runCatching { sincronizarPortadas(app) } }
+        programar(app)
+    }
+
+    fun portadaPendiente(c: Context, l: Libro) = prefs(c).getBoolean("pup:${MezclaLectura.kid(l.clave)}", false)
+    fun quitadaPendiente(c: Context, l: Libro) = prefs(c).getBoolean("pux:${MezclaLectura.kid(l.clave)}", false)
+
+    /**
+     * Una sola vez (al actualizar a esta versión): quita las portadas que no puso nadie. Antes Marfil sacaba la portada del propio archivo (y, en un PDF,
+     * dibujaba su primera página), y la subía. Se reconocen así: `<id>.jpg` es la sacada del archivo; `<id>-<hora>.jpg` con esa misma hora como versión
+     * en la cuenta es una bajada de otro dispositivo (de origen desconocido); el resto las pusiste tú aquí y se vuelven a subir como tuyas.
+     * Devuelve cuántas ha quitado.
+     */
+    fun limpiarPortadasAutomaticas(c: Context): Int {
+        val p = prefs(c)
+        if (p.getBoolean("portadas_v2", false)) return 0
+        var quitadas = 0
+        for (l0 in Biblioteca.libros.toList()) {
+            val l = Biblioteca.por(l0.id) ?: continue
+            val f = archivoPortada(l) ?: continue
+            val kid = MezclaLectura.kid(l.clave)
+            val hora = f.name.removePrefix(l.id + "-").removeSuffix(".jpg").toLongOrNull()
+            val automatica = f.name == "${l.id}.jpg" || (hora != null && p.getLong("pu:$kid", 0L) == hora)
+            if (automatica) { f.delete(); Biblioteca.poner(l.copy(portada = "")); quitadas++ }
+            else p.edit().putBoolean("pup:$kid", true).putLong("pu:$kid", System.currentTimeMillis()).apply()
+        }
+        p.edit().putBoolean("portadas_v2", true).apply()
+        if (quitadas > 0 || Biblioteca.libros.isNotEmpty()) programar(c)
+        return quitadas
     }
 
     private fun archivoPortada(l: Libro): File? = l.portada.takeIf { it.isNotBlank() && !it.startsWith("http") }?.let { File(it) }?.takeIf { it.exists() && it.length() > 0 }
 
     private val sincPortadas = AtomicBoolean(false)
 
-    /** Sube las portadas que tienes y no están en tu kDrive (o que has cambiado), y baja las que pusieron en otros dispositivos. Bloqueante (red). */
+    /** Sube las portadas que has puesto (o quitado) tú y baja las que pusiste en otros dispositivos. Bloqueante (red). */
     fun sincronizarPortadas(c: Context): Int {
         if (!KDrive.on(c) || !Cuenta.vinculada || !sincPortadas.compareAndSet(false, true)) return 0
         var hechas = 0
@@ -127,32 +179,46 @@ object NubeLibros {
             val raw = Cuenta.db("GET", "${Cuenta.raiz}/portadas", null)
             val o = raw?.let { runCatching { JSONObject(it) }.getOrNull() } ?: JSONObject()
             val remoto = HashMap(idxPortadas(c))
-            for (k in o.keys()) o.optJSONObject(k)?.let { x -> if (x.optLong("f") > 0) remoto[k] = x.optLong("f") to x.optLong("u") }
+            for (k in o.keys()) o.optJSONObject(k)?.let { x -> remoto[k] = EntradaPortada(x.optLong("f"), x.optLong("u"), x.optInt("p") == 1, x.optInt("x") == 1) }
             guardaIdxPortadas(c, remoto)
             val p = prefs(c)
             for (l0 in Biblioteca.libros.toList()) {
                 var l = Biblioteca.por(l0.id) ?: continue
-                // Las portadas de internet (las de Atrio) se guardan antes en el móvil
+                // Las portadas de internet (las que pusiste en Atrio) se guardan antes en el móvil
                 if (l.portada.startsWith("http")) l = Portadas.cachear(c, l) ?: l
                 val kid = MezclaLectura.kid(l.clave)
                 val local = archivoPortada(l)
                 val ver = p.getLong("pu:$kid", 0L)
                 val r = remoto[kid]
                 try {
-                    if (local != null && (p.getBoolean("pup:$kid", false) || r == null)) {
-                        val u = if (ver > 0) ver else System.currentTimeMillis()
-                        val id = KDrive.upload(c, "Marfil/Portadas", "$kid.jpg", local.length()) { local.inputStream() }
-                        Cuenta.db("PUT", "${Cuenta.raiz}/portadas/$kid", JSONObject().put("f", id).put("u", u).toString(), "print=silent")
-                        remoto[kid] = id to u; guardaIdxPortadas(c, remoto)
-                        p.edit().putLong("pu:$kid", u).putBoolean("pup:$kid", false).apply(); hechas++
-                    } else if (r != null && (local == null || r.second > ver)) {
-                        val dir = Metadatos.dirPortadas(c)
-                        val f = File(dir, "${l.id}-${r.second}.jpg")
-                        KDrive.download(c, r.first, f)
-                        if (android.graphics.BitmapFactory.decodeFile(f.path) == null) { f.delete(); continue }
-                        dir.listFiles { x -> x.name.startsWith(l.id) && x != f }?.forEach { it.delete() }
-                        Biblioteca.poner((Biblioteca.por(l.id) ?: l).copy(portada = f.absolutePath))
-                        p.edit().putLong("pu:$kid", r.second).apply(); hechas++
+                    when (accionPortada(r, local != null, ver, p.getBoolean("pup:$kid", false), p.getBoolean("pux:$kid", false))) {
+                        "subir" -> {
+                            val u = if (ver > 0) ver else System.currentTimeMillis()
+                            val id = KDrive.upload(c, "Marfil/Portadas", "$kid.jpg", local!!.length()) { local.inputStream() }
+                            Cuenta.db("PUT", "${Cuenta.raiz}/portadas/$kid", JSONObject().put("f", id).put("u", u).put("p", 1).toString(), "print=silent")
+                            remoto[kid] = EntradaPortada(id, u, true, false); guardaIdxPortadas(c, remoto)
+                            p.edit().putLong("pu:$kid", u).putBoolean("pup:$kid", false).apply(); hechas++
+                        }
+                        "subir-quitada" -> {
+                            val u = if (ver > 0) ver else System.currentTimeMillis()
+                            Cuenta.db("PUT", "${Cuenta.raiz}/portadas/$kid", JSONObject().put("f", 0).put("u", u).put("p", 1).put("x", 1).toString(), "print=silent")
+                            remoto[kid] = EntradaPortada(0, u, true, true); guardaIdxPortadas(c, remoto)
+                            p.edit().putLong("pu:$kid", u).putBoolean("pux:$kid", false).apply(); hechas++
+                        }
+                        "bajar" -> {
+                            val dir = Metadatos.dirPortadas(c)
+                            val f = File(dir, "${l.id}-${r!!.u}.jpg")
+                            KDrive.download(c, r.f, f)
+                            if (android.graphics.BitmapFactory.decodeFile(f.path) == null) { f.delete(); continue }
+                            dir.listFiles { x -> x.name.startsWith(l.id) && x != f }?.forEach { it.delete() }
+                            Biblioteca.poner((Biblioteca.por(l.id) ?: l).copy(portada = f.absolutePath))
+                            p.edit().putLong("pu:$kid", r.u).apply(); hechas++
+                        }
+                        "borrar-local" -> {
+                            Metadatos.dirPortadas(c).listFiles { x -> x.name.startsWith(l.id) }?.forEach { it.delete() }
+                            Biblioteca.poner((Biblioteca.por(l.id) ?: l).copy(portada = ""))
+                            p.edit().putLong("pu:$kid", r!!.u).apply(); hechas++
+                        }
                     }
                 } catch (e: Exception) { /* esta portada se reintenta la próxima vez */ }
             }
@@ -202,8 +268,7 @@ object NubeLibros {
         KDrive.download(c, x.f, dest)
         val ahora = Biblioteca.por(l.id) ?: l
         val conArchivo = ahora.copy(uri = android.net.Uri.fromFile(dest).toString(), archivo = x.n)
-        val portada = if (ahora.portada.isBlank()) Metadatos.leer(dest, x.n).portada?.let { Metadatos.guardarPortadaPublica(c, l.id, it) }.orEmpty() else ahora.portada
-        return conArchivo.copy(portada = portada).also { Biblioteca.poner(it) }
+        return conArchivo.also { Biblioteca.poner(it) }
     }
 
     /** Lo que pasa al abrir un libro «en otro dispositivo»: si está en tu kDrive, se baja y se abre; si no, se dice por qué. */

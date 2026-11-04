@@ -33,6 +33,13 @@ su reborde fino de tinta). **Un toque juega; mantener pulsado abre la ficha.** P
 «Buscar» filtra en el sitio entre todos tus juegos, y la última baldosa («Añadir») es el atajo para meter más. «Lista» abre la lista de siempre, con orden y filtros;
 «Sistemas» y el engranaje, sus pantallas.
 
+## 0.9.2: portadas solo las tuyas
+
+- Marfil ya no saca portadas de los archivos (ni de los EPUB ni la primera página de un PDF). Si no has puesto tú una portada,
+  el libro se queda con la «tela» generada (color según el título, con la letra o el título en crema).
+- Solo se sincronizan por kDrive las portadas que pones tú; «Quitar portada» también se propaga a tus otros dispositivos.
+- Al actualizar, las portadas automáticas que había se limpian una sola vez; las que pusiste tú se conservan.
+
 ## Qué hace
 
 - **ROMs con emuladores externos** (GBA, DS, SNES, N64, PSP, PS1/PS2, Dreamcast, 3DS… hasta 170 sistemas). Eliges la ROM o una

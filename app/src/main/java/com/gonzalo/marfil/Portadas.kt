@@ -88,14 +88,15 @@ object Portadas {
         return (Biblioteca.por(l.id) ?: l).copy(portada = f.absolutePath).also { Biblioteca.poner(it) }
     }
 
-    /** Quita la portada elegida (el libro vuelve a enseñar la suya o, si no tiene, la tela). */
+    /** Quita la portada elegida: el libro vuelve a su tapa de color con la letra (y se quita también en tus otros dispositivos). */
     fun quitar(ctx: Context, l: Libro): Libro {
         val dir = Metadatos.dirPortadas(ctx)
         dir.listFiles { x -> x.name.startsWith(l.id) }?.forEach { it.delete() }
+        NubeLibros.portadaQuitada(ctx, l)
         return (Biblioteca.por(l.id) ?: l).copy(portada = "").also { Biblioteca.poner(it) }
     }
 
-    /** Pone la portada que lleva el propio archivo del libro (si la lleva). */
+    /** Pone la portada que lleva el propio archivo del libro, si la lleva (solo los EPUB; solo si lo pides tú desde «Portada»). */
     fun delLibro(ctx: Context, l: Libro): Libro? {
         val f = runCatching { File(android.net.Uri.parse(l.uri).path ?: return null) }.getOrNull()?.takeIf { it.exists() } ?: return null
         val bytes = Metadatos.leer(f, l.archivo.ifBlank { f.name }).portada ?: return null

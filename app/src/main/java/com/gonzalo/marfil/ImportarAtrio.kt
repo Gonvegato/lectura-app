@@ -142,7 +142,7 @@ object ImportarAtrio {
             }
             // La foto de portada de Atrio no se baja aquí: se apunta en el índice de portadas y la sincronización la baja a todos tus dispositivos
             if (c.foto != null && libro.portada.isBlank() && Cuenta.vinculada) runCatching {
-                Cuenta.db("PUT", "${Cuenta.raiz}/portadas/${MezclaLectura.kid(libro.clave)}", JSONObject().put("f", c.foto.f).put("u", System.currentTimeMillis()).toString(), "print=silent")
+                Cuenta.db("PUT", "${Cuenta.raiz}/portadas/${MezclaLectura.kid(libro.clave)}", JSONObject().put("f", c.foto.f).put("u", System.currentTimeMillis()).put("p", 1).toString(), "print=silent")
                 fotos++
             }
             if (c.nube != null && NubeLibros.de(ctx, libro) == null) { runCatching { NubeLibros.registrar(ctx, libro, c.nube) }; conArchivo++ }
