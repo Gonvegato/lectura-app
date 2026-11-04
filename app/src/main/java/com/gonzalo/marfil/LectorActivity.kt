@@ -438,7 +438,10 @@ class LectorActivity : ComponentActivity() {
         @JavascriptInterface
         fun saveSettings(json: String) {
             edit { it.put("settings", JSONObject(json)).put("settingsAt", System.currentTimeMillis()) }
-            getSharedPreferences("lector", MODE_PRIVATE).edit().putString("ajustes", runCatching { JSONObject(json).apply { remove("pdfTexto"); remove("pdfForzar") }.toString() }.getOrDefault(json)).apply()
+            getSharedPreferences("lector", MODE_PRIVATE).edit().putString("ajustes", runCatching { JSONObject(json).apply { remove("pdfTexto"); remove("pdfForzar") }.toString() }.getOrDefault(json))
+                .putLong("ajustesAt", System.currentTimeMillis()).apply()
+            // Lo que eliges aquí llega también a tus otros dispositivos
+            SincroP.cambio(applicationContext)
         }
 
         @JavascriptInterface

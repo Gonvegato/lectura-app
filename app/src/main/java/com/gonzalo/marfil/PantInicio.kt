@@ -63,6 +63,7 @@ fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -
         }
         Filete(1.dp)
         BarrasLectura(libros)
+        LineaReto(libros)
         Column(Modifier.fillMaxWidth().padding(top = 18.dp)) {
             Filete(1.dp)
             FlowRow(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(18.dp)) {

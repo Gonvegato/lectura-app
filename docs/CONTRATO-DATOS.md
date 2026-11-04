@@ -13,11 +13,12 @@ Las valoraciones de Azabache deben enlazarse por esta misma clave.
 
 | Nodo | Contenido | Quién escribe |
 |---|---|---|
-| `dev/<dispositivo>/data` | La biblioteca de ese dispositivo (texto JSON `v:1`): por libro `k` (clave), `t` título, `a` autor, `ar` archivo, `f` favorito, `e` estado (`PENDIENTE`/`LEYENDO`/`LEIDO`), `an` añadido, `ul` última lectura, `fr` fracción (0–1), `mod`, `msp` ms leídos en ese dispositivo; `borrados` (clave → hora). | cada Marfil, solo el suyo |
+| `dev/<dispositivo>/data` | La biblioteca de ese dispositivo (texto JSON `v:1`): por libro `k` (clave), `t` título, `a` autor, `ar` archivo, `f` favorito, `e` estado (`PENDIENTE`/`LEYENDO`/`LEIDO`), `an` añadido, `ul` última lectura, `fr` fracción (0–1), `mod`, `msp` ms leídos en ese dispositivo, `pg`/`po` páginas y su origen, `tm` fechas (ms) en que se terminó; `borrados` (clave → hora). | cada Marfil, solo el suyo |
 | `stamps/<dispositivo>` | Hora de la última subida de ese dispositivo (servidor). | cada Marfil |
 | `lec/<kid>/<dispositivo>` | `{t, u, s}`: `s` es el estado de lectura entero (posición, subrayados, notas, marcadores, ajustes, tiempo). **Pesado**: no leerlo para listados. | cada Marfil |
 | `lstamps/<kid>/<dispositivo>` | Hora de la última subida de ese libro en ese dispositivo. | cada Marfil |
 | `tiempo/<kid>/<escritor>` | `{t, a, dev}`: título, autor y el tiempo leído: `dev[<dispositivo>] = {total (ms), days: {"AAAA-MM-DD": ms}, best}`. **Ligero**: es lo que debe leer un Diario. | cada Marfil |
+| `subrayados/<kid>/<escritor>` | `{t, a, n}`: título, autor y `n` = lista de `{x: texto, o: nota, c: creado (ms), l: etiqueta, k: sitio}`; **ligero** y sin el estado del lector. Cada escritor trae los subrayados de todos los dispositivos: une por `k`+`c`. Sin subrayados, el nodo no existe. | cada Marfil |
 | `nube/<kid>` | `{f, n, s, u}`: id del archivo en kDrive, nombre, tamaño, hora. | cualquier Marfil |
 
 ## Cómo leer el tiempo para un Diario
@@ -26,4 +27,4 @@ Para cada libro, lee `tiempo/<kid>/*`. Cada escritor trae su vista de **todos** 
 
 ## Lo que aún no está (se añadirá cuando Azabache lo pida)
 
-Fecha exacta en que se terminó un libro; subrayados en un nodo ligero (hoy solo van dentro de `lec`).
+Nada pendiente de Marfil. Las fechas de terminado van en `dev/<dispositivo>/data` (`tm`).

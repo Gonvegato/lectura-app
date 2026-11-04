@@ -15,7 +15,7 @@ object ImportarAtrio {
     /** Lo que hay en Atrio: los libros y las sagas (con los libros de cada una, por su clave, en su orden). */
     class Hallazgo(val candidatos: List<Candidato>, val sagas: List<Saga>)
 
-    class Candidato(val atrioId: Long, val libro: Libro, val estado: JSONObject?, val nube: NubeLibro?, val abandonado: Boolean)
+    class Candidato(val atrioId: Long, val libro: Libro, val estado: JSONObject?, val nube: NubeLibro?, val abandonado: Boolean, val foto: NubeLibro? = null)
 
     private fun cambio(o: JSONObject) = maxOf(o.optLong("updated", 0L), o.optLong("sv", 0L))
 
@@ -43,7 +43,7 @@ object ImportarAtrio {
         for (b in blobs) b.optJSONArray("nube")?.let { a ->
             for (i in 0 until a.length()) {
                 val o = a.optJSONObject(i) ?: continue
-                val k = o.optString("k"); if (!k.startsWith("libro:")) continue
+                val k = o.optString("k"); if (!k.startsWith("libro:") && !k.startsWith("foto:")) continue
                 val cur = nubes[k]; if (cur == null || o.optLong("updated") > cur.optLong("updated")) nubes[k] = o
             }
         }
@@ -64,12 +64,16 @@ object ImportarAtrio {
             val nube = nubes["libro:$id"]?.let { NubeLibro(it.optLong("f"), it.optString("n"), it.optLong("s")) }?.takeIf { it.f > 0 }
             val pags = maxOf(g?.optInt("pages") ?: 0, p?.optInt("pages") ?: 0)
             val libro = Libro(
-                id = "atrio$id", paginas = pags, paginasOrigen = if (pags > 0) "atrio" else "", titulo = titulo, autor = autor, portada = portada, archivo = nube?.n.orEmpty(),
+                id = "atrio$id", terminados = if (g != null && fin > 0) listOf(fin) else emptyList(), paginas = pags, paginasOrigen = if (pags > 0) "atrio" else "", titulo = titulo, autor = autor, portada = portada, archivo = nube?.n.orEmpty(),
                 favorito = g?.optBoolean("fav") ?: false, estado = estado,
                 anadido = if (inicio > 0) inicio else maxOf(g?.optLong("updated") ?: 0L, p?.optLong("updated") ?: 0L).takeIf { it > 0 } ?: ahora,
                 ultima = maxOf(fin, st?.optLong("read") ?: 0L), fraccion = if (estado == Estado.LEIDO) 1f else fr
             )
-            Candidato(id, libro, st, nube, abandonado = pst == 2)
+            // Si su portada era una foto tuya (una dirección «file:…/foto_123.jpg» de Atrio), dónde está esa foto en tu kDrive
+            val cover = g?.optString("cover").orEmpty().ifBlank { p?.optString("cover").orEmpty() }
+            val foto = cover.takeIf { it.startsWith("file:") }?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
+                ?.let { nubes["foto:$it"] }?.let { NubeLibro(it.optLong("f"), it.optString("n"), it.optLong("s")) }?.takeIf { it.f > 0 }
+            Candidato(id, libro, st, nube, abandonado = pst == 2, foto = foto)
         }.sortedBy { it.libro.titulo.lowercase() }
     }
 
@@ -97,7 +101,10 @@ object ImportarAtrio {
     }
 
     /** Lo último que Atrio subió a tu cuenta (de sus dispositivos más recientes). Bloqueante (red). */
-    fun leer(): Hallazgo? {
+    fun leer(): Hallazgo? = blobs()?.let { b -> candidatos(b).let { Hallazgo(it, sagasDe(b, it)) } }
+
+    /** Los datos que subieron los dispositivos más recientes de Atrio (uno por dispositivo), o null si no hay. Bloqueante (red). */
+    fun blobs(): List<JSONObject>? {
         if (!Cuenta.vinculada) return null
         val st = Cuenta.db("GET", "/users/${Cuenta.uid}/stamps", null)?.let { JSONObject(it) } ?: return null
         val devs = st.keys().asSequence().map { it to st.optLong(it) }.sortedByDescending { it.second }.take(4).toList()
@@ -107,14 +114,14 @@ object ImportarAtrio {
             val datos = (JSONTokener(raw).nextValue() as? String) ?: continue
             runCatching { JSONObject(datos) }.getOrNull()?.let { blobs += it }
         }
-        return if (blobs.isEmpty()) null else candidatos(blobs).let { Hallazgo(it, sagasDe(blobs, it)) }
+        return blobs.ifEmpty { null }
     }
 
     class Resultado(val nuevos: Int, val yaEstaban: Int, val conArchivo: Int, val sagas: Int = 0)
 
     /** Pone los candidatos en Marfil. Bloqueante (red para el índice de kDrive). Se puede repetir sin duplicar. */
     fun importar(ctx: Context, cands: List<Candidato>, avance: (Int, Int) -> Unit = { _, _ -> }, sagas: List<Saga> = emptyList()): Resultado {
-        var nuevos = 0; var ya = 0; var conArchivo = 0
+        var nuevos = 0; var ya = 0; var conArchivo = 0; var fotos = 0
         cands.forEachIndexed { i, c ->
             avance(i, cands.size)
             val previo = Biblioteca.existente(c.libro.titulo, c.libro.autor)
@@ -125,12 +132,18 @@ object ImportarAtrio {
                 var n = previo
                 if (c.libro.estado == Estado.ABANDONADO && previo.estado == Estado.PENDIENTE) n = n.copy(estado = Estado.ABANDONADO)
                 if (previo.paginas == 0 && c.libro.paginas > 0) n = n.copy(paginas = c.libro.paginas, paginasOrigen = "atrio")
+                if (previo.terminados.isEmpty() && c.libro.terminados.isNotEmpty()) n = n.copy(terminados = c.libro.terminados)
                 if (n != previo) Biblioteca.poner(n)
             }
             c.estado?.let { atrio ->
                 val local = EstadoLectura.estado(ctx, libro.id)
                 val unido = MezclaLectura.mezclar(local, JSONObject(atrio.toString()).apply { remove("uri"); remove("name") }, Cuenta.dispositivo)
                 if (!MezclaLectura.igual(unido, local)) EstadoLectura.poner(ctx, libro.id, unido)
+            }
+            // La foto de portada de Atrio no se baja aquí: se apunta en el índice de portadas y la sincronización la baja a todos tus dispositivos
+            if (c.foto != null && libro.portada.isBlank() && Cuenta.vinculada) runCatching {
+                Cuenta.db("PUT", "${Cuenta.raiz}/portadas/${MezclaLectura.kid(libro.clave)}", JSONObject().put("f", c.foto.f).put("u", System.currentTimeMillis()).toString(), "print=silent")
+                fotos++
             }
             if (c.nube != null && NubeLibros.de(ctx, libro) == null) { runCatching { NubeLibros.registrar(ctx, libro, c.nube) }; conArchivo++ }
         }
@@ -145,6 +158,7 @@ object ImportarAtrio {
             }
         }
         avance(cands.size, cands.size)
+        if (fotos > 0) NubeLibros.programar(ctx)
         return Resultado(nuevos, ya, conArchivo, nSagas)
     }
 }

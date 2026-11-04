@@ -9,6 +9,9 @@ fun readTime(min: Long): String = if (min < 60) "$min min" else "${min / 60} h${
 /** Los ajustes que no son de un libro (el objetivo diario de lectura). */
 object Ajustes {
     fun metaLectura(c: Context): Int = c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).getInt("meta_lectura", 0)
+    /** El reto del año: cuántos libros quieres terminar (0 = sin reto). */
+    fun metaAnual(c: Context): Int = c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).getInt("meta_anual", 0)
+    fun ponMetaAnual(c: Context, n: Int) { c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).edit().putInt("meta_anual", n.coerceIn(0, 999)).apply() }
     fun ponMetaLectura(c: Context, min: Int) { c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).edit().putInt("meta_lectura", min.coerceIn(0, 600)).apply() }
 }
 

@@ -26,15 +26,16 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
 /** Cómo se puede ordenar un estante. */
-enum class OrdenLibros(val nombre: String) { RECIENTES("Recientes"), ANADIDOS("Añadidos"), TITULO("Título"), AUTOR("Autor"), PAGINAS("Páginas") }
+enum class OrdenLibros(val nombre: String) { RECIENTES("Recientes"), ANADIDOS("Añadidos"), TERMINADO("Terminado"), TITULO("Título"), AUTOR("Autor"), PAGINAS("Páginas") }
 
 /** El orden con el que empieza cada estante: lo pendiente, por lo último añadido; el resto, por lo último abierto. */
-fun ordenInicial(e: Estado): OrdenLibros = if (e == Estado.PENDIENTE) OrdenLibros.ANADIDOS else OrdenLibros.RECIENTES
+fun ordenInicial(e: Estado): OrdenLibros = when (e) { Estado.PENDIENTE -> OrdenLibros.ANADIDOS; Estado.LEIDO -> OrdenLibros.TERMINADO; else -> OrdenLibros.RECIENTES }
 
 /** Ordena una lista de libros. Los que no tienen autor (o páginas) van al final. */
 fun ordenar(o: OrdenLibros, l: List<Libro>): List<Libro> = when (o) {
     OrdenLibros.RECIENTES -> l.sortedWith(compareByDescending<Libro> { it.ultima }.thenByDescending { it.anadido })
     OrdenLibros.ANADIDOS -> l.sortedByDescending { it.anadido }
+    OrdenLibros.TERMINADO -> l.sortedWith(compareByDescending<Libro> { it.terminado }.thenByDescending { it.ultima })
     OrdenLibros.TITULO -> l.sortedBy { norm(it.titulo) }
     OrdenLibros.AUTOR -> l.sortedWith(compareBy<Libro> { it.autor.isBlank() }.thenBy { norm(it.autor) }.thenBy { norm(it.titulo) })
     OrdenLibros.PAGINAS -> l.sortedWith(compareBy<Libro> { it.paginas <= 0 }.thenByDescending { it.paginas }.thenBy { norm(it.titulo) })
@@ -43,7 +44,7 @@ fun ordenar(o: OrdenLibros, l: List<Libro>): List<Libro> = when (o) {
 /** El orden que has elegido para cada estante (se recuerda al cerrar la app). */
 object OrdenGuardado {
     private fun prefs(c: android.content.Context) = c.getSharedPreferences("marfil_orden", android.content.Context.MODE_PRIVATE)
-    fun de(c: android.content.Context, e: Estado): OrdenLibros = OrdenLibros.entries.firstOrNull { it.name == prefs(c).getString(e.name, null) } ?: ordenInicial(e)
+    fun de(c: android.content.Context, e: Estado): OrdenLibros = OrdenLibros.entries.firstOrNull { it.name == prefs(c).getString(e.name, null) && (it != OrdenLibros.TERMINADO || e == Estado.LEIDO) } ?: ordenInicial(e)
     fun pon(c: android.content.Context, e: Estado, o: OrdenLibros) { prefs(c).edit().putString(e.name, o.name).apply() }
 }
 
@@ -156,7 +157,9 @@ private fun PaginaEstante(estado: Estado, todos: List<Libro>, alAbrir: (Libro) -
                 FitTitle(if (estado == Estado.LEYENDO) "Leyendo" else estado.nombre + "s", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
                 Filete(1.dp, Line)
                 // Cómo se ordena este estante (se recuerda)
-                FiltrosRevista(OrdenLibros.entries.map { it.nombre }, orden.ordinal, Modifier.padding(top = 4.dp)) { i -> orden = OrdenLibros.entries[i]; OrdenGuardado.pon(ctx, estado, orden) }
+                // («Terminado» solo en Leídos)
+                val ordenes = OrdenLibros.entries.filter { it != OrdenLibros.TERMINADO || estado == Estado.LEIDO }
+                FiltrosRevista(ordenes.map { it.nombre }, ordenes.indexOf(orden).coerceAtLeast(0), Modifier.padding(top = 4.dp)) { i -> orden = ordenes[i]; OrdenGuardado.pon(ctx, estado, orden) }
                 Filete(1.dp, Line)
             }
         }

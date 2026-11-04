@@ -46,7 +46,11 @@ data class Libro(
     /** Páginas del libro (0 = no se sabe) y de dónde sale ese número: ver [Paginas]. */
     val paginas: Int = 0,
     val paginasOrigen: String = "",
+    /** Las veces que lo has terminado (fechas en ms, de la más antigua a la más reciente). */
+    val terminados: List<Long> = emptyList(),
 ) {
+    /** La última vez que lo terminaste (0 = nunca). */
+    val terminado: Long get() = terminados.lastOrNull() ?: 0L
     val msLeidos: Long get() = msPropios + ajenosMs.values.sum()
     /** El libro viene de otro dispositivo y aquí aún no tiene archivo. */
     val enOtroDispositivo: Boolean get() = uri.isBlank()
@@ -66,6 +70,16 @@ fun tituloYAutorDeArchivo(nombre: String): Pair<String, String> {
     val base = nombre.substringBeforeLast('.', nombre).replace('_', ' ').replace(Regex("\\s+"), " ").trim()
     val partes = base.split(" - ").map { it.trim() }.filter { it.isNotEmpty() }
     return if (partes.size >= 2) partes[0] to partes[1] else base to ""
+}
+
+/** Dos fechas de terminado con menos de 12 horas de diferencia son la misma. */
+const val REPETIDA_MS = 12L * 3600_000L
+
+/** Junta varias listas de fechas de terminado (de tus dispositivos) en una, ordenada y sin repetidas (a menos de 12 h, se queda la primera). */
+fun juntarFechas(vararg listas: List<Long>): List<Long> {
+    val out = ArrayList<Long>()
+    for (f in listas.flatMap { it }.filter { it > 0 }.sorted()) if (out.isEmpty() || f - out.last() >= REPETIDA_MS) out.add(f)
+    return out
 }
 
 object Biblioteca {
@@ -109,8 +123,11 @@ object Biblioteca {
     }
 
     /** Guarda un libro. Solo cambiar la ficha (título, autor, favorito, estante) cuenta como «cambio»: leer no, para que un dispositivo que solo lee no pise lo editado en otro. */
-    fun poner(l: Libro) {
-        val i = libros.indexOfFirst { it.id == l.id }
+    fun poner(l0: Libro) {
+        val i = libros.indexOfFirst { it.id == l0.id }
+        // Una sola regla para «terminado»: si pasa a Leído (desde la ficha, desde el lector…), se apunta la fecha (salvo que ya se apuntara hace poco)
+        val ahora = System.currentTimeMillis()
+        val l = if (i >= 0 && libros[i].estado != Estado.LEIDO && l0.estado == Estado.LEIDO && (l0.terminado == 0L || l0.terminado < ahora - REPETIDA_MS)) l0.copy(terminados = l0.terminados + ahora) else l0
         val nuevo = if (i >= 0 && compartidos(libros[i]) == compartidos(l)) l.copy(mod = libros[i].mod) else l.copy(mod = System.currentTimeMillis())
         if (i >= 0) libros[i] = nuevo else { libros.add(0, nuevo); borrados.remove(nuevo.clave) }
         guardar()
@@ -133,6 +150,7 @@ object Biblioteca {
         put("id", l.id); put("clave", l.clave); put("titulo", l.titulo); put("autor", l.autor); put("portada", l.portada); put("uri", l.uri); put("archivo", l.archivo)
         put("favorito", l.favorito); put("estado", l.estado.name); put("anadido", l.anadido); put("ultima", l.ultima); put("fraccion", l.fraccion.toDouble())
         put("mod", l.mod); put("msp", l.msPropios); put("pg", l.paginas); put("po", l.paginasOrigen)
+        put("tm", JSONArray().also { a -> l.terminados.forEach { a.put(it) } })
         put("ajms", JSONObject().also { o -> l.ajenosMs.forEach { (k, v) -> o.put(k, v) } })
     }
 
@@ -142,7 +160,8 @@ object Biblioteca {
         estado = Estado.entries.firstOrNull { it.name == o.optString("estado") } ?: Estado.PENDIENTE,
         anadido = o.optLong("anadido"), ultima = o.optLong("ultima"), fraccion = o.optDouble("fraccion", 0.0).toFloat(), mod = o.optLong("mod"),
         msPropios = o.optLong("msp"), ajenosMs = o.optJSONObject("ajms")?.let { a -> a.keys().asSequence().associateWith { k -> a.optLong(k) } } ?: emptyMap(),
-        paginas = o.optInt("pg"), paginasOrigen = o.optString("po")
+        paginas = o.optInt("pg"), paginasOrigen = o.optString("po"),
+        terminados = o.optJSONArray("tm")?.let { a -> (0 until a.length()).map { a.optLong(it) }.filter { it > 0 } } ?: emptyList()
     )
 }
 

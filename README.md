@@ -171,3 +171,13 @@ Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuen
 - **Ordenar** cada estante (Recientes, Añadidos, Título, Autor, Páginas); se recuerda por estante.
 - **Atajo «Seguir leyendo»** al mantener pulsado el icono de la app: abre el libro que estás leyendo en tu página.
 - **APK más pequeño**: solo arm64 y x86_64 (el traductor del diccionario se copiaba para cuatro procesadores).
+
+## Marfil 0.9.0
+
+- **Fecha de terminado** (y «2.ª vez» si lo relees): se apunta sola cuando un libro pasa a Leído, viaja entre dispositivos, sale en la ficha y es el orden «Terminado» de Leídos. De Atrio se trae la fecha en que lo terminaste.
+- **Reto anual** (Ajustes → Lectura → «Libros al año»): en la portada («RETO 2026 · 7 DE 12 LIBROS») y en el widget de la semana.
+- **Ajustes del lector iguales en todos tus dispositivos** (letra, tamaño, tema, márgenes…); el brillo y lo propio de los PDF son de cada dispositivo.
+- **Subrayados en un nodo ligero** de tu cuenta (`/marfil/subrayados`) para la cita del Diario de Azabache.
+- **«En Azabache»** en la ficha: la valoración (solo se ve) y «Abrir en Azabache →».
+- **Portadas que en Atrio eran fotos tuyas**: al importar se enlazan con su archivo de tu kDrive y se bajan a todos tus dispositivos.
+- El botón de un libro ya leído dice «Volver a leer».

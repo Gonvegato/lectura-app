@@ -36,7 +36,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.8.2"
+const val VERSION = "0.9.0"
 
 /** «Ajustes»: Apariencia (como la de Atrio), cuenta de Atrio, actualizaciones y copias. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -81,6 +81,10 @@ fun PantEstilo(alVolver: () -> Unit) {
         var meta by remember { mutableIntStateOf(Ajustes.metaLectura(ctx)) }
         MagChoice(metas.map { if (it == 0) "Sin objetivo" else "$it min" }, metas.indexOf(meta).coerceAtLeast(0), "Objetivo diario") { i -> meta = metas[i]; Ajustes.ponMetaLectura(ctx, meta) }
         Text("Las barras de la portada marcan los días que lo cumples.", color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(bottom = 6.dp))
+        val retos = listOf(0, 6, 12, 20, 24, 30, 40, 52)
+        var reto by remember { mutableIntStateOf(Ajustes.metaAnual(ctx)) }
+        MagChoice(retos.map { if (it == 0) "Sin reto" else "$it" }, retos.indexOf(reto).coerceAtLeast(0), "Libros al año") { i -> reto = retos[i]; Ajustes.ponMetaAnual(ctx, reto) }
+        Text("Tu reto del año sale en la portada y en el widget de la semana.", color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(bottom = 6.dp))
 
         Spacer(Modifier.height(14.dp))
         Filete(2.dp)

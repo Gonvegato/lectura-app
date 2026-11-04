@@ -118,7 +118,9 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
     }
 
     val deck = listOfNotNull(
-        if (l.ultima > 0) "leído por última vez ${haceCuando(l.ultima)}" else null,
+        if (l.terminado > 0) "terminado el ${fecha(l.terminado)}" + if (l.terminados.size > 1) " · ${l.terminados.size}.ª vez" else "" else null,
+        // Si ya lo terminaste, la fecha de terminado dice lo importante: no se repite «leído por última vez»
+        if (l.ultima > 0 && l.terminado == 0L) "leído por última vez ${haceCuando(l.ultima)}" else null,
         if (l.msLeidos >= 60_000) "${tiempoDe(l.msLeidos)} leídos" else null
     ).joinToString(" · ")
     val miSaga = Sagas.de(l.clave)
@@ -185,7 +187,7 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
                 AccionGrande(Icons.Rounded.AttachFile, "Elegir archivo", Modifier.fillMaxWidth(), acento = false) { elegirArchivo.launch(arrayOf("*/*")) }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    AccionGrande(Icons.Rounded.AutoStories, if (frac > 0.005f) "Seguir leyendo" else "Empezar a leer", Modifier.weight(1f)) { alLeer(l) }
+                    AccionGrande(Icons.Rounded.AutoStories, if (l.estado == Estado.LEIDO && frac >= 0.99f) "Volver a leer" else if (frac > 0.005f) "Seguir leyendo" else "Empezar a leer", Modifier.weight(1f)) { alLeer(l) }
                     Spacer(Modifier.width(8.dp))
                     Box {
                         Icon(Icons.Rounded.MoreVert, "Opciones del archivo", tint = Charcoal, modifier = Modifier.size(44.dp).clickable { menuArchivo = true }.padding(10.dp))
@@ -233,6 +235,26 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
         )
         Filete(2.dp)
 
+        // La valoración de Azabache (solo se ve; se hace allí)
+        if (Cuenta.vinculada) {
+            var nota by remember(l.clave) { mutableStateOf(NotaAzabache.cargar(ctx)[l.clave]) }
+            LaunchedEffect(l.clave) {
+                if (NotaAzabache.vieja(ctx)) withContext(Dispatchers.IO) { NotaAzabache.refrescar(ctx) }.let { nota = NotaAzabache.cargar(ctx)[l.clave] }
+            }
+            Column(Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp)) {
+                CabezaCasilla("En Azabache")
+                if (nota != null) {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        FitTitle("${nota!!.general}", 48.sp, 50.sp, unaLinea = true, maxLines = 1)
+                        Text(" /100", color = Muted, fontFamily = Body, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 10.dp))
+                    }
+                    if (nota!!.resena.isNotBlank()) Text(nota!!.resena, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, lineHeight = 21.sp, maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
+                } else Text("Sin valorar todavía.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp)
+                if (NotaAzabache.instalado(ctx)) EnlaceRevista(if (nota != null) "Abrir en Azabache →" else "Valorar en Azabache →", acento = true) { NotaAzabache.abrir(ctx, nota) }
+            }
+            Filete(2.dp)
+        }
+
         // Subrayados y notas
         SeccionNotas(l)
         Spacer(Modifier.height(18.dp))
@@ -245,6 +267,8 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
             MagFact("Autor", l.autor.ifBlank { "—" })
             if (miSaga != null) MagFact("Saga", "${miSaga.nombre} · ${miSaga.claves.indexOf(l.clave) + 1}")
             MagFact("Formato", l.formato.uppercase().ifBlank { "—" })
+            if (l.terminado > 0) MagFact("Terminado", fecha(l.terminado))
+            if (l.terminados.size > 1) MagFact("Lecturas", "${l.terminados.size}")
             if (l.paginas > 0) MagFact("Páginas", "${l.paginas}")
             MagFact("Archivo", if (l.enOtroDispositivo) "no está en este dispositivo" else l.archivo)
             if (ficheroLocal != null) MagFact("Tamaño", tamanoLegible(ficheroLocal.length()))

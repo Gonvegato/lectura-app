@@ -27,6 +27,18 @@ fun notasDe(st: JSONObject): List<NotaLibro> {
     }.sortedWith(compareBy<NotaLibro>({ if (it.fraccion < 0) 2.0 else it.fraccion }, { it.creada }))
 }
 
+/**
+ * Lo que se publica de los subrayados de un libro para que otras apps (el Diario de Azabache) lo lean sin bajar el estado entero del lector:
+ * `{"t": título, "a": autor, "n": [{"x": texto, "o": nota, "c": creado, "l": etiqueta, "k": sitio}]}`. null si no hay ninguno.
+ */
+fun subrayadosLigeros(titulo: String, autor: String, st: JSONObject): JSONObject? {
+    val notas = notasDe(st)
+    if (notas.isEmpty()) return null
+    return JSONObject().put("t", titulo).put("a", autor).put("n", org.json.JSONArray().also { a ->
+        notas.forEach { n -> a.put(JSONObject().put("x", n.texto).put("o", n.nota).put("c", n.creada).put("l", n.etiqueta).put("k", n.value)) }
+    })
+}
+
 /** «Subrayados y notas» en la ficha: tocar uno abre el libro justo ahí (si el archivo está en tu kDrive, se baja antes). */
 @Composable
 fun SeccionNotas(l: Libro) {

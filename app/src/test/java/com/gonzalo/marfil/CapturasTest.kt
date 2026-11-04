@@ -67,6 +67,10 @@ class CapturasTest {
             l("6", "1984", "George Orwell", Estado.LEIDO, 1f, 328, ahora - 40 * dia, 6 * 3600_000L, 4),
             l("10", "Solaris", "Stanislaw Lem", Estado.ABANDONADO, 0.22f, 230, ahora - 60 * dia, 2 * 3600_000L, 5),
         ))
+        // Dos terminados este año (y uno de ellos, por segunda vez) y un reto de 12
+        Biblioteca.libros[8] = Biblioteca.libros[8].copy(terminados = listOf(ahora - 200 * dia, ahora - 20 * dia))
+        Biblioteca.libros[9] = Biblioteca.libros[9].copy(terminados = listOf(ahora - 40 * dia))
+        Ajustes.ponMetaAnual(ctx, 12)
         Sagas.poner(Saga("sd", "Crónicas de Dune", listOf(Biblioteca.libros[1].clave, Biblioteca.libros[6].clave, Biblioteca.libros[7].clave)))
         // Unos días de lectura para que se vean las barras de la semana, y subrayados en Dune
         val hoy = java.time.LocalDate.now()
@@ -176,5 +180,13 @@ class CapturasTest {
         siembra(); montar(false)
         rule.onNodeWithContentDescription("Ajustes").performClick()
         rule.onNodeWithText("Tener todos mis libros aquí", useUnmergedTree = true).performScrollTo(); foto("8_ajustes_libros")
+    }
+
+    @Test fun fichaDeUnLeido() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra(); montar(false)
+        rule.onNodeWithText("LEÍDOS").performClick(); rule.waitForIdle()
+        rule.onNodeWithText("Fahrenheit 451", useUnmergedTree = true).performClick(); foto("4d_ficha_leido")
+        rule.onNodeWithText("Añadido", useUnmergedTree = true).performScrollTo(); foto("4e_ficha_leido_abajo")
     }
 }

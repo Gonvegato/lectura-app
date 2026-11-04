@@ -850,8 +850,10 @@ object Widgets {
                 pon(big, pad, top)
                 ante("hoy", pad, top + big.height + 2f, izqW, gris, 8.5f)
                 var y = top + big.height + 20f
+                val retoAnual = Ajustes.metaAnual(ctx)
                 val extra = listOfNotNull(
                     if (meta > 0) (if (hoyMin >= meta) "Objetivo cumplido" else "Objetivo: $meta min") else null,
+                    if (retoAnual > 0) "Reto: ${terminadosEn(d.todos, anoDe(System.currentTimeMillis()))}/$retoAnual" else null,
                     if (racha >= 2) "$racha días seguidos" else null
                 )
                 for (t in extra) { if (y + 14f < h - pad) y += pon(capa(t, tp(fCursiva, 12f, gris), izqW, 1), pad, y) + 2f }

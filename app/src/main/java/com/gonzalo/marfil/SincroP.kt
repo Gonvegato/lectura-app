@@ -81,6 +81,8 @@ object SincroP {
             st.optJSONObject("stats")?.optJSONObject("dev")?.let { d ->
                 Cuenta.db("PUT", "${Cuenta.raiz}/tiempo/$kid/${Cuenta.dispositivo}", JSONObject().put("t", l.titulo).put("a", l.autor).put("dev", d).toString(), "print=silent")
             }
+            // Los subrayados, en su nodo ligero (para la cita del Diario); sin ninguno, el nodo se borra
+            Cuenta.db("PUT", "${Cuenta.raiz}/subrayados/$kid/${Cuenta.dispositivo}", subrayadosLigeros(l.titulo, l.autor, st)?.toString() ?: "null", "print=silent")
             p.edit().putString("hashLec:$kid", hash).apply()
             guardaVistosLec(c, vistosLec(c).put("$kid/${Cuenta.dispositivo}", ts))
             bien(c); true
@@ -154,7 +156,7 @@ object SincroP {
     suspend fun subir(c: Context, forzar: Boolean = false): Boolean = candado.withLock {
         if (!Cuenta.vinculada) return@withLock true
         try {
-            val blob = Mezcla.aJson(Mezcla.aBlob(Cuenta.dispositivo, Biblioteca.libros.toList(), HashMap(Biblioteca.borrados), if (Skin.ajustesAt > 0L) Skin.ajustesJson().toString() else "", Sagas.lista.toList(), HashMap(Sagas.borradas)))
+            val blob = Mezcla.aJson(Mezcla.aBlob(Cuenta.dispositivo, Biblioteca.libros.toList(), HashMap(Biblioteca.borrados), if (Skin.ajustesAt > 0L) Skin.ajustesJson().toString() else "", Sagas.lista.toList(), HashMap(Sagas.borradas), AjustesLector.paraSubir(c)))
             val hash = blob.hashCode().toString() + ":" + blob.length
             val p = prefs(c)
             if (!forzar && p.getString("hash", "") == hash) return@withLock true
@@ -189,13 +191,15 @@ object SincroP {
                 if (dev == Cuenta.dispositivo || ts <= vistas.optLong(dev, 0L) || ahora - ts > Cuenta.STALE) continue
                 val raw = Cuenta.db("GET", "${Cuenta.raiz}/dev/$dev/data", null) ?: continue
                 val datos = JSONTokener(raw).nextValue() as? String ?: continue
-                Mezcla.deJson(datos)?.let { nuevos += Blob(dev, it.libros, it.borrados, it.ajustes, it.sagas, it.sagasBorradas) }
+                Mezcla.deJson(datos)?.let { nuevos += Blob(dev, it.libros, it.borrados, it.ajustes, it.sagas, it.sagasBorradas, it.lector) }
                 vistosNuevos.put(dev, ts)
             }
             var cambio = false
             // La apariencia (tema, fondo, acento, colores a mano, letras…) más reciente de tus otras instalaciones
             nuevos.mapNotNull { b -> b.ajustes.takeIf { it.isNotBlank() }?.let { runCatching { JSONObject(it) }.getOrNull() } }.maxByOrNull { it.optLong("at") }
                 ?.let { if (Skin.aplicarAjustes(c, it)) cambio = true }
+            // Los ajustes del lector (letra, tema, márgenes…): los del cambio más reciente de tus otros dispositivos
+            nuevos.map { it.lector }.filter { it.isNotBlank() }.maxByOrNull { runCatching { JSONObject(it).optLong("at") }.getOrDefault(0L) }?.let { if (AjustesLector.aplicar(c, it)) cambio = true }
             if (nuevos.isNotEmpty()) {
                 val r = Mezcla.mezclar(Biblioteca.libros.toList(), HashMap(Biblioteca.borrados), nuevos, Cuenta.dispositivo)
                 if (r.cambio) { Biblioteca.aplicarMezcla(r.libros, r.borrados); cambio = true }
