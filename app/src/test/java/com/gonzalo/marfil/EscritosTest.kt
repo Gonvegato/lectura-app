@@ -49,7 +49,10 @@ class EscritosTest {
 
     @Test fun elEpubEsValidoYLlevaPortadaPartesYCapitulos() {
         val o = Escritos.obrasDe(lectura()).first { it.id == "novela" }
-        val z = zipDe(Escritos.epub(o))
+        val bytes = Escritos.epub(o)
+        // Se deja en disco para abrirlo con el lector de verdad (herramientas/lector-prueba/escrito.js)
+        runCatching { File("build/outputs/escritos").apply { mkdirs() }.resolve("escrito.epub").writeBytes(bytes) }
+        val z = zipDe(bytes)
         assertEquals("el mimetype va primero y sin comprimir", "mimetype", z.keys.first()); assertEquals("application/epub+zip", z["mimetype"])
         assertTrue(z["META-INF/container.xml"]!!.contains("OEBPS/content.opf"))
         val opf = z["OEBPS/content.opf"]!!
