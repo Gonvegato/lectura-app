@@ -33,6 +33,12 @@ su reborde fino de tinta). **Un toque juega; mantener pulsado abre la ficha.** P
 «Buscar» filtra en el sitio entre todos tus juegos, y la última baldosa («Añadir») es el atajo para meter más. «Lista» abre la lista de siempre, con orden y filtros;
 «Sistemas» y el engranaje, sus pantallas.
 
+## 0.11.0: el estado arriba y los widgets eligen libro
+
+- En la ficha, las pestañas de estado (Pendiente · Leyendo · Leído · Abandonado) van arriba, pegadas a la barra; debajo quedan la saga y el favorito.
+- **Los widgets eligen libro**: al poner «Sigue leyendo» o «En portada» en el escritorio, Android pregunta qué libro abre: «el que toque» (lo
+  que estés leyendo, como hasta ahora) o uno fijo.
+
 ## 0.10.1: los filtros de orden en todas las secciones
 
 - Las secciones ya no precomponen las páginas vecinas: en las pruebas del ordenador, con ellas precompuestas, los filtros de orden («Título»,

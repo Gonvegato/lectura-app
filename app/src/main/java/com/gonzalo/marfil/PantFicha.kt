@@ -134,8 +134,11 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
             EnlaceRevista("Borrar") { quitar = true }
         }
         Filete(3.dp)
+        // El estante, como las pestañas de estado de Atrio, pegado a la barra de arriba
+        FiltrosRevista(Estado.entries.map { it.nombre }, l.estado.ordinal, Modifier.padding(top = 4.dp)) { i -> Biblioteca.poner(l.copy(estado = Estado.entries[i])) }
+        Filete(1.dp)
         Spacer(Modifier.height(14.dp))
-        RevistaHeadline(l.titulo, listOfNotNull(l.estado.nombre, l.formato.uppercase().ifBlank { null }, l.autor.ifBlank { null }).joinToString(" · "))
+        RevistaHeadline(l.titulo, listOfNotNull(l.formato.uppercase().ifBlank { null }, l.autor.ifBlank { null }).joinToString(" · "))
         if (deck.isNotBlank()) Text(deck, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 17.sp, modifier = Modifier.padding(top = 6.dp))
         Spacer(Modifier.height(14.dp))
 
@@ -156,9 +159,8 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
         }
         Spacer(Modifier.height(16.dp))
 
-        // El estante, como las pestañas de estado de Atrio, y debajo sus acciones
+        // Las acciones: la saga y el favorito
         Filete(1.dp)
-        FiltrosRevista(Estado.entries.map { it.nombre }, l.estado.ordinal, Modifier.padding(top = 4.dp)) { i -> Biblioteca.poner(l.copy(estado = Estado.entries[i])) }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
             EnlaceRevista(if (miSaga != null) "Saga: ${miSaga.nombre} →" else "Saga →", acento = miSaga != null) { saga = true }
             EnlaceRevista(if (l.favorito) "★ Favorito" else "☆ Favorito", acento = l.favorito) { Biblioteca.poner(l.copy(favorito = !l.favorito)) }

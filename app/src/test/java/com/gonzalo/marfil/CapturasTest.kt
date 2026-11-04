@@ -135,8 +135,8 @@ class CapturasTest {
     @Test fun fichaCompleta() {
         org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
         siembra(); montar(false)
-        rule.onNodeWithText("LEYENDO").performClick()
-        rule.onNodeWithText("Crónicas de Dune", useUnmergedTree = true).performClick()
+        rule.onNodeWithText("LEYENDO").performClick(); rule.waitForIdle(); Thread.sleep(400); rule.waitForIdle()
+        // (en Leyendo solo está «Dune»: sale como libro suelto, con su saga al lado)
         rule.onAllNodesWithText("Dune", useUnmergedTree = true)[0].performClick(); foto("4_ficha")
         rule.onNodeWithText("Añadido", useUnmergedTree = true).performScrollTo(); foto("4b_ficha_abajo")
     }

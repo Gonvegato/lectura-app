@@ -8,4 +8,5 @@
     android:initialLayout="@layout/w_marco"
     android:previewImage="@drawable/w_prev_leyendo"
     android:description="@string/w_leyendo_d"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    android:configure="com.gonzalo.marfil.ConfigWidgetActivity" />

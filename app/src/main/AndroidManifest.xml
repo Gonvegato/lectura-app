@@ -24,6 +24,10 @@
             </intent-filter>
         </activity>
         <!-- El lector: la página de lectura (foliate-js y pdf.js) en una pantalla propia -->
+        <!-- Al poner un widget de un libro: elegir cuál abre -->
+        <activity android:name=".ConfigWidgetActivity" android:exported="true" android:theme="@style/Marfil">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" /></intent-filter>
+        </activity>
         <activity android:name=".LectorActivity" android:exported="false" android:theme="@style/Lector"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|uiMode|density" />
         <!-- Compartir una cita como imagen -->

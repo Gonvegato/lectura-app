@@ -108,4 +108,14 @@ class WidgetsTest {
             File(dir, "w_prev_$nombre.png").outputStream().use { pag.bitmap(ctx, tam.first, tam.second, false, 2f).compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
+
+    @Test fun unWidgetPuedeAbrirSiempreElLibroQueElijas() {
+        siembra()
+        val fijo = Biblioteca.libros.last()
+        Widgets.ponFijo(ctx, 77, fijo.id)
+        val pag = runBlocking { Widgets.componer(ctx, WTipo.LEYENDO, 77, 330f, 165f) }
+        assertTrue(pag.zonas.any { it.desc == "Abrir ${fijo.titulo}" })
+        assertTrue(runBlocking { Widgets.componer(ctx, WTipo.PORTADA, 77, 330f, 250f) }.zonas.any { it.desc == fijo.titulo })
+        Widgets.olvidar(ctx, intArrayOf(77)); assertNull(Widgets.fijoDe(ctx, 77))
+    }
 }
