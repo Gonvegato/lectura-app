@@ -45,6 +45,7 @@ object SincroP {
     private fun prefs(c: Context) = c.getSharedPreferences("marfil_sync", Context.MODE_PRIVATE)
     private val pendientes = java.util.Collections.synchronizedSet(HashSet<String>())
     private var escuchaLec: FbStream? = null
+    private var escuchaCobalto: FbStream? = null
 
     // ---- el estado de lectura de cada libro: /lec/<libro>/<dispositivo> (el estado entero) y /lstamps/<libro>/<dispositivo> (su hora)
     private fun vistosLec(c: Context): JSONObject = runCatching { JSONObject(prefs(c).getString("vistosLec", "{}")!!) }.getOrDefault(JSONObject())
@@ -76,13 +77,14 @@ object SincroP {
             val nodo = JSONObject().put("t", l.titulo).put("u", JSONObject().put(".sv", "timestamp")).put("s", st)
             Cuenta.db("PUT", "${Cuenta.raiz}/lec/$kid/${Cuenta.dispositivo}", nodo.toString(), "print=silent")
             val ts = Cuenta.db("GET", "${Cuenta.raiz}/lec/$kid/${Cuenta.dispositivo}/u", null)?.toLongOrNull() ?: throw Cuenta.Fail("Firebase no ha guardado lo leído.")
-            Cuenta.db("PUT", "${Cuenta.raiz}/lstamps/$kid/${Cuenta.dispositivo}", ts.toString(), "print=silent")
-            // El tiempo leído, sin subrayados ni notas (ligero): lo que el Diario de Azabache lee. Ver docs/CONTRATO-DATOS.md
+            // Los nodos ligeros van ANTES del sello: Azabache lee «tiempo» y «subrayados» en cuanto oye el sello (ver docs/CONTRATO-DATOS.md)
+            // El tiempo leído, sin subrayados ni notas (ligero): lo que el Diario de Azabache lee
             st.optJSONObject("stats")?.optJSONObject("dev")?.let { d ->
                 Cuenta.db("PUT", "${Cuenta.raiz}/tiempo/$kid/${Cuenta.dispositivo}", JSONObject().put("t", l.titulo).put("a", l.autor).put("dev", d).toString(), "print=silent")
             }
             // Los subrayados, en su nodo ligero (para la cita del Diario); sin ninguno, el nodo se borra
             Cuenta.db("PUT", "${Cuenta.raiz}/subrayados/$kid/${Cuenta.dispositivo}", subrayadosLigeros(l.titulo, l.autor, st)?.toString() ?: "null", "print=silent")
+            Cuenta.db("PUT", "${Cuenta.raiz}/lstamps/$kid/${Cuenta.dispositivo}", ts.toString(), "print=silent")
             p.edit().putString("hashLec:$kid", hash).apply()
             guardaVistosLec(c, vistosLec(c).put("$kid/${Cuenta.dispositivo}", ts))
             bien(c); true
@@ -246,9 +248,23 @@ object SincroP {
         val g = FbStream("marfil-lec", { renovar -> Cuenta.urlFlujo("${Cuenta.raiz}/lstamps", renovar) }, { _, _ -> bajarPronto() }, { })
         escuchaLec = g
         g.start(scope)
+        // Cobalto: en cuanto publica un capítulo terminado (sella su «stamps»), los Escritos se traen y sus EPUB se rehacen
+        val h = FbStream("marfil-cobalto", { renovar -> Cuenta.urlFlujo("/users/${Cuenta.uid}/cobalto/stamps", renovar) }, { _, _ -> escritosPronto() }, { })
+        escuchaCobalto = h
+        h.start(scope)
     }
 
-    fun parar() { escucha?.stop(); escucha = null; escuchaLec?.stop(); escuchaLec = null }
+    private val mirandoEscritos = java.util.concurrent.atomic.AtomicBoolean(false)
+    /** Varios avisos de Cobalto seguidos se juntan en una sola lectura de sus Escritos. */
+    fun escritosPronto() {
+        val c = app ?: return
+        if (!Cuenta.vinculada || !mirandoEscritos.compareAndSet(false, true)) return
+        scope.launch {
+            try { delay(600); runCatching { Escritos.refrescar(c) } } finally { mirandoEscritos.set(false) }
+        }
+    }
+
+    fun parar() { escucha?.stop(); escucha = null; escuchaLec?.stop(); escuchaLec = null; escuchaCobalto?.stop(); escuchaCobalto = null }
 
     private fun bien(c: Context) {
         fallos = 0

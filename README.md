@@ -79,6 +79,13 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.1: los Escritos llegan solos
+
+- Marfil escucha el sello de Cobalto: en cuanto das un capítulo por terminado allí (y Cobalto sincroniza), aquí se traen los Escritos y se
+  rehace su EPUB, sin entrar en la pantalla (Cobalto 0.2.1 o más nueva).
+- Al subir lo leído de un libro, los nodos ligeros que lee Azabache (`tiempo`, `subrayados`) van antes del sello: el Diario de Azabache ya no
+  puede leerlos viejos.
+
 ## 0.12.0: los Escritos de Cobalto, portadas para Azabache y ajustes en pestañas
 
 - **Escritos** (en el menú): las obras de Cobalto con capítulos terminados se leen aquí, con el lector de Marfil. Cada obra se convierte
