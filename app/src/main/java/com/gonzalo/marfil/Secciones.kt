@@ -284,7 +284,8 @@ fun PantSecciones(inicial: Destino, alVolver: () -> Unit, alAbrir: (Libro) -> Un
         if (buscando) CampoRevista("Buscar", busca, "título, autor o saga") { busca = it }
         PestanasPaginas(listOf("Leyendo", "Pendientes", "Leídos", "Abandonados", "Autores", "Sagas"), pager.currentPage, cuentas) { i -> ambito.launch { pager.animateScrollToPage(i) } }
         if (busca.isNotBlank()) Resultados(busca, todos, alAbrir)
-        else HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), beyondViewportPageCount = 1, key = { paginas[it].name }) { i ->
+        // (sin páginas vecinas precompuestas: con ellas, en las páginas que no son la primera los enlaces de la cabecera no recibían el toque)
+        else HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), key = { paginas[it].name }) { i ->
             when (paginas[i]) {
                 Destino.Leyendo -> PaginaEstante(Estado.LEYENDO, todos, alAbrir, alAbrirSaga, alAnadir)
                 Destino.Pendientes -> PaginaEstante(Estado.PENDIENTE, todos, alAbrir, alAbrirSaga, alAnadir)

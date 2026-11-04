@@ -33,6 +33,11 @@ su reborde fino de tinta). **Un toque juega; mantener pulsado abre la ficha.** P
 «Buscar» filtra en el sitio entre todos tus juegos, y la última baldosa («Añadir») es el atajo para meter más. «Lista» abre la lista de siempre, con orden y filtros;
 «Sistemas» y el engranaje, sus pantallas.
 
+## 0.10.1: los filtros de orden en todas las secciones
+
+- Las secciones ya no precomponen las páginas vecinas: en las pruebas del ordenador, con ellas precompuestas, los filtros de orden («Título»,
+  «Autor»…) de las páginas que no eran la primera no recibían el toque. Si en el móvil te pasaba, esto lo arregla; si no, no cambia nada visible.
+
 ## 0.10.0: sección Sagas
 
 - Nueva pestaña **Sagas** al final de las secciones (Leyendo · Pendientes · Leídos · Abandonados · Autores · Sagas), también en el
