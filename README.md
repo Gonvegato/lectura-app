@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.2: Azabache abre el libro exacto
+
+- Marfil entiende el extra `clave` (la clave del libro, la misma en todos tus Marfiles): «Leer» en Azabache abre Marfil en la ficha de ese libro.
+  Los widgets siguen usando `ficha` (por id) y `leer` (directo al lector).
+
 ## 0.12.1: los Escritos llegan solos
 
 - Marfil escucha el sello de Cobalto: en cuanto das un capítulo por terminado allí (y Cobalto sincroniza), aquí se traen los Escritos y se

@@ -17,9 +17,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
-        setIntent(intent); fichaPedida = intent.getStringExtra("ficha"); irPedido = intent.getStringExtra("go")
+        setIntent(intent); fichaPedida = fichaDe(intent); irPedido = intent.getStringExtra("go")
         seguirLeyendoPedido(intent)
     }
+
+    private fun fichaDe(i: android.content.Intent?) = fichaPedidaDe(i)
 
     /** El atajo del icono «Seguir leyendo»: directo al lector, en tu página (una sola vez por intent). */
     private fun seguirLeyendoPedido(i: android.content.Intent?) {
@@ -33,7 +35,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         iniciar(this)
         Actualizador.init(this)
-        fichaPedida = intent?.getStringExtra("ficha"); irPedido = intent?.getStringExtra("go")
+        fichaPedida = fichaDe(intent); irPedido = intent?.getStringExtra("go")
         seguirLeyendoPedido(intent)
         setContent {
             MarfilTheme {
@@ -63,3 +65,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() { super.onStop(); SincroP.parar() }
 }
+
+/** La ficha que pide abrir un widget («ficha», por id) o Azabache («clave», la del libro: la misma en todos tus Marfiles). */
+internal fun fichaPedidaDe(i: android.content.Intent?): String? = i?.getStringExtra("ficha") ?: i?.getStringExtra("clave")?.let { k -> Biblioteca.libros.firstOrNull { it.clave == k }?.id }

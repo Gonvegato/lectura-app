@@ -28,3 +28,8 @@ Para cada libro, lee `tiempo/<kid>/*`. Cada escritor trae su vista de **todos** 
 ## Lo que aún no está (se añadirá cuando Azabache lo pida)
 
 Nada pendiente de Marfil. Las fechas de terminado van en `dev/<dispositivo>/data` (`tm`).
+
+## Abrir Marfil desde fuera
+
+Con el intent de lanzamiento del paquete `com.gonzalo.marfil`: `go=escritos` abre la sección Escritos; `clave=<clave del libro>` abre la ficha
+de ese libro (la clave es la `k` de la biblioteca); `ficha=<id>` y `leer=<id>` (por id de este dispositivo) los usan los widgets.
