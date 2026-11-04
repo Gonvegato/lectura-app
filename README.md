@@ -79,11 +79,12 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
-## 0.12.2: Azabache abre el libro exacto
+## 0.12.3: Azabache abre el libro exacto, y la obra exacta de Cobalto
 
 - Marfil entiende el extra `clave` (la clave del libro, la misma en todos tus Marfiles): «Leer» en Azabache abre Marfil en la ficha de ese libro.
   Los widgets siguen usando `ficha` (por id) y `leer` (directo al lector).
-- En Escritos, «Escribir en Cobalto» abre Cobalto **en esa obra** (no en su portada).
+- En Escritos, «Escribir en Cobalto» abre Cobalto **en esa obra** (no en su portada). Y al revés: Azabache y Cobalto pueden pedir
+  «lee esta obra» (`go=escritos` + `obra`), y Marfil la prepara y la abre en el lector.
 
 ## 0.12.1: los Escritos llegan solos
 

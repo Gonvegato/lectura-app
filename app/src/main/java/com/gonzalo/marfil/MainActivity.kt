@@ -17,11 +17,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
-        setIntent(intent); fichaPedida = fichaDe(intent); irPedido = intent.getStringExtra("go")
+        setIntent(intent); fichaPedida = fichaDe(intent); irPedido = irDe(intent)
         seguirLeyendoPedido(intent)
     }
 
     private fun fichaDe(i: android.content.Intent?) = fichaPedidaDe(i)
+    private fun irDe(i: android.content.Intent?) = irPedidoDe(i)
 
     /** El atajo del icono «Seguir leyendo»: directo al lector, en tu página (una sola vez por intent). */
     private fun seguirLeyendoPedido(i: android.content.Intent?) {
@@ -35,7 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         iniciar(this)
         Actualizador.init(this)
-        fichaPedida = fichaDe(intent); irPedido = intent?.getStringExtra("go")
+        fichaPedida = fichaDe(intent); irPedido = irDe(intent)
         seguirLeyendoPedido(intent)
         setContent {
             MarfilTheme {
@@ -68,3 +69,10 @@ class MainActivity : ComponentActivity() {
 
 /** La ficha que pide abrir un widget («ficha», por id) o Azabache («clave», la del libro: la misma en todos tus Marfiles). */
 internal fun fichaPedidaDe(i: android.content.Intent?): String? = i?.getStringExtra("ficha") ?: i?.getStringExtra("clave")?.let { k -> Biblioteca.libros.firstOrNull { it.clave == k }?.id }
+
+/** La sección pedida desde fuera (Azabache, Cobalto): `go=escritos`, y con `obra=<id de Escribir>` se abre esa obra en el lector («escritos:<id>»). */
+internal fun irPedidoDe(i: android.content.Intent?): String? {
+    val go = i?.getStringExtra("go") ?: return null
+    val obra = i.getStringExtra("obra").orEmpty()
+    return if (go.equals("escritos", true) && obra.isNotBlank()) "escritos:$obra" else go
+}

@@ -31,5 +31,5 @@ Nada pendiente de Marfil. Las fechas de terminado van en `dev/<dispositivo>/data
 
 ## Abrir Marfil desde fuera
 
-Con el intent de lanzamiento del paquete `com.gonzalo.marfil`: `go=escritos` abre la sección Escritos; `clave=<clave del libro>` abre la ficha
+Con el intent de lanzamiento del paquete `com.gonzalo.marfil`: `go=escritos` abre la sección Escritos (con `obra=<id de Escribir>`, abre esa obra en el lector); `clave=<clave del libro>` abre la ficha
 de ese libro (la clave es la `k` de la biblioteca); `ficha=<id>` y `leer=<id>` (por id de este dispositivo) los usan los widgets.

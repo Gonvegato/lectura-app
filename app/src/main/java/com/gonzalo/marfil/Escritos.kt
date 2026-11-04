@@ -178,13 +178,20 @@ object Escritos {
 
 /** «Escritos»: tus obras de Cobalto con capítulos terminados, para leerlas aquí. */
 @Composable
-fun PantEscritos(alVolver: () -> Unit, alLeer: (Libro) -> Unit) {
+fun PantEscritos(alVolver: () -> Unit, alLeer: (Libro) -> Unit, abrir: String? = null, alAbierto: () -> Unit = {}) {
     val ctx = LocalContext.current
     val ambito = rememberCoroutineScope()
     val obras = remember(Escritos.version) { Escritos.obras(ctx) }
     var mirando by remember { mutableStateOf(false) }
     var mensaje by remember { mutableStateOf("") }
     LaunchedEffect(Unit) { if (Cuenta.vinculada) { mirando = true; withContext(Dispatchers.IO) { runCatching { Escritos.refrescar(ctx) } }; mirando = false } }
+    // Otra app (Azabache, Cobalto) pide leer una obra: se prepara y se abre en el lector (si aún no está aquí, se espera a traerla)
+    LaunchedEffect(abrir, obras, mirando) {
+        val id = abrir ?: return@LaunchedEffect
+        val o = obras.firstOrNull { it.id == id }
+        if (o != null) { alAbierto(); val l = withContext(Dispatchers.IO) { runCatching { Escritos.preparar(ctx, o) }.getOrNull() }; if (l != null) alLeer(l) else mensaje = "No he podido preparar el libro." }
+        else if (!mirando && Escritos.ultimaVez(ctx) > 0L) { alAbierto(); mensaje = "Esa obra aún no tiene capítulos terminados en Cobalto." }
+    }
     Column(Modifier.fillMaxSize().background(Paper).verticalScroll(rememberScrollState()).statusBarsPadding().navigationBarsPadding().padding(horizontal = 28.dp)) {
         RevistaTopBar(alVolver, "Marfil") {
             EnlaceRevista(if (mirando) "Mirando…" else "Actualizar", acento = !mirando) {

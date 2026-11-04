@@ -48,7 +48,14 @@ fun MarfilApp(libroPedido: String? = null, alAbrirPedido: () -> Unit = {}, irPed
     // Un widget (o un aviso) pide abrir un libro
     LaunchedEffect(libroPedido) { if (libroPedido != null && Biblioteca.por(libroPedido) != null) { fichaId = libroPedido; destino = 0 }; if (libroPedido != null) alAbrirPedido() }
     // Otra app (Azabache) pide una sección: «escritos», «leyendo»…
-    LaunchedEffect(irPedido) { if (irPedido != null) { Destino.entries.firstOrNull { it.name.equals(irPedido, true) }?.let { fichaId = null; sagaId = null; destino = it.ordinal }; alIrPedido() } }
+    var escritoPedido by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(irPedido) {
+        if (irPedido != null) {
+            val seccion = irPedido.substringBefore(':'); escritoPedido = irPedido.substringAfter(':', "").ifBlank { null }
+            Destino.entries.firstOrNull { it.name.equals(seccion, true) }?.let { fichaId = null; sagaId = null; destino = it.ordinal }
+            alIrPedido()
+        }
+    }
 
     // Añadir libros: se eligen uno o varios archivos (EPUB, PDF, MOBI…); se copian a la app y se leen sus datos
     val elegir = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
@@ -70,7 +77,7 @@ fun MarfilApp(libroPedido: String? = null, alAbrirPedido: () -> Unit = {}, irPed
         when (d) {
             Destino.Portada -> PantInicio(alAbrir = { fichaId = it.id }, alLeer = ::leer, alAnadir = ::anadir, alIr = { ir(it) }, alBuscar = { ir(Destino.Leyendo, true) }, alAbrirSaga = { sagaId = it.id })
             Destino.Ajustes -> PantEstilo(alVolver = { destino = 0 })
-            Destino.Escritos -> PantEscritos(alVolver = { destino = 0 }, alLeer = ::leer)
+            Destino.Escritos -> PantEscritos(alVolver = { destino = 0 }, alLeer = ::leer, abrir = escritoPedido, alAbierto = { escritoPedido = null })
             else -> PantSecciones(d, alVolver = { destino = 0 }, alAbrir = { fichaId = it.id }, alAbrirSaga = { sagaId = it.id }, alAnadir = ::anadir, buscandoInicial = buscar)
         }
         AnimatedVisibility(sagaId != null, enter = slideInVertically { it / 8 } + fadeIn(), exit = slideOutVertically { it / 8 } + fadeOut()) {

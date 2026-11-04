@@ -24,4 +24,11 @@ class IntentsTest {
         assertNull("una clave que no está no pide nada", fichaPedidaDe(Intent().putExtra("clave", "libro:nada:nadie")))
         assertNull(fichaPedidaDe(null))
     }
+
+    @Test fun laSeccionPedidaYLaObraDeCobalto() {
+        assertEquals("escritos", irPedidoDe(Intent().putExtra("go", "escritos")))
+        assertEquals("escritos:p_abc", irPedidoDe(Intent().putExtra("go", "escritos").putExtra("obra", "p_abc")))
+        assertEquals("la obra solo cuenta con Escritos", "leyendo", irPedidoDe(Intent().putExtra("go", "leyendo").putExtra("obra", "p_abc")))
+        assertNull(irPedidoDe(Intent()))
+    }
 }
