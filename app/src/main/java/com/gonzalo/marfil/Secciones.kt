@@ -25,10 +25,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
-/** Cómo se ordena cada estante. */
-private fun ordenar(estado: Estado, l: List<Libro>): List<Libro> = when (estado) {
-    Estado.PENDIENTE -> l.sortedByDescending { it.anadido }
-    else -> l.sortedWith(compareByDescending<Libro> { it.ultima }.thenByDescending { it.anadido })
+/** Cómo se puede ordenar un estante. */
+enum class OrdenLibros(val nombre: String) { RECIENTES("Recientes"), ANADIDOS("Añadidos"), TITULO("Título"), AUTOR("Autor"), PAGINAS("Páginas") }
+
+/** El orden con el que empieza cada estante: lo pendiente, por lo último añadido; el resto, por lo último abierto. */
+fun ordenInicial(e: Estado): OrdenLibros = if (e == Estado.PENDIENTE) OrdenLibros.ANADIDOS else OrdenLibros.RECIENTES
+
+/** Ordena una lista de libros. Los que no tienen autor (o páginas) van al final. */
+fun ordenar(o: OrdenLibros, l: List<Libro>): List<Libro> = when (o) {
+    OrdenLibros.RECIENTES -> l.sortedWith(compareByDescending<Libro> { it.ultima }.thenByDescending { it.anadido })
+    OrdenLibros.ANADIDOS -> l.sortedByDescending { it.anadido }
+    OrdenLibros.TITULO -> l.sortedBy { norm(it.titulo) }
+    OrdenLibros.AUTOR -> l.sortedWith(compareBy<Libro> { it.autor.isBlank() }.thenBy { norm(it.autor) }.thenBy { norm(it.titulo) })
+    OrdenLibros.PAGINAS -> l.sortedWith(compareBy<Libro> { it.paginas <= 0 }.thenByDescending { it.paginas }.thenBy { norm(it.titulo) })
+}
+
+/** El orden que has elegido para cada estante (se recuerda al cerrar la app). */
+object OrdenGuardado {
+    private fun prefs(c: android.content.Context) = c.getSharedPreferences("marfil_orden", android.content.Context.MODE_PRIVATE)
+    fun de(c: android.content.Context, e: Estado): OrdenLibros = OrdenLibros.entries.firstOrNull { it.name == prefs(c).getString(e.name, null) } ?: ordenInicial(e)
+    fun pon(c: android.content.Context, e: Estado, o: OrdenLibros) { prefs(c).edit().putString(e.name, o.name).apply() }
 }
 
 /** Lo que dice debajo del título de un libro: autor y cómo va. */
@@ -129,13 +145,18 @@ private fun vacioDe(e: Estado) = when (e) {
 /** Una página de un estante: título enorme y sus libros (con las sagas juntas). */
 @Composable
 private fun PaginaEstante(estado: Estado, todos: List<Libro>, alAbrir: (Libro) -> Unit, alAbrirSaga: (Saga) -> Unit, alAnadir: () -> Unit) {
-    val libros = remember(todos, estado) { ordenar(estado, todos.filter { it.estado == estado }) }
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    var orden by remember(estado) { mutableStateOf(OrdenGuardado.de(ctx, estado)) }
+    val libros = remember(todos, estado, orden) { ordenar(orden, todos.filter { it.estado == estado }) }
     var abiertas by rememberSaveable(estado) { mutableStateOf(setOf<String>()) }
     LazyColumn(Modifier.fillMaxSize()) {
         item {
             Column {
                 Antetitulo("Sección · ${libros.size} ${if (libros.size == 1) "libro" else "libros"}", Modifier.padding(top = 12.dp), color = Acento, conCuadro = false)
                 FitTitle(if (estado == Estado.LEYENDO) "Leyendo" else estado.nombre + "s", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
+                Filete(1.dp, Line)
+                // Cómo se ordena este estante (se recuerda)
+                FiltrosRevista(OrdenLibros.entries.map { it.nombre }, orden.ordinal, Modifier.padding(top = 4.dp)) { i -> orden = OrdenLibros.entries[i]; OrdenGuardado.pon(ctx, estado, orden) }
                 Filete(1.dp, Line)
             }
         }

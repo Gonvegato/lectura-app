@@ -165,3 +165,9 @@ Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuen
 - Deslizando (PDF o cómic «hacia abajo», o «Desplazamiento continuo»): en vez de mantener pulsado, **dos toques seguidos** seleccionan la palabra (subrayar, nota, diccionario); un toque suelto espera una fracción de segundo por si es el primero de dos.
 - La línea de abajo (lo que queda y el %) no se enseña en ese modo: se solapaba con el texto.
 - Al llegar al final de un capítulo se puede **seguir deslizando**: arrastrar o el impulso del dedo pasa al siguiente capítulo (y al principio, al anterior). Probado con un navegador con pantalla táctil: `herramientas/lector-prueba`.
+
+## Marfil 0.8.2
+
+- **Ordenar** cada estante (Recientes, Añadidos, Título, Autor, Páginas); se recuerda por estante.
+- **Atajo «Seguir leyendo»** al mantener pulsado el icono de la app: abre el libro que estás leyendo en tu página.
+- **APK más pequeño**: solo arm64 y x86_64 (el traductor del diccionario se copiaba para cuatro procesadores).

@@ -16,6 +16,14 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent); fichaPedida = intent.getStringExtra("ficha")
+        seguirLeyendoPedido(intent)
+    }
+
+    /** El atajo del icono «Seguir leyendo»: directo al lector, en tu página (una sola vez por intent). */
+    private fun seguirLeyendoPedido(i: android.content.Intent?) {
+        val id = i?.getStringExtra("leer") ?: return
+        i.removeExtra("leer")
+        Biblioteca.por(id)?.let { Lector.abrir(this, it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +32,7 @@ class MainActivity : ComponentActivity() {
         iniciar(this)
         Actualizador.init(this)
         fichaPedida = intent?.getStringExtra("ficha")
+        seguirLeyendoPedido(intent)
         setContent {
             MarfilTheme {
                 // Iconos de la barra de estado claros u oscuros según el fondo
@@ -45,6 +54,7 @@ class MainActivity : ComponentActivity() {
         // Los colores de Atrio pueden haber cambiado mientras estabas en ella: se vuelven a leer
         val c = applicationContext
         kotlin.concurrent.thread { TemaAtrio.refrescar(c) }
+        AtajoLectura.pon(c)
         // Tu cuenta de Atrio, en directo mientras Marfil se ve
         SincroP.escuchar(c)
     }

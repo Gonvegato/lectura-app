@@ -162,3 +162,48 @@ class SeccionesTest {
         assertEquals(Estado.PENDIENTE, Biblioteca.aLibro(JSONObject(Biblioteca.aJson(l).toString()).put("estado", "RARO")).estado)
     }
 }
+
+/** Ordenar los estantes. */
+class OrdenTest {
+    private fun l(t: String, a: String = "", pag: Int = 0, ult: Long = 0, anad: Long = 0) = Libro(t, t, a, paginas = pag, ultima = ult, anadido = anad)
+
+    @org.junit.Test fun losCincoOrdenes() {
+        val x = listOf(l("Cien", "García", 471, 5, 1), l("Álamo", "", 0, 9, 2), l("Zeta", "Austen", 900, 1, 3), l("Beta", "Zafón", 0, 7, 4))
+        org.junit.Assert.assertEquals(listOf("Álamo", "Beta", "Cien", "Zeta"), ordenar(OrdenLibros.RECIENTES, x).map { it.titulo })
+        org.junit.Assert.assertEquals(listOf("Beta", "Zeta", "Álamo", "Cien"), ordenar(OrdenLibros.ANADIDOS, x).map { it.titulo })
+        org.junit.Assert.assertEquals(listOf("Álamo", "Beta", "Cien", "Zeta"), ordenar(OrdenLibros.TITULO, x).map { it.titulo })
+        org.junit.Assert.assertEquals("el autor vacío, al final", listOf("Zeta", "Cien", "Beta", "Álamo"), ordenar(OrdenLibros.AUTOR, x).map { it.titulo })
+        org.junit.Assert.assertEquals("sin páginas, al final", listOf("Zeta", "Cien", "Álamo", "Beta"), ordenar(OrdenLibros.PAGINAS, x).map { it.titulo })
+    }
+
+    @org.junit.Test fun elOrdenInicialDeCadaEstante() {
+        org.junit.Assert.assertEquals(OrdenLibros.ANADIDOS, ordenInicial(Estado.PENDIENTE))
+        for (e in listOf(Estado.LEYENDO, Estado.LEIDO, Estado.ABANDONADO)) org.junit.Assert.assertEquals(OrdenLibros.RECIENTES, ordenInicial(e))
+    }
+}
+
+/** El atajo «Seguir leyendo» del icono. */
+@org.junit.runner.RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [34])
+class AtajoTest {
+    private val ctx get() = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+    private fun l(id: String, e: Estado, ult: Long, uri: String = "file:///x") = Libro(id, "Libro $id", "A", estado = e, ultima = ult, uri = uri)
+
+    @org.junit.Test fun elegirElLibroDelAtajo() {
+        val libros = listOf(l("a", Estado.LEYENDO, 5), l("b", Estado.LEYENDO, 9), l("c", Estado.LEYENDO, 99, uri = ""), l("d", Estado.PENDIENTE, 200))
+        org.junit.Assert.assertEquals("b", AtajoLectura.libro(libros)?.id)
+        org.junit.Assert.assertNull(AtajoLectura.libro(listOf(l("d", Estado.PENDIENTE, 1), l("e", Estado.LEYENDO, 3, uri = ""))))
+    }
+
+    @org.junit.Test fun elAtajoSePoneYSeQuita() {
+        Skin.cargar(ctx); Cuenta.cargar(ctx); Biblioteca.cargar(ctx); Biblioteca.libros.clear()
+        val sm = ctx.getSystemService(android.content.pm.ShortcutManager::class.java)
+        Biblioteca.libros.add(l("a", Estado.LEYENDO, 5).copy(fraccion = 0.37f))
+        AtajoLectura.pon(ctx)
+        val sc = sm.dynamicShortcuts.single()
+        org.junit.Assert.assertEquals("seguir_leyendo", sc.id); org.junit.Assert.assertTrue(sc.longLabel.toString().contains("37 %"))
+        org.junit.Assert.assertEquals("a", sc.intent!!.getStringExtra("leer"))
+        Biblioteca.libros.clear(); AtajoLectura.pon(ctx)
+        org.junit.Assert.assertTrue(sm.dynamicShortcuts.isEmpty())
+    }
+}

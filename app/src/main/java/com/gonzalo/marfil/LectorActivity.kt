@@ -374,6 +374,7 @@ class LectorActivity : ComponentActivity() {
         // Al dejar de leer, lo leído sube ya: en la tablet sigues por la misma página sin tocar nada
         SincroP.cambio(applicationContext, 0)
         SincroP.cambioLectura(applicationContext, id, 0)
+        AtajoLectura.pon(applicationContext)
     }
 
     override fun onDestroy() {
