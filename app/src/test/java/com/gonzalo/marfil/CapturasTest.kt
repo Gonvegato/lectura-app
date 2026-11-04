@@ -15,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
@@ -122,6 +123,8 @@ class CapturasTest {
         rule.onAllNodesWithText("ABANDONADOS")[0].performClick(); rule.waitForIdle(); foto("3f_abandonados")
         rule.onAllNodesWithText("AUTORES")[0].performClick(); rule.waitForIdle()
         rule.onNodeWithText("Frank Herbert", useUnmergedTree = true).performClick(); foto("3g_autores")
+        rule.onAllNodesWithText("SAGAS")[0].performClick(); rule.waitForIdle(); foto("3h_sagas")
+        rule.onAllNodesWithText("Crónicas de Dune", useUnmergedTree = true).onLast().performClick(); rule.waitForIdle(); foto("3i_sagas_abierta")
     }
 
     @Test fun vacia() {

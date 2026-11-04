@@ -33,6 +33,13 @@ su reborde fino de tinta). **Un toque juega; mantener pulsado abre la ficha.** P
 «Buscar» filtra en el sitio entre todos tus juegos, y la última baldosa («Añadir») es el atajo para meter más. «Lista» abre la lista de siempre, con orden y filtros;
 «Sistemas» y el engranaje, sus pantallas.
 
+## 0.10.0: sección Sagas
+
+- Nueva pestaña **Sagas** al final de las secciones (Leyendo · Pendientes · Leídos · Abandonados · Autores · Sagas), también en el
+  menú de la portada. Lista todas tus sagas por nombre, con su abanico de portadas y su resumen; cada una se despliega para ver sus
+  libros en orden y abrir su página.
+- Desde ahí se crea una saga nueva («+ Nueva saga»): se abre su página para ir metiendo libros con «Editar».
+
 ## 0.9.2: portadas solo las tuyas
 
 - Marfil ya no saca portadas de los archivos (ni de los EPUB ni la primera página de un PDF). Si no has puesto tú una portada,

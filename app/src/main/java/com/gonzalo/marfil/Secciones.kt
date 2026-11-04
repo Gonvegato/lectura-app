@@ -215,6 +215,37 @@ private fun PaginaAutores(todos: List<Libro>, alAbrir: (Libro) -> Unit, alAbrirS
     }
 }
 
+/** Todas las sagas, por nombre: cada una con su abanico y sus libros desplegables; desde aquí se crea una nueva (y se abre para meterle libros). */
+@Composable
+private fun PaginaSagas(todos: List<Libro>, alAbrir: (Libro) -> Unit, alAbrirSaga: (Saga) -> Unit) {
+    val sagas = Sagas.lista.toList()
+    val filas = remember(sagas, todos) { sagas.sortedBy { norm(it.nombre) }.map { FilaLista.DeSaga(it, Sagas.libros(it, todos)) } }
+    var abiertas by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var nueva by rememberSaveable { mutableStateOf<String?>(null) }
+    LazyColumn(Modifier.fillMaxSize()) {
+        item {
+            Column {
+                Antetitulo("Sección · ${sagas.size} ${if (sagas.size == 1) "saga" else "sagas"}", Modifier.padding(top = 12.dp), color = Acento, conCuadro = false)
+                FitTitle("Sagas", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
+                Filete(1.dp, Line)
+                EnlaceRevista("+ Nueva saga", Modifier.padding(vertical = 4.dp), acento = true) { nueva = "" }
+                Filete(1.dp, Line)
+            }
+        }
+        if (filas.isEmpty()) item {
+            Text("Aún no hay sagas. Créala aquí o desde la ficha de un libro («Saga»), y luego ve metiendo sus libros en orden.",
+                color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, modifier = Modifier.padding(top = 30.dp))
+        }
+        items(filas, key = { "s:" + it.saga.id }) { f ->
+            FilaSaga(f, f.saga.id in abiertas, { abiertas = if (f.saga.id in abiertas) abiertas - f.saga.id else abiertas + f.saga.id }, alAbrirSaga, alAbrir)
+        }
+        item { Spacer(Modifier.height(24.dp)) }
+    }
+    nueva?.let { n ->
+        DialogoNuevaSaga(n, alCambiar = { nueva = it }, alCerrar = { nueva = null }) { nombre -> nueva = null; alAbrirSaga(Sagas.crear(nombre)) }
+    }
+}
+
 /** Lo que sale al buscar: todos los libros que cuadran, estén en el estante que estén. */
 @Composable
 private fun Resultados(busca: String, todos: List<Libro>, alAbrir: (Libro) -> Unit) {
@@ -231,19 +262,19 @@ private fun Resultados(busca: String, todos: List<Libro>, alAbrir: (Libro) -> Un
 }
 
 /**
- * Las secciones de la biblioteca como páginas por las que te mueves (con el dedo o con las pestañas): Leyendo, Pendientes, Leídos, Abandonados y Autores.
+ * Las secciones de la biblioteca como páginas por las que te mueves (con el dedo o con las pestañas): Leyendo, Pendientes, Leídos, Abandonados, Autores y Sagas.
  * Buscar mira en todos los estantes a la vez.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PantSecciones(inicial: Destino, alVolver: () -> Unit, alAbrir: (Libro) -> Unit, alAbrirSaga: (Saga) -> Unit, alAnadir: () -> Unit, buscandoInicial: Boolean = false) {
-    val paginas = listOf(Destino.Leyendo, Destino.Pendientes, Destino.Leidos, Destino.Abandonados, Destino.Autores)
+    val paginas = listOf(Destino.Leyendo, Destino.Pendientes, Destino.Leidos, Destino.Abandonados, Destino.Autores, Destino.Sagas)
     val pager = rememberPagerState(initialPage = paginas.indexOf(inicial).coerceAtLeast(0)) { paginas.size }
     val ambito = rememberCoroutineScope()
     var buscando by rememberSaveable { mutableStateOf(buscandoInicial) }
     var busca by rememberSaveable { mutableStateOf("") }
     val todos = Biblioteca.libros.toList()
-    val cuentas = listOf(Estado.LEYENDO, Estado.PENDIENTE, Estado.LEIDO, Estado.ABANDONADO).map { e -> todos.count { it.estado == e } } + todos.filter { it.autor.isNotBlank() }.map { norm(it.autor) }.distinct().size
+    val cuentas = listOf(Estado.LEYENDO, Estado.PENDIENTE, Estado.LEIDO, Estado.ABANDONADO).map { e -> todos.count { it.estado == e } } + todos.filter { it.autor.isNotBlank() }.map { norm(it.autor) }.distinct().size + Sagas.lista.size
     Column(Modifier.fillMaxSize().background(Paper).navigationBarsPadding().padding(horizontal = 28.dp)) {
         RevistaTopBar(alVolver, "Marfil") {
             EnlaceRevista("Buscar", acento = buscando) { buscando = !buscando; if (!buscando) busca = "" }
@@ -251,7 +282,7 @@ fun PantSecciones(inicial: Destino, alVolver: () -> Unit, alAbrir: (Libro) -> Un
         }
         Filete(3.dp)
         if (buscando) CampoRevista("Buscar", busca, "título, autor o saga") { busca = it }
-        PestanasPaginas(listOf("Leyendo", "Pendientes", "Leídos", "Abandonados", "Autores"), pager.currentPage, cuentas) { i -> ambito.launch { pager.animateScrollToPage(i) } }
+        PestanasPaginas(listOf("Leyendo", "Pendientes", "Leídos", "Abandonados", "Autores", "Sagas"), pager.currentPage, cuentas) { i -> ambito.launch { pager.animateScrollToPage(i) } }
         if (busca.isNotBlank()) Resultados(busca, todos, alAbrir)
         else HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), beyondViewportPageCount = 1, key = { paginas[it].name }) { i ->
             when (paginas[i]) {
@@ -259,6 +290,7 @@ fun PantSecciones(inicial: Destino, alVolver: () -> Unit, alAbrir: (Libro) -> Un
                 Destino.Pendientes -> PaginaEstante(Estado.PENDIENTE, todos, alAbrir, alAbrirSaga, alAnadir)
                 Destino.Leidos -> PaginaEstante(Estado.LEIDO, todos, alAbrir, alAbrirSaga, alAnadir)
                 Destino.Abandonados -> PaginaEstante(Estado.ABANDONADO, todos, alAbrir, alAbrirSaga, alAnadir)
+                Destino.Sagas -> PaginaSagas(todos, alAbrir, alAbrirSaga)
                 else -> PaginaAutores(todos, alAbrir, alAbrirSaga)
             }
         }

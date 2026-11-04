@@ -140,6 +140,18 @@ fun DialogoSagaDeLibro(l: Libro, alCerrar: () -> Unit) {
     )
 }
 
+/** Crear una saga vacía (se abre después para meterle libros). */
+@Composable
+fun DialogoNuevaSaga(nombre: String, alCambiar: (String) -> Unit, alCerrar: () -> Unit, alCrear: (String) -> Unit) {
+    AlertDialog(
+        onDismissRequest = alCerrar, containerColor = Paper, shape = esquina(4.dp),
+        title = { Text("Nueva saga", color = Charcoal, fontFamily = Display, fontWeight = FontWeight.Bold) },
+        text = { CampoRevista("Nombre", nombre, "p. ej. Dune") { alCambiar(it) } },
+        confirmButton = { BotonTexto("Crear", true) { if (nombre.isNotBlank()) alCrear(nombre.trim()) } },
+        dismissButton = { BotonTexto("Cerrar") { alCerrar() } }
+    )
+}
+
 /** Elegir varios libros de la biblioteca (a pantalla completa, con buscador): devuelve las claves de los marcados. */
 @Composable
 fun SelectorLibros(titulo: String, candidatos: List<Libro>, alCerrar: () -> Unit, alElegir: (List<String>) -> Unit) {

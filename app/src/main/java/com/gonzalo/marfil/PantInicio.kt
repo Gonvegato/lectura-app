@@ -42,7 +42,7 @@ fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -
     val estanteria = libros.filter { it.estado == Estado.PENDIENTE }.sortedByDescending { it.anadido }.take(6)
     val secciones = listOf<Pair<String, () -> Unit>>(
         "Leyendo" to { alIr(Destino.Leyendo) }, "Pendientes" to { alIr(Destino.Pendientes) }, "Leídos" to { alIr(Destino.Leidos) },
-        "Abandonados" to { alIr(Destino.Abandonados) }, "Autores" to { alIr(Destino.Autores) }
+        "Abandonados" to { alIr(Destino.Abandonados) }, "Autores" to { alIr(Destino.Autores) }, "Sagas" to { alIr(Destino.Sagas) }
     )
 
     // La cabecera y el menú, exactamente como en la portada de Atrio (RevistaHome): mismos márgenes, mismo tamaño de cabecera, de filetes y de letra

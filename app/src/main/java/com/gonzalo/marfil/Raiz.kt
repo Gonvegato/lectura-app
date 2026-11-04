@@ -33,7 +33,7 @@ fun iniciar(c: Context) {
 }
 
 /** Dónde estás: la portada, las secciones (páginas por las que te mueves) y los ajustes. */
-enum class Destino { Portada, Leyendo, Pendientes, Leidos, Abandonados, Autores, Ajustes }
+enum class Destino { Portada, Leyendo, Pendientes, Leidos, Abandonados, Autores, Sagas, Ajustes }
 
 /** La app: portada de revista, sus secciones, la ficha de un libro o una saga por encima y el selector de archivos para añadir. */
 @Composable
