@@ -212,7 +212,7 @@ fun PantEscritos(alVolver: () -> Unit, alLeer: (Libro) -> Unit) {
                     EnlaceRevista(if (libro != null && libro.fraccion > 0.005f) "Seguir leyendo →" else "Leer →", acento = true) {
                         ambito.launch { val l = withContext(Dispatchers.IO) { runCatching { Escritos.preparar(ctx, o) }.getOrNull() }; if (l != null) alLeer(l) else mensaje = "No he podido preparar el libro." }
                     }
-                    if (Escritos.instaladoCobalto(ctx)) EnlaceRevista("Escribir en Cobalto →") { Escritos.abrirCobalto(ctx) }
+                    if (Escritos.instaladoCobalto(ctx)) EnlaceRevista("Escribir en Cobalto →") { Escritos.abrirCobalto(ctx, o.id) }
                 }
             }
             Filete(1.dp, Line)
@@ -222,4 +222,5 @@ fun PantEscritos(alVolver: () -> Unit, alLeer: (Libro) -> Unit) {
 }
 
 fun Escritos.instaladoCobalto(c: Context) = runCatching { c.packageManager.getLaunchIntentForPackage(Escritos.PAQ_COBALTO) != null }.getOrDefault(false)
-fun Escritos.abrirCobalto(c: Context) { c.packageManager.getLaunchIntentForPackage(Escritos.PAQ_COBALTO)?.let { c.startActivity(it.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } }
+/** Abre Cobalto en esa obra (Cobalto entiende el extra «obra», el id de Escribir), o Cobalto a secas. */
+fun Escritos.abrirCobalto(c: Context, obra: String = "") { c.packageManager.getLaunchIntentForPackage(Escritos.PAQ_COBALTO)?.let { if (obra.isNotBlank()) it.putExtra("obra", obra); c.startActivity(it.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } }

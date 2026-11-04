@@ -83,6 +83,7 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 - Marfil entiende el extra `clave` (la clave del libro, la misma en todos tus Marfiles): «Leer» en Azabache abre Marfil en la ficha de ese libro.
   Los widgets siguen usando `ficha` (por id) y `leer` (directo al lector).
+- En Escritos, «Escribir en Cobalto» abre Cobalto **en esa obra** (no en su portada).
 
 ## 0.12.1: los Escritos llegan solos
 
