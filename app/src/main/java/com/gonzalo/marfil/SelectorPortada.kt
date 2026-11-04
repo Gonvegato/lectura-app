@@ -58,9 +58,9 @@ fun ContenidoSelectorPortada(l: Libro, alCerrar: () -> Unit, hallados: List<Cand
             if (r.isEmpty()) dice("No he encontrado portadas. Prueba con otro título o con el autor.")
         }
     }
-    suspend fun guardar(bytes: ByteArray?) {
+    suspend fun guardar(bytes: ByteArray?, url: String = "") {
         if (bytes == null) { dice("No he podido leer esa imagen."); guardando = false; return }
-        val n = withContext(Dispatchers.IO) { Portadas.poner(ctx, l, bytes) }
+        val n = withContext(Dispatchers.IO) { Portadas.poner(ctx, l, bytes, url) }
         guardando = false
         if (n == null) dice("Esa imagen no vale como portada.") else alCerrar()
     }
@@ -102,7 +102,7 @@ fun ContenidoSelectorPortada(l: Libro, alCerrar: () -> Unit, hallados: List<Cand
                 items(lista, key = { it.grande }) { c ->
                     Column(Modifier.clickable(enabled = !guardando) {
                         guardando = true
-                        ambito.launch { guardar(withContext(Dispatchers.IO) { Portadas.descargar(c.grande) }) }
+                        ambito.launch { guardar(withContext(Dispatchers.IO) { Portadas.descargar(c.grande) }, c.grande) }
                     }) {
                         Box(Modifier.fillMaxWidth().aspectRatio(0.68f).background(Sand)) {
                             AsyncImage(c.miniatura, c.titulo, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)

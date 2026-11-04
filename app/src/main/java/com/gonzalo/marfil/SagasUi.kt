@@ -99,7 +99,7 @@ fun PantSaga(id: String, alCerrar: () -> Unit, alAbrir: (Libro) -> Unit) {
         MagLink("Borrar la saga", "Los libros se quedan donde están; solo se deshace el grupo") { borrar = true }
         Spacer(Modifier.height(30.dp))
     }
-    if (anadir) SelectorLibros("Añadir a «${s.nombre}»", Biblioteca.libros.filter { it.clave !in s.claves }, { anadir = false }) { claves -> anadir = false; Sagas.poner(s.copy(claves = s.claves + claves)) }
+    if (anadir) SelectorLibros("Añadir a «${s.nombre}»", Biblioteca.propios().filter { it.clave !in s.claves }, { anadir = false }) { claves -> anadir = false; Sagas.poner(s.copy(claves = s.claves + claves)) }
     if (renombrar) {
         var t by remember { mutableStateOf(s.nombre) }
         AlertDialog(onDismissRequest = { renombrar = false }, containerColor = Paper, shape = esquina(4.dp),

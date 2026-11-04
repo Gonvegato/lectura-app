@@ -18,7 +18,7 @@ object AtajoLectura {
 
     fun pon(ctx: Context) = runCatching {
         val sm = ctx.getSystemService(ShortcutManager::class.java) ?: return@runCatching
-        val l = libro(Biblioteca.libros.toList())
+        val l = libro(Biblioteca.propios())
         if (l == null) { sm.removeDynamicShortcuts(listOf(ID)); return@runCatching }
         val intent = Intent(ctx, MainActivity::class.java).setAction(Intent.ACTION_VIEW).putExtra("leer", l.id).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val corto = if (l.titulo.length > 22) l.titulo.take(21).trimEnd() + "…" else l.titulo

@@ -178,11 +178,26 @@ class CapturasTest {
         foto("7_selector_portada")
     }
 
-    @Test fun ajustesLibros() {
+    @Test fun ajustes() {
         org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
         siembra(); montar(false)
-        rule.onNodeWithContentDescription("Ajustes").performClick()
-        rule.onNodeWithText("Tener todos mis libros aquí", useUnmergedTree = true).performScrollTo(); foto("8_ajustes_libros")
+        rule.onNodeWithContentDescription("Ajustes").performClick(); rule.waitForIdle(); foto("8_ajustes")
+        rule.onNodeWithText("LECTURA").performClick(); rule.waitForIdle(); foto("8b_ajustes_lectura")
+        rule.onNodeWithText("CUENTA").performClick(); rule.waitForIdle()
+        rule.onNodeWithText("Tener todos mis libros aquí", useUnmergedTree = true).performScrollTo(); foto("8c_ajustes_cuenta")
+        rule.onNodeWithText("AVANZADO").performClick(); rule.waitForIdle(); foto("8d_ajustes_avanzado")
+    }
+
+    @Test fun escritos() {
+        org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
+        siembra()
+        val lectura = org.json.JSONObject().put("novela", org.json.JSONObject()
+            .put("c1", org.json.JSONObject().put("t", "La casa del acantilado").put("a", "Gonzalo").put("c", "El regreso").put("n", 1).put("pa", "Primera parte").put("p", 2140).put("x", "Era de noche.").put("u", System.currentTimeMillis() - 86_400_000L))
+            .put("c2", org.json.JSONObject().put("t", "La casa del acantilado").put("a", "Gonzalo").put("c", "La marea").put("n", 2).put("pa", "").put("p", 1870).put("x", "Subía *despacio*.").put("u", System.currentTimeMillis() - 3_600_000L)))
+            .put("relatos", org.json.JSONObject().put("c1", org.json.JSONObject().put("t", "Relatos de invierno").put("a", "Gonzalo").put("c", "Nieve").put("n", 1).put("pa", "").put("p", 950).put("x", "Nevaba.").put("u", System.currentTimeMillis() - 20 * 86_400_000L)))
+        ctx.getSharedPreferences("marfil_escritos", Context.MODE_PRIVATE).edit().putString("lectura", lectura.toString()).putLong("ultima", System.currentTimeMillis() - 600_000L).commit()
+        montar(false)
+        rule.onNodeWithText("ESCRITOS").performClick(); rule.waitForIdle(); foto("9_escritos")
     }
 
     @Test fun fichaDeUnLeido() {

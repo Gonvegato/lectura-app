@@ -74,7 +74,7 @@ object NubeLibros {
         var n = 0
         try {
             runCatching { leerIndice(c) }
-            for (l in Biblioteca.libros.toList()) {
+            for (l in Biblioteca.propios()) {
                 if (l.uri.isBlank() || de(c, l) != null) continue
                 val f = runCatching { File(android.net.Uri.parse(l.uri).path ?: return@runCatching null) }.getOrNull()?.takeIf { it.exists() && it.length() > 0 } ?: continue
                 val ext = (l.archivo.substringAfterLast('.', "").ifBlank { f.extension }).lowercase().take(5).ifBlank { "epub" }
@@ -152,7 +152,7 @@ object NubeLibros {
         val p = prefs(c)
         if (p.getBoolean("portadas_v2", false)) return 0
         var quitadas = 0
-        for (l0 in Biblioteca.libros.toList()) {
+        for (l0 in Biblioteca.propios()) {
             val l = Biblioteca.por(l0.id) ?: continue
             val f = archivoPortada(l) ?: continue
             val kid = MezclaLectura.kid(l.clave)
@@ -182,7 +182,7 @@ object NubeLibros {
             for (k in o.keys()) o.optJSONObject(k)?.let { x -> remoto[k] = EntradaPortada(x.optLong("f"), x.optLong("u"), x.optInt("p") == 1, x.optInt("x") == 1) }
             guardaIdxPortadas(c, remoto)
             val p = prefs(c)
-            for (l0 in Biblioteca.libros.toList()) {
+            for (l0 in Biblioteca.propios()) {
                 var l = Biblioteca.por(l0.id) ?: continue
                 // Las portadas de internet (las que pusiste en Atrio) se guardan antes en el móvil
                 if (l.portada.startsWith("http")) l = Portadas.cachear(c, l) ?: l
@@ -231,7 +231,7 @@ object NubeLibros {
     fun bajarTodos(c: Context, aviso: (String) -> Unit = {}): Int {
         if (!KDrive.on(c)) return 0
         var n = 0
-        for (l in Biblioteca.libros.toList()) {
+        for (l in Biblioteca.propios()) {
             if (!l.enOtroDispositivo || de(c, l) == null) continue
             if (c.filesDir.usableSpace < 300L * 1024 * 1024) { aviso("Queda poco sitio en el móvil: dejo de bajar libros."); break }
             runCatching { aviso("Bajando ${l.titulo}…"); bajar(c, l); n++ }
@@ -275,7 +275,7 @@ object NubeLibros {
     fun abrirBajando(c: Context, l: Libro, goto: String?) {
         val hilo = Handler(Looper.getMainLooper())
         fun dice(t: String) = hilo.post { Toast.makeText(c, t, Toast.LENGTH_LONG).show() }
-        if (!KDrive.on(c)) { dice("Este libro está en otro dispositivo. Conecta tu kDrive (Ajustes → Actualizaciones) para bajarlo."); return }
+        if (!KDrive.on(c)) { dice("Este libro está en otro dispositivo. Conecta tu kDrive (Ajustes → Avanzado) para bajarlo."); return }
         scope.launch {
             runCatching { leerIndice(c) }
             if (de(c, l) == null) { dice("Este libro aún no está en tu kDrive: se sube solo, con Wi-Fi, desde el dispositivo donde lo añadiste."); return@launch }

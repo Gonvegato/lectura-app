@@ -33,11 +33,11 @@ fun iniciar(c: Context) {
 }
 
 /** Dónde estás: la portada, las secciones (páginas por las que te mueves) y los ajustes. */
-enum class Destino { Portada, Leyendo, Pendientes, Leidos, Abandonados, Autores, Sagas, Ajustes }
+enum class Destino { Portada, Leyendo, Pendientes, Leidos, Abandonados, Autores, Sagas, Escritos, Ajustes }
 
 /** La app: portada de revista, sus secciones, la ficha de un libro o una saga por encima y el selector de archivos para añadir. */
 @Composable
-fun MarfilApp(libroPedido: String? = null, alAbrirPedido: () -> Unit = {}) {
+fun MarfilApp(libroPedido: String? = null, alAbrirPedido: () -> Unit = {}, irPedido: String? = null, alIrPedido: () -> Unit = {}) {
     val ctx = LocalContext.current
     val ambito = rememberCoroutineScope()
     var destino by rememberSaveable { mutableIntStateOf(0) }
@@ -47,6 +47,8 @@ fun MarfilApp(libroPedido: String? = null, alAbrirPedido: () -> Unit = {}) {
     val d = Destino.entries[destino]
     // Un widget (o un aviso) pide abrir un libro
     LaunchedEffect(libroPedido) { if (libroPedido != null && Biblioteca.por(libroPedido) != null) { fichaId = libroPedido; destino = 0 }; if (libroPedido != null) alAbrirPedido() }
+    // Otra app (Azabache) pide una sección: «escritos», «leyendo»…
+    LaunchedEffect(irPedido) { if (irPedido != null) { Destino.entries.firstOrNull { it.name.equals(irPedido, true) }?.let { fichaId = null; sagaId = null; destino = it.ordinal }; alIrPedido() } }
 
     // Añadir libros: se eligen uno o varios archivos (EPUB, PDF, MOBI…); se copian a la app y se leen sus datos
     val elegir = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
@@ -68,6 +70,7 @@ fun MarfilApp(libroPedido: String? = null, alAbrirPedido: () -> Unit = {}) {
         when (d) {
             Destino.Portada -> PantInicio(alAbrir = { fichaId = it.id }, alLeer = ::leer, alAnadir = ::anadir, alIr = { ir(it) }, alBuscar = { ir(Destino.Leyendo, true) }, alAbrirSaga = { sagaId = it.id })
             Destino.Ajustes -> PantEstilo(alVolver = { destino = 0 })
+            Destino.Escritos -> PantEscritos(alVolver = { destino = 0 }, alLeer = ::leer)
             else -> PantSecciones(d, alVolver = { destino = 0 }, alAbrir = { fichaId = it.id }, alAbrirSaga = { sagaId = it.id }, alAnadir = ::anadir, buscandoInicial = buscar)
         }
         AnimatedVisibility(sagaId != null, enter = slideInVertically { it / 8 } + fadeIn(), exit = slideOutVertically { it / 8 } + fadeOut()) {

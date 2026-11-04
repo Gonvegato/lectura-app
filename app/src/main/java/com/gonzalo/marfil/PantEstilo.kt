@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +37,9 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.11.1"
+const val VERSION = "0.12.0"
 
-/** «Ajustes»: Apariencia (como la de Atrio), cuenta de Atrio, actualizaciones y copias. */
+/** «Ajustes» en pestañas, como Atrio: Apariencia · Lectura · Cuenta (Atrio y libros en la nube) · Avanzado (actualizaciones y copias). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PantEstilo(alVolver: () -> Unit) {
@@ -51,55 +52,55 @@ fun PantEstilo(alVolver: () -> Unit) {
     val importar = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { u ->
         if (u != null) mensaje = runCatching { Biblioteca.leer(ctx.contentResolver.openInputStream(u)!!.use { it.readBytes().decodeToString() }, reemplazar = false); Biblioteca.guardar(); "Copia importada" }.getOrElse { "Ese archivo no es una copia de Marfil" }
     }
+    var pestana by rememberSaveable { mutableIntStateOf(0) }
     Column(Modifier.fillMaxSize().background(Paper).verticalScroll(rememberScrollState()).statusBarsPadding().navigationBarsPadding().padding(horizontal = 20.dp)) {
         RevistaTopBar(alVolver, "Marfil")
         Antetitulo("Sección", Modifier.padding(top = 10.dp), color = Acento, conCuadro = false)
         FitTitle("Ajustes", 52.sp, 56.sp, letterSpacing = (-1.5).sp, modifier = Modifier.padding(top = 2.dp), unaLinea = true)
         Filete(3.dp)
+        PestanasRevista(listOf("Apariencia", "Lectura", "Cuenta", "Avanzado"), pestana) { pestana = it }
         Spacer(Modifier.height(14.dp))
 
-        SeccionApariencia()
-
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Cuenta de Atrio", Modifier.padding(bottom = 4.dp))
-        SeccionCuenta()
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Actualizaciones", Modifier.padding(bottom = 4.dp))
-        SeccionActualizaciones()
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Lectura", Modifier.padding(bottom = 4.dp))
-        val metas = listOf(0, 10, 15, 20, 30, 45, 60)
-        var meta by remember { mutableIntStateOf(Ajustes.metaLectura(ctx)) }
-        MagChoice(metas.map { if (it == 0) "Sin objetivo" else "$it min" }, metas.indexOf(meta).coerceAtLeast(0), "Objetivo diario") { i -> meta = metas[i]; Ajustes.ponMetaLectura(ctx, meta) }
-        Text("Las barras de la portada marcan los días que lo cumples.", color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(bottom = 6.dp))
-        val retos = listOf(0, 6, 12, 20, 24, 30, 40, 52)
-        var reto by remember { mutableIntStateOf(Ajustes.metaAnual(ctx)) }
-        MagChoice(retos.map { if (it == 0) "Sin reto" else "$it" }, retos.indexOf(reto).coerceAtLeast(0), "Libros al año") { i -> reto = retos[i]; Ajustes.ponMetaAnual(ctx, reto) }
-        Text("Tu reto del año sale en la portada y en el widget de la semana.", color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(bottom = 6.dp))
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Libros", Modifier.padding(bottom = 4.dp))
-        SeccionLibros()
-
-        Spacer(Modifier.height(14.dp))
-        Filete(2.dp)
-        Spacer(Modifier.height(12.dp))
-        Antetitulo("Copias", Modifier.padding(bottom = 4.dp))
-        MagLink("Guardar copia de la biblioteca", "Un archivo con tus libros y estantes (no incluye los archivos de los libros)") { exportar.launch("marfil-biblioteca.json") }
-        Filete(1.dp, Line)
-        MagLink("Importar copia", "Suma los libros de una copia a los que ya tienes") { importar.launch(arrayOf("application/json", "*/*")) }
-        mensaje?.let { Text(it, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp)) }
+        when (pestana) {
+            0 -> SeccionApariencia()
+            1 -> {
+                Antetitulo("Objetivos", Modifier.padding(bottom = 4.dp))
+                val metas = listOf(0, 10, 15, 20, 30, 45, 60)
+                var meta by remember { mutableIntStateOf(Ajustes.metaLectura(ctx)) }
+                MagChoice(metas.map { if (it == 0) "Sin objetivo" else "$it min" }, metas.indexOf(meta).coerceAtLeast(0), "Objetivo diario") { i -> meta = metas[i]; Ajustes.ponMetaLectura(ctx, meta) }
+                Text("Las barras de la portada marcan los días que lo cumples.", color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(bottom = 6.dp))
+                val retos = listOf(0, 6, 12, 20, 24, 30, 40, 52)
+                var reto by remember { mutableIntStateOf(Ajustes.metaAnual(ctx)) }
+                MagChoice(retos.map { if (it == 0) "Sin reto" else "$it" }, retos.indexOf(reto).coerceAtLeast(0), "Libros al año") { i -> reto = retos[i]; Ajustes.ponMetaAnual(ctx, reto) }
+                Text("Tu reto del año sale en la portada y en el widget de la semana.", color = Muted, fontFamily = Body, fontSize = 12.sp, modifier = Modifier.padding(bottom = 6.dp))
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Lector", Modifier.padding(bottom = 4.dp))
+                Text("La letra, el fondo y el paso de página se cambian desde el propio lector (toca el centro de la página y pulsa «Letra»). Lo que elijas vale para todos los libros.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(bottom = 6.dp))
+            }
+            2 -> {
+                Antetitulo("Cuenta de Atrio", Modifier.padding(bottom = 4.dp))
+                SeccionCuenta()
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Libros", Modifier.padding(bottom = 4.dp))
+                SeccionLibros()
+            }
+            else -> {
+                Antetitulo("kDrive y actualizaciones", Modifier.padding(bottom = 4.dp))
+                SeccionActualizaciones()
+                Spacer(Modifier.height(14.dp))
+                Filete(2.dp)
+                Spacer(Modifier.height(12.dp))
+                Antetitulo("Copias", Modifier.padding(bottom = 4.dp))
+                MagLink("Guardar copia de la biblioteca", "Un archivo con tus libros y estantes (no incluye los archivos de los libros)") { exportar.launch("marfil-biblioteca.json") }
+                Filete(1.dp, Line)
+                MagLink("Importar copia", "Suma los libros de una copia a los que ya tienes") { importar.launch(arrayOf("application/json", "*/*")) }
+                mensaje?.let { Text(it, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 4.dp)) }
+            }
+        }
 
         Spacer(Modifier.height(26.dp))
         Filete(3.dp)
@@ -138,7 +139,7 @@ private fun SeccionCuenta() {
     var ocupado by remember { mutableStateOf(false) }
     var aviso by remember { mutableStateOf<String?>(null) }
     if (!Cuenta.vinculada) {
-        Text("Entra con la misma cuenta que usas en Atrio y tus libros, lo que llevas leído, tus subrayados, tus portadas y tus ajustes se sincronizan entre tus dispositivos. Los archivos de los libros viajan por tu kDrive (Actualizaciones, más abajo).",
+        Text("Entra con la misma cuenta que usas en Atrio y tus libros, lo que llevas leído, tus subrayados, tus portadas y tus ajustes se sincronizan entre tus dispositivos. Los archivos de los libros viajan por tu kDrive (se conecta en «Avanzado»).",
             color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
         CampoRevista("Usuario", usuario, "tu usuario de Atrio") { usuario = it }
         CampoRevista("Contraseña", clave, "••••••••", secreto = true) { clave = it }
@@ -256,7 +257,7 @@ fun SeccionLibros() {
     val enNube = NubeLibros.indice(ctx).size
     val sinArchivo = Biblioteca.libros.count { it.enOtroDispositivo }
     Text(
-        if (!KDrive.on(ctx)) "kDrive sin conectar (Ajustes → Actualizaciones): los libros no se suben ni se bajan."
+        if (!KDrive.on(ctx)) "kDrive sin conectar (Ajustes → Avanzado): los libros no se suben ni se bajan."
         else "$enNube libros en tu kDrive" + if (sinArchivo > 0) " · $sinArchivo sin archivo en este dispositivo (se bajan al abrirlos)" else "",
         color = Muted, fontFamily = Body, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.padding(bottom = 4.dp)
     )
@@ -277,7 +278,7 @@ fun SeccionLibros() {
     Filete(1.dp, Line)
     MagLink(if (ocupado) "Un momento…" else "Subir mis libros a kDrive ahora", "Normalmente se suben solos con Wi-Fi") {
         if (ocupado) return@MagLink
-        if (!KDrive.on(ctx)) { estado = "Conecta antes tu kDrive (Ajustes → Actualizaciones)."; return@MagLink }
+        if (!KDrive.on(ctx)) { estado = "Conecta antes tu kDrive (Ajustes → Avanzado)."; return@MagLink }
         ocupado = true; estado = "Subiendo…"
         ambito.launch {
             val n = withContext(Dispatchers.IO) { runCatching { NubeLibros.subirPendientes(ctx, aMano = true) { m -> estado = m } } }

@@ -27,6 +27,8 @@ data class Libro(
     val clave: String = claveDe(titulo, autor),
     /** Portada elegida o sacada del libro (archivo de la app); "" = sin portada. */
     val portada: String = "",
+    /** De dónde salió la portada si fue de internet (Open Library, iTunes…): viaja con la cuenta, para que Azabache enseñe la misma. */
+    val portadaUrl: String = "",
     /** Dirección del archivo en este dispositivo ("" = aún no está aquí). */
     val uri: String = "",
     /** Nombre del archivo (con su extensión). */
@@ -63,7 +65,7 @@ fun claveDe(titulo: String, autor: String) = "libro:" + norm(titulo) + ":" + nor
 fun norm(s: String): String = Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{M}+"), "").replace(Regex("[^\\p{L}\\p{N}]+"), " ").trim()
 
 /** Lo que se edita de un libro y viaja con la cuenta (gana el cambio más reciente). */
-fun compartidos(l: Libro) = listOf(l.titulo, l.autor, l.favorito, l.estado)
+fun compartidos(l: Libro) = listOf(l.titulo, l.autor, l.favorito, l.estado, l.portadaUrl)
 
 /** El título de un libro a partir del nombre de su archivo: «El nombre de la rosa - Umberto Eco.epub» → («El nombre de la rosa», «Umberto Eco»). */
 fun tituloYAutorDeArchivo(nombre: String): Pair<String, String> {
@@ -84,6 +86,8 @@ fun juntarFechas(vararg listas: List<Long>): List<Long> {
 
 object Biblioteca {
     val libros = mutableStateListOf<Libro>()
+    /** Tus libros de verdad: sin las obras de Cobalto (que se leen aquí pero no son de la biblioteca). */
+    fun propios(): List<Libro> = libros.filter { !it.esEscrito }
     var cargada by mutableStateOf(false)
     private var archivo: File? = null
     private var appCtx: Context? = null
@@ -147,7 +151,7 @@ object Biblioteca {
     }
 
     fun aJson(l: Libro) = JSONObject().apply {
-        put("id", l.id); put("clave", l.clave); put("titulo", l.titulo); put("autor", l.autor); put("portada", l.portada); put("uri", l.uri); put("archivo", l.archivo)
+        put("id", l.id); put("clave", l.clave); put("titulo", l.titulo); put("autor", l.autor); put("portada", l.portada); put("pu", l.portadaUrl); put("uri", l.uri); put("archivo", l.archivo)
         put("favorito", l.favorito); put("estado", l.estado.name); put("anadido", l.anadido); put("ultima", l.ultima); put("fraccion", l.fraccion.toDouble())
         put("mod", l.mod); put("msp", l.msPropios); put("pg", l.paginas); put("po", l.paginasOrigen)
         put("tm", JSONArray().also { a -> l.terminados.forEach { a.put(it) } })
@@ -155,7 +159,7 @@ object Biblioteca {
     }
 
     fun aLibro(o: JSONObject) = Libro(
-        id = o.optString("id").ifBlank { nuevoId() }, titulo = o.optString("titulo"), autor = o.optString("autor"), clave = o.optString("clave").ifBlank { claveDe(o.optString("titulo"), o.optString("autor")) }, portada = o.optString("portada"),
+        id = o.optString("id").ifBlank { nuevoId() }, titulo = o.optString("titulo"), autor = o.optString("autor"), clave = o.optString("clave").ifBlank { claveDe(o.optString("titulo"), o.optString("autor")) }, portada = o.optString("portada"), portadaUrl = o.optString("pu"),
         uri = o.optString("uri"), archivo = o.optString("archivo"), favorito = o.optBoolean("favorito"),
         estado = Estado.entries.firstOrNull { it.name == o.optString("estado") } ?: Estado.PENDIENTE,
         anadido = o.optLong("anadido"), ultima = o.optLong("ultima"), fraccion = o.optDouble("fraccion", 0.0).toFloat(), mod = o.optLong("mod"),

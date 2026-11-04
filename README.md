@@ -1,37 +1,94 @@
 # Marfil
 
-El launcher de juegos del móvil. Hermano de [Atrio](https://github.com/gvegagato-prog/Atrio-Suite-2.0): mismo sistema de temas
-(las mismas paletas, letras y «estilos»), otro paquete (`com.gonzalo.marfil`), así que **conviven en el mismo móvil** y se ven
-como dos programas de la misma suite. Atrio es la puerta de la casa; Marfil es la galería de arcos.
-
-Marfil **no es un emulador**: abre los que ya tienes instalados, los juegos de Android y los juegos de navegador, todo desde
-una sola biblioteca.
+La app de leer del móvil. Hermana de [Azabache](https://github.com/Gonvegato/azabache) (la revista: valorar), [Hiedra](https://github.com/Gonvegato/hiedra)
+(juegos) y [Cobalto](https://github.com/Gonvegato/cobalto) (escribir): misma interfaz «Revista» de Atrio, mismos temas, otro paquete
+(`com.gonzalo.marfil`), así que conviven en el mismo móvil. Aquí se **añaden y se leen** los libros (EPUB, PDF y cómics); Azabache los
+refleja para valorarlos, y los escritos de Cobalto se leen aquí.
 
 ## Capturas
 
-La interfaz es la «Revista» de Atrio. Generadas en el ordenador con datos de ejemplo (`CapturasTest`): [portada](docs/capturas/2_portada.png) ·
-[portada en oscuro](docs/capturas/7_portada_oscuro.png) · [juegos](docs/capturas/3_juegos.png) · [ficha](docs/capturas/12_ficha_casillas.png) ·
-[ficha editando casillas](docs/capturas/13_ficha_editando.png) · [sistemas](docs/capturas/4_sistemas.png) · [ajustes](docs/capturas/5_ajustes.png) ·
-[añadir](docs/capturas/9_anadir.png)
+Generadas en el ordenador con libros de ejemplo (`CapturasTest`, solo con `-Proborazzi.test.record=true`): [portada](docs/capturas/1_portada.png) ·
+[en oscuro](docs/capturas/2_portada_oscuro.png) · [Leyendo](docs/capturas/3_lista.png) · [Pendientes](docs/capturas/3b_pendientes.png) ·
+[saga abierta](docs/capturas/3c_saga_abierta.png) · [página de una saga](docs/capturas/3d_pagina_saga.png) · [Sagas](docs/capturas/3h_sagas.png) ·
+[ficha](docs/capturas/4_ficha.png) · [ficha sin archivo](docs/capturas/4c_ficha_sin_archivo.png) · [ficha de un leído](docs/capturas/4d_ficha_leido.png) ·
+[tapas](docs/capturas/6_tapas.png) · [elegir portada](docs/capturas/7_selector_portada.png) · [Escritos](docs/capturas/9_escritos.png) ·
+[Ajustes](docs/capturas/8_ajustes.png) · [Lectura](docs/capturas/8b_ajustes_lectura.png) · [Cuenta](docs/capturas/8c_ajustes_cuenta.png) ·
+[Avanzado](docs/capturas/8d_ajustes_avanzado.png). Los widgets, en [`docs/widgets/hoja.png`](docs/widgets/hoja.png).
 
-## La pantalla de inicio es tu lienzo
+## Qué hace
 
-Como la portada de Atrio, con **las mismas medidas** (márgenes de 28 dp, cabecera de 92 sp o 132 sp en tableta, filetes, línea del número y la fecha en 12 sp, y el menú de secciones en versalitas de 12 sp entre dos filetes con 18 dp de aire arriba): cabecera de revista, el **menú de secciones** (Recientes, Favoritos, ROMs, Android, Web, Todo, Sistemas) y, debajo, **tu lienzo**: una cuadrícula de 4 columnas de casillas invisibles donde colocas lo que quieras con el tamaño que quieras.
-- **Editar**: arrastra un elemento para moverlo (se encaja en las casillas; si pisa a otros, los empuja hacia abajo, como en la pantalla de inicio del móvil), arrastra el **círculo** de su esquina para hacerlo grande o pequeño, toca para elegir su **color de fondo** (solo el de ese elemento): cualquier color (matiz, intensidad y brillo, o el código #RRGGBB); los que uses quedan guardados y a mano para otras fichas («T» = el del tema), o **encuadrar** una imagen (arrastrar y zoom, con la forma exacta de su hueco; la foto se guarda y se dibuja ENTERA, y el hueco solo enseña la parte que queda dentro, así que se puede llevar al hueco cualquier parte de la foto) o quitarlo. «+ Añadir»: un juego, una imagen de la galería o una **imagen de internet** (la misma búsqueda de las portadas: Google Imágenes, Pinterest, ArtStation, Newgrounds).
-- **Los juegos y los widgets de dentro son los widgets de fuera**: se dibujan con el mismo código (papel, tinta, letras del tema, portadas, reborde fino y esquinas). Un juego es el widget «Sigue jugando» fijo en él (según su tamaño: portada a sangre, ancho o alto). «+ Añadir → Widgets» pone también Sigue jugando, Recientes, En portada, ¿Y ahora qué?, LECTURA y LECTURA en papel; tocarlos hace lo mismo que fuera. El contador «1/4 ›» de los widgets se quitó (tocar la esquina de arriba sigue pasando al siguiente).
-- Dentro de la app los widgets llevan **más margen** (el reborde fino más metido), la categoría arriba, un **botón «Jugar →»** y algo más de información (veces jugadas, terminado…) para que no queden vacíos; los de fuera no cambian.
-- **Acento**: el del tema por defecto; Marfil no inventa ninguno por juego. Si quieres, eliges uno por elemento («Color de acento»: cuadradito, botón y horas, con un lavado suave de ese color).
-- Cada juego, widget e imagen lleva por fuera una **línea de contorno del color del texto** (sin sombra), siguiendo su silueta.
-- **Color**: cada juego o widget puede tener su propio color de fondo (cualquiera, con los usados a mano): ese pasa a ser su papel, y la tinta, el gris y las líneas se sacan de él para que se lea. Sin color propio usan los del tema.
-- **Sincronizado entre tus móviles** (por elemento, gana el cambio más reciente; lo quitado se quita en todos). Los juegos se enlazan por su clave, las imágenes viajan por kDrive. La cuadrícula tiene 4 columnas en todos los móviles para que la disposición sea la misma.
-- La primera vez (sin cuenta vinculada) se rellena con tus últimos juegos. Capturas: [lienzo](docs/capturas/20_lienzo.png) · [editando](docs/capturas/21_lienzo_editando.png).
+- **Portada** de revista: cabecera, número y fecha, las barras de los días que cumples tu objetivo, «Ahora» (lo último que abriste),
+  «En la mesilla» (lo que lees a medias) y «En la estantería» (lo pendiente), el reto del año, y el menú de secciones.
+- **Secciones** como páginas que se recorren con el dedo: Leyendo · Pendientes · Leídos · Abandonados · Autores · Sagas · Escritos. Cada
+  estante se ordena (Recientes, Añadidos, Título, Autor, Páginas, Terminado) y se recuerda; «Buscar» mira en todos.
+- **Ficha** con la estética de Atrio: estado arriba (Pendiente · Leyendo · Leído · Abandonado), saga y favorito, la casilla de lectura
+  («Seguir leyendo», «Bajar de tu kDrive», «Elegir archivo»), portada, tiempo y páginas, subrayados y notas, fecha de terminado (y «2.ª vez»),
+  y «En Azabache» (la valoración, solo se ve, y «Abrir en Azabache →»).
+- **Lector** (foliate-js para EPUB y cómics, pdf.js para PDF): páginas o desplazamiento continuo, letra, tamaño, tema y márgenes (iguales en
+  todos tus dispositivos), subrayados, notas y marcadores, diccionario (Wikcionario), botones de capítulo siguiente y anterior al deslizar.
+- **Portadas**: de la galería, de internet (iTunes Libros, Open Library y el buscador de imágenes de Atrio) o ninguna (una tapa de tela con el
+  título). Marfil no saca portadas de los archivos. Las que eliges viajan: las de internet por su dirección, las tuyas por kDrive.
+- **Sagas**: en las listas los libros de una saga salen juntos; su página dice qué toca leer ahora, y se ordenan, añaden y quitan libros.
+- **Escritos**: las obras de Cobalto con capítulos terminados, convertidas en EPUB, para leerlas con el lector (no salen en los estantes ni viajan).
+- **Páginas** de cada libro, de la fuente más fiable: lo que escribes tú → Atrio / el PDF → Open Library → calculadas por el texto del EPUB.
+- **Widgets** (los de Atrio, con libros): Sigue leyendo, En la mesilla, En portada, ¿Y ahora qué?, Lectura de la semana, Una cita y la cabecera.
+  Eligen libro al ponerlos («el que toque» o uno fijo) y se repintan con el tema.
+- Objetivo diario de minutos y reto anual de libros; atajo «Seguir leyendo» al mantener pulsado el icono; copia de la biblioteca en un archivo.
 
-## (Antes) La pantalla de inicio era un launcher de baldosas
+## Ajustes
 
-Cabecera de revista compacta y, debajo, **baldosas** con la misma disposición que los widgets (portada a la izquierda, nombre a la derecha, el papel de la revista y
-su reborde fino de tinta). **Un toque juega; mantener pulsado abre la ficha.** Pestañas: Recientes, Favoritos, ROMs (con filtro por sistema), Android, Web y Todo;
-«Buscar» filtra en el sitio entre todos tus juegos, y la última baldosa («Añadir») es el atajo para meter más. «Lista» abre la lista de siempre, con orden y filtros;
-«Sistemas» y el engranaje, sus pantallas.
+En pestañas, como Atrio: **Apariencia** (tema claro/oscuro/como el móvil, fondo de color, tamaño del texto, acento, «A tu manera» con los colores y
+las letras a mano, cada color con «Copiar de Atrio», y los colores de Atrio en directo, invertidos o no) · **Lectura** (objetivo diario y libros al
+año; el lector se ajusta desde dentro, con «Letra») · **Cuenta** (la cuenta de Atrio y los libros en la nube: tener todos aquí, traer los de Atrio,
+subir a kDrive ahora) · **Avanzado** (actualizarse sola, el token y el número de kDrive, y las copias).
+
+## Cuenta de Atrio y sincronización entre tus Marfiles
+
+Entras con el mismo usuario y contraseña que en Atrio (Firebase Authentication por REST; se guarda el pase de acceso, no la contraseña). Marfil no
+crea cuentas. Cada dispositivo escribe en su hueco bajo `/users/<uid>/marfil/` con sellos de hora y escucha en directo: libros (por clave:
+título + autor), estado, favorito, saga, portada, páginas, fechas de terminado y los ajustes del lector. Gana el cambio más reciente; lo que
+quitas viaja como «borrado»; el **tiempo leído se suma** por dispositivo. Un libro que viene de otro móvil aparece «sin archivo» hasta que se baja
+de kDrive o eliges su archivo. Tu pareja de Atrio puede leer esa parte de la cuenta (las reglas de Atrio dejan leer a la pareja todo `/users/<uid>`).
+Lo que lee Azabache está en `docs/CONTRATO-DATOS.md`. Probado en el ordenador contra el Firebase de mentira (`MezclaTest`, `MezclaLecturaTest`,
+`ImportarAtrioTest`); no con tu cuenta real.
+
+## Actualizaciones automáticas (kDrive, como Atrio)
+
+Cada versión se sube a **«Mi carpeta/versiones»** de tu kDrive como `Marfil-<versión>.apk` (`python3 herramientas/subir-version.py`). Marfil mira
+al abrir, cada minuto mientras se ve y, cerrada, cada 4 horas (WorkManager); si hay una más nueva se baja, se comprueba que es Marfil con la misma
+firma y se instala sin preguntar cuando no la usas (Android 12+, con el permiso de instalar apps); si Android no lo deja, te pregunta. El token
+de kDrive se pega una vez en Ajustes → Avanzado y se guarda solo en este móvil (no viaja por la cuenta: la pareja la lee).
+
+## Compilar
+
+```
+gradle :app:assembleDebug
+gradle :app:testDebugUnitTest                                                   # 0 fallos
+gradle :app:testDebugUnitTest --tests '*CapturasTest*' -Proborazzi.test.record=true   # capturas en app/build/outputs/roborazzi
+gradle :app:assembleRelease                                                     # firmado con app/marfil.keystore
+```
+
+Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al sacar versión: subir `versionCode`/`versionName`
+(`app/build.gradle.kts`) y `VERSION` (`PantEstilo.kt`), apuntar los cambios aquí y subir el APK a kDrive.
+
+## Privacidad
+
+- Las portadas de internet se buscan por título y autor en iTunes Libros y Open Library; el diccionario pregunta a Wikcionario.
+- Con la cuenta vinculada, la biblioteca (títulos, estados, tiempo, subrayados) se sube a tu Firebase, legible por ti y por tu pareja de Atrio.
+  Los archivos de los libros y las portadas tuyas van a tu kDrive. Sin vincular, nada sale del móvil.
+
+## Versiones
+
+## 0.12.0: los Escritos de Cobalto, portadas para Azabache y ajustes en pestañas
+
+- **Escritos** (en el menú): las obras de Cobalto con capítulos terminados se leen aquí, con el lector de Marfil. Cada obra se convierte
+  en un EPUB (portada, partes y capítulos, con las cursivas, negritas, citas y saltos de escena de Cobalto) que se rehace solo cuando
+  Cobalto cambia algo. Son libros «de casa»: no salen en las listas, ni en los estantes, ni viajan a otros dispositivos ni a la nube.
+  «Escribir en Cobalto» abre Cobalto si está en el móvil; Azabache abre esta pantalla desde su «Escritos».
+- **Portadas**: la dirección de la portada que elegiste de internet viaja con el libro (`pu`), así Azabache (y tus otros móviles)
+  enseñan la misma portada que tienes aquí. Las que subiste de tu galería siguen yendo por kDrive.
+- **Ajustes** en pestañas, como Atrio: Apariencia · Lectura (objetivos y el lector) · Cuenta (Atrio y los libros en la nube) ·
+  Avanzado (actualizaciones y copias). Lo mismo, pero sin tenerlo todo a la vista.
 
 ## 0.11.1
 
@@ -63,113 +120,13 @@ su reborde fino de tinta). **Un toque juega; mantener pulsado abre la ficha.** P
 - Solo se sincronizan por kDrive las portadas que pones tú; «Quitar portada» también se propaga a tus otros dispositivos.
 - Al actualizar, las portadas automáticas que había se limpian una sola vez; las que pusiste tú se conservan.
 
-## Qué hace
-
-- **ROMs con emuladores externos** (GBA, DS, SNES, N64, PSP, PS1/PS2, Dreamcast, 3DS… hasta 170 sistemas). Eliges la ROM o una
-  carpeta entera; Marfil reconoce el sistema por la extensión o por el nombre de la carpeta, y la abre con el emulador que
-  elijas por sistema o por juego (melonDS, DraStic, mGBA/RetroArch, Pizza Boy, My Boy!, SkyEmu…). Sin elegir nada, usa uno
-  propio instalado y, si no, RetroArch.
-- **Juegos de Android**: elige de las apps instaladas (marca primero las que Android declara como juegos).
-- **Juegos de navegador** (PokéRogue y similares): pantalla completa, sin barra de direcciones, con cookies y datos guardados
-  entre sesiones (ahí viven las partidas), pantalla siempre encendida, orientación fija si quieres, y confirmación antes de
-  salir. Deslizar hacia abajo no recarga ni rebota (overscroll desactivado). Funciona con mando Bluetooth (la API Gamepad de Chromium).
-- **Accesos directos** en el escritorio del móvil para cualquier juego.
-- **Pantalla de inicio**: opcionalmente puedes elegir Marfil como launcher del móvil (Estilo → Pantalla de inicio).
-- **Portadas desde internet** (como en Atrio): en la ficha, Portada → «Buscar en internet» abre Google Imágenes, Pinterest, ArtStation o Newgrounds dentro de Marfil, con su casilla de búsqueda; tocas una imagen (o la mantienes pulsada) y se usa de portada. También puedes elegir una de la galería.
-- **Ficha con casillas editables** (el sistema de maquetas de Atrio, con menos casillas): filas de una o dos casillas separadas por una línea
-  que arrastras (⇔) y con alto que arrastras (⇕); subir, bajar, dividir, unir, quitar y añadir filas. Casillas: horas jugadas (editables),
-  veces y última vez, estado (terminado), valoración (solo cuando está terminado; 0–10 en pasos de 0,5), apuntes, cómo se abre, texto libre e
-  imagen tuya (galería o búsqueda en internet). Cada juego guarda su diseño y puedes usar el de uno para todos los de su tipo.
-- Tiempo de juego aproximado, favoritos, búsqueda, orden, portadas propias, portadas automáticas (libretro), copia de seguridad.
-
-## Diseño: la misma interfaz que Atrio
-
-Marfil usa la interfaz «Revista» de Atrio, con sus mismas piezas (copiadas de `Revista.kt`, `RevistaUI.kt`, `Ediciones.kt` y `Maqueta.kt`):
-papel crema (o oscuro), Fraunces para los titulares, filetes gruesos y finos, antetítulos con cuadradito de acento, pestañas subrayadas,
-enlaces con flecha, cifras enormes y puntos guía. No hay dock: se navega desde el menú de la portada y con «← Marfil».
-Ajustes → **Apariencia** es la de Atrio: Tema (claro, oscuro, como el móvil), **Fondo** de color, Tamaño del texto, **Acento**, y «A tu manera» (color del fondo, del texto y del acento a mano, y la **letra** de los títulos y del texto). En «A tu manera», cada color (fondo, texto y acento) tiene su enlace **«Copiar de Atrio»**, que copia solo ese color (el que Atrio tiene a mano o, si no, el que se ve en Atrio según su tema, fondo y acento). El código de un color acepta #RRGGBB, RRGGBB, #RGB y #AARRGGBB, en mayúsculas o minúsculas, escrito o pegado, y se aplica en cuanto es válido. Además, «Colores de Atrio, en directo» (sigue los de la app instalada, con opción de invertirlos) y **«Copiar de Atrio»**: Atrio sube su apariencia a tu cuenta; Marfil la lee (tema, fondo, acento, colores a mano, letras, tamaño) y copia solo lo que marques, sin tocar nada en Atrio (hace falta la cuenta vinculada, no Atrio instalado en este móvil). La apariencia de Marfil (tema, fondo, acento, colores a mano, letras, tamaño) también **viaja con tu cuenta** entre tus Marfiles (gana el cambio más reciente) y repinta los widgets de fuera. Probado contra el Firebase de mentira de Atrio, no con tu cuenta real.
-**Colores de Atrio** (Ajustes → Apariencia → Colores de): Marfil lee los colores que tienes puestos en Atrio (paleta, fondo de color, colores a mano, acento, claro u oscuro) y los usa; con **Invertir** los pone del revés: el fondo con el color del texto y el texto con el del fondo, y el acento se mantiene.
-Para eso Atrio 1.0.7 (o más nueva) ofrece sus colores en `content://com.gonzalo.gamerate.tema/colores` (solo colores, ningún dato tuyo). Sin esa versión, o sin Atrio, Marfil usa su propia paleta y te lo dice en Ajustes.
-
-## Cuenta de Atrio y sincronización entre tus Marfiles
-
-Ajustes → **Cuenta de Atrio**: entras con el mismo usuario y contraseña que en Atrio (Firebase Authentication por REST; la contraseña no se guarda, solo el pase de acceso, que se renueva solo).
-Marfil no crea cuentas. Lo que se sincroniza, **solo entre tus Marfiles** (no con Atrio), igual que Atrio entre sus dispositivos (cada dispositivo escribe en su hueco bajo `/users/<tu uid>/marfil/`, con sellos de hora y escucha en directo):
-juegos (por clave: sistema + nombre de archivo, paquete o web), favorito, terminado, nota, apuntes, nombre y diseño de la ficha. Gana el cambio más reciente; lo que quitas viaja como «borrado»;
-las **horas y las veces se suman** (cada dispositivo sube las suyas). Una ROM que viene de otro móvil aparece «en otro dispositivo» hasta que la añades aquí (se une sola por sistema y nombre de archivo).
-Tu pareja de Atrio puede leer esa parte de la cuenta (las reglas de Atrio dejan leer a la pareja todo `/users/<uid>`).
-Las ROMs, los guardados y las portadas van por kDrive (siguiente sección). Probado en el ordenador contra el Firebase de mentira de Atrio (`SincroTest`) y las reglas de mezcla (`MezclaTest`); no con tu cuenta real.
-
-## Actualizaciones automáticas (kDrive, como Atrio)
-
-Marfil se actualiza sola con el mismo sistema que Atrio: cada versión se sube a **«Mi carpeta/versiones»** de tu kDrive como `Marfil-<versión>.apk` (junto a las `Atrio-…apk`; cada app solo mira las suyas).
-Se mira al abrir, cada minuto mientras se ve y, con la app cerrada, cada 4 horas (WorkManager). Si hay una más nueva se baja, se comprueba que es Marfil y que lleva la misma firma, y se instala
-**sin preguntar** cuando no la usas (Android 12+, con el permiso de instalar apps); si Android no lo deja, te pregunta, y al terminar se vuelve a abrir (con «Mostrar sobre otras apps») o te avisa.
-Ajustes → **Actualizaciones**: interruptor, token y número de tu kDrive (el token de Atrio es solo de Atrio y no se comparte: hay que pegarlo aquí una vez; se guarda solo en el móvil), «Buscar ahora» y el estado de la última comprobación.
-La primera vez que se instala una versión con esto hay que hacerlo a mano; a partir de ahí, sola. Probado contra el kDrive de mentira de Atrio (`ActualizadorTest`), no contra tu kDrive ni instalando de verdad en un móvil.
-
-## Guardados, ROMs y portadas en tu kDrive
-
-Con la cuenta de Atrio vinculada y el kDrive conectado (Ajustes), en la ficha de una ROM aparece **En la nube**:
-- **Guardados**: eliges la carpeta donde el emulador deja los `.srm`/`.sav`/`.dsv`/… de ese sistema (la misma para todos sus juegos; se busca por el nombre del archivo de la ROM, también en subcarpetas).
-  **Antes de jugar**, Marfil mira si en la nube hay un guardado distinto del tuyo y que no sea el que ya habías sincronizado; si lo hay, lo baja (comprobando que llega entero) y lo pone en su sitio, dejando antes una copia de lo que sustituye (`copias_guardados`, las 5 últimas).
-  **Al volver a Marfil**, si el guardado de este móvil ha cambiado, lo sube. Si los dos móviles cambiaron el mismo guardado sin sincronizar entre medias, gana el de la nube y la copia te protege.
-  No hay vigilancia mientras juegas (Android no avisa de cuándo un emulador escribe un archivo): se mira al lanzar y al volver.
-- **ROMs**: se **suben solas** a tu kDrive (a trozos, como en Atrio) las que aún no están, solo con wifi (WorkManager; si se corta, reintenta la ROM entera). Interruptor en Ajustes → Actualizaciones. En el otro móvil, «Descargar la ROM» a la carpeta que elijas (hace falta elegir carpeta); se une sola al juego. Solo a tu kDrive.
-- **Portadas** que elegiste: se suben solas y las bajan tus otros móviles si no tienen portada (si ya tienen otra, no se pisa).
-- El índice (hash, id de kDrive y nombre de archivo, nunca rutas de tu móvil) viaja en tu cuenta: `/users/<uid>/marfil/nube/…`; los archivos, en «Mi carpeta/Marfil/…».
-
-**Límite importante**: Android no deja a una app leer las carpetas privadas de otra (`Android/data/<emulador>/…`; el permiso «todos los archivos» tampoco las incluye, según la FAQ oficial de Android 11). Muchos emuladores guardan ahí por defecto (según guías de terceros, Pizza Boy y My Boy!).
-Marfil solo puede sincronizar guardados que estén en una carpeta que Android te deje elegir: configura el emulador para guardar en una carpeta normal del almacenamiento (RetroArch permite cambiar la carpeta de «Savefile» en Ajustes → Directorio). Probado con carpetas normales y los servidores de mentira de Atrio (`NubePTest`); **no con SAF real ni con ningún emulador en un móvil**.
-
-## Widgets
-
-Seis widgets, copiados de los de Atrio (mismo lienzo: papel, titulares en Fraunces, portadas recortadas, esquinas redondas y el reborde fino de tinta)
-pero con tus juegos: **Sigue jugando**, **Recientes** (la estantería; tocar un juego lo lanza), **En portada**, **¿Y ahora qué?** (una propuesta distinta cada día) la **marca** «LECTURA.» sobre tu fondo y **LECTURA en papel** (con su papel, el número del día y la fecha). Usan los colores del tema que tengas puesto (los de Marfil o los de Atrio, invertidos o no) y se repintan cuando cambias el tema, los
-colores de Atrio o la biblioteca. Con los colores de Atrio no dependen de claro/oscuro; con los de Marfil, «como el sistema» lleva los dos dibujos y se ve el que toca.
-Las letras también son las del tema (Ajustes → Estilo): las que vienen con la app, Vitrina o las de Google Fonts (se piden a los servicios de Google, igual que en la app; si no llegan, se usa la letra de la app).
-Vistas previas en `docs/widgets/`.
-
-## Icono
-
-El marco de Atrio (la puerta) en versión baja y cuadrada, con la luz roja por dentro en vez de arena, sobre el mismo azul noche con su difuminado interior.
-
-## Cómo funciona el lanzamiento (y qué no está probado)
-
-Los comandos para abrir cada emulador **no están escritos a mano**: salen de los archivos de ES-DE para Android
-(`es_systems.xml` y `es_find_rules.xml`, licencia MIT; ver `NOTICE`) y `Comando.kt` los interpreta (acción, datos, extras,
-banderas, permisos de lectura al documento). Eso se prueba en el ordenador con el catálogo real (`ComandoTest`).
-
-**Lo que NO se ha podido probar**: abrir de verdad cada emulador en un móvil. Esta versión se escribió y se verificó sin
-dispositivo. Si un emulador no abre una ROM, el primer sospechoso es el permiso de acceso al archivo: algunos emuladores
-necesitan que les des acceso a la carpeta dentro de sus propios ajustes (ES-DE documenta lo mismo), y RetroArch necesita su
-núcleo descargado. Marfil te lo dice en la ficha del juego («Se abre con…»).
-
-## Compilar
-
-```
-gradle :app:assembleDebug        # o ./gradlew
-gradle :app:testDebugUnitTest --tests '*ComandoTest*'
-gradle :app:testDebugUnitTest --tests '*CapturasTest*' -Proborazzi.test.record=true   # capturas en app/build/outputs/roborazzi
-```
-
-Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). El APK de release se firma con `app/marfil.keystore`
-(misma costumbre que Atrio: clave fija para que cada versión se instale encima de la anterior).
-
-## Privacidad
-
-- Portadas automáticas: pide `thumbnails.libretro.com/<sistema>/Named_Boxarts/<nombre del archivo>.png`, es decir, **el nombre
-  de tus archivos** llega a ese servidor. Se apaga en Estilo → «Portadas automáticas».
-- Los juegos web guardan cookies (también de terceros: muchos inician sesión en otro dominio) dentro del WebView de Marfil.
-- Si vinculas tu cuenta de Atrio, tu biblioteca (títulos, notas, horas, favoritos…) se sube a tu base de datos de Firebase, legible por ti y por tu pareja de Atrio. Sin vincular, nada más sale del móvil.
-
 ## Lo leído entre dispositivos
 
 Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuenta: `/users/<uid>/marfil/lec/<libro>/<dispositivo>` (el estado entero) y `/lstamps/<libro>/<dispositivo>` (su hora, que es lo que se escucha en directo). Se une así (ver `MezclaLectura`): posición, la más reciente; «lo más lejos que has llegado», el mayor; ajustes del libro, los últimos; subrayados, notas y marcadores se juntan (los quitados viajan como borrados con hora); el tiempo leído se suma por dispositivo. Al abrir un libro se baja antes lo último de los demás (hasta 2,5 s de espera) y al salir se sube.
 
 ## Libros por kDrive e importar de Atrio
 
-- Cada libro que añades se sube solo (con Wi-Fi) a `Mi carpeta/Marfil/Libros/<título>/`; el índice (`/users/<uid>/marfil/nube/<libro>`: id de kDrive, nombre, tamaño) viaja por tu cuenta. En otro dispositivo el libro sale «sin archivo» y se baja al abrirlo (hace falta conectar el kDrive en Ajustes → Actualizaciones).
+- Cada libro que añades se sube solo (con Wi-Fi) a `Mi carpeta/Marfil/Libros/<título>/`; el índice (`/users/<uid>/marfil/nube/<libro>`: id de kDrive, nombre, tamaño) viaja por tu cuenta. En otro dispositivo el libro sale «sin archivo» y se baja al abrirlo (hace falta conectar el kDrive en Ajustes → Avanzado).
 - Ajustes → Libros → «Traer mis libros de Atrio»: lee (sin cambiar nada en Atrio) lo que Atrio subió a tu cuenta y crea cada libro con su ficha, lo leído (posición, subrayados, notas, marcadores, tiempo) y, si Atrio lo subió a kDrive, el enlace a su archivo (no se duplica). Los «abandonados» de Atrio entran como pendientes. Se puede repetir sin duplicar.
 
 ## Portadas, ficha y widgets (0.7)

@@ -12,10 +12,12 @@ import androidx.compose.runtime.setValue
 class MainActivity : ComponentActivity() {
     /** El libro que pide abrir un widget (se consume al abrirlo). */
     private var fichaPedida by androidx.compose.runtime.mutableStateOf<String?>(null)
+    /** Una sección pedida desde fuera (Azabache: «escritos»). */
+    private var irPedido by androidx.compose.runtime.mutableStateOf<String?>(null)
 
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
-        setIntent(intent); fichaPedida = intent.getStringExtra("ficha")
+        setIntent(intent); fichaPedida = intent.getStringExtra("ficha"); irPedido = intent.getStringExtra("go")
         seguirLeyendoPedido(intent)
     }
 
@@ -31,7 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         iniciar(this)
         Actualizador.init(this)
-        fichaPedida = intent?.getStringExtra("ficha")
+        fichaPedida = intent?.getStringExtra("ficha"); irPedido = intent?.getStringExtra("go")
         seguirLeyendoPedido(intent)
         setContent {
             MarfilTheme {
@@ -43,7 +45,7 @@ class MainActivity : ComponentActivity() {
                         navigationBarStyle = if (oscuro) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT) else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
                     )
                 }
-                MarfilApp(fichaPedida) { fichaPedida = null }
+                MarfilApp(fichaPedida, { fichaPedida = null }, irPedido) { irPedido = null }
             }
         }
     }

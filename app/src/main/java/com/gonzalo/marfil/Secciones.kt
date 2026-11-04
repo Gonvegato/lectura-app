@@ -273,7 +273,7 @@ fun PantSecciones(inicial: Destino, alVolver: () -> Unit, alAbrir: (Libro) -> Un
     val ambito = rememberCoroutineScope()
     var buscando by rememberSaveable { mutableStateOf(buscandoInicial) }
     var busca by rememberSaveable { mutableStateOf("") }
-    val todos = Biblioteca.libros.toList()
+    val todos = Biblioteca.propios()
     val cuentas = listOf(Estado.LEYENDO, Estado.PENDIENTE, Estado.LEIDO, Estado.ABANDONADO).map { e -> todos.count { it.estado == e } } + todos.filter { it.autor.isNotBlank() }.map { norm(it.autor) }.distinct().size + Sagas.lista.size
     Column(Modifier.fillMaxSize().background(Paper).navigationBarsPadding().padding(horizontal = 28.dp)) {
         RevistaTopBar(alVolver, "Marfil") {

@@ -16,7 +16,8 @@ import org.json.JSONObject
 /** Lo que un dispositivo sube de cada libro: lo compartido y SU tiempo leído. */
 class LibroSync(
     val clave: String, val titulo: String, val autor: String, val archivo: String, val favorito: Boolean, val estado: Estado,
-    val anadido: Long, val ultima: Long, val fraccion: Float, val mod: Long, val msp: Long, val paginas: Int = 0, val po: String = "", val terminados: List<Long> = emptyList()
+    val anadido: Long, val ultima: Long, val fraccion: Float, val mod: Long, val msp: Long, val paginas: Int = 0, val po: String = "", val terminados: List<Long> = emptyList(),
+    val portadaUrl: String = ""
 )
 
 /** La biblioteca de un dispositivo, tal como la sube a la cuenta. */
@@ -29,8 +30,8 @@ object Mezcla {
     const val OLVIDO = 180L * 86_400_000L
 
     fun aBlob(dev: String, libros: List<Libro>, borrados: Map<String, Long>, ajustes: String = "", sagas: List<Saga> = emptyList(), sagasBorradas: Map<String, Long> = emptyMap(), lector: String = ""): Blob = Blob(dev,
-        libros.filter { it.titulo.isNotBlank() }.distinctBy { it.clave }.map { l ->
-            LibroSync(l.clave, l.titulo, l.autor, l.archivo, l.favorito, l.estado, l.anadido, l.ultima, l.fraccion, l.mod, l.msPropios, l.paginas, l.paginasOrigen, l.terminados)
+        libros.filter { it.titulo.isNotBlank() && !it.esEscrito }.distinctBy { it.clave }.map { l ->
+            LibroSync(l.clave, l.titulo, l.autor, l.archivo, l.favorito, l.estado, l.anadido, l.ultima, l.fraccion, l.mod, l.msPropios, l.paginas, l.paginasOrigen, l.terminados, l.portadaUrl)
         }, borrados, ajustes, sagas, sagasBorradas, lector)
 
     fun aJson(b: Blob): String = JSONObject().put("v", 1).put("dev", b.dev)
@@ -38,7 +39,7 @@ object Mezcla {
         .put("libros", JSONArray().also { a ->
             b.libros.forEach { g ->
                 a.put(JSONObject().put("k", g.clave).put("t", g.titulo).put("a", g.autor).put("ar", g.archivo).put("f", g.favorito).put("e", g.estado.name)
-                    .put("an", g.anadido).put("ul", g.ultima).put("fr", g.fraccion.toDouble()).put("mod", g.mod).put("msp", g.msp).put("pg", g.paginas).put("po", g.po).put("tm", JSONArray().also { a -> g.terminados.forEach { a.put(it) } }))
+                    .put("an", g.anadido).put("ul", g.ultima).put("fr", g.fraccion.toDouble()).put("mod", g.mod).put("msp", g.msp).put("pg", g.paginas).put("po", g.po).put("tm", JSONArray().also { a -> g.terminados.forEach { a.put(it) } }).put("pu", g.portadaUrl))
             }
         })
         .apply {
@@ -57,7 +58,7 @@ object Mezcla {
                 val g = ja.getJSONObject(i)
                 LibroSync(g.getString("k"), g.optString("t"), g.optString("a"), g.optString("ar"), g.optBoolean("f"),
                     Estado.entries.firstOrNull { it.name == g.optString("e") } ?: Estado.PENDIENTE,
-                    g.optLong("an"), g.optLong("ul"), g.optDouble("fr", 0.0).toFloat(), g.optLong("mod"), g.optLong("msp"), g.optInt("pg"), g.optString("po"), g.optJSONArray("tm")?.let { a -> (0 until a.length()).map { a.optLong(it) } } ?: emptyList())
+                    g.optLong("an"), g.optLong("ul"), g.optDouble("fr", 0.0).toFloat(), g.optLong("mod"), g.optLong("msp"), g.optInt("pg"), g.optString("po"), g.optJSONArray("tm")?.let { a -> (0 until a.length()).map { a.optLong(it) } } ?: emptyList(), g.optString("pu"))
             }, bo?.keys()?.asSequence()?.associateWith { bo.optLong(it) } ?: emptyMap(), o.optJSONObject("aj")?.toString().orEmpty(),
                 o.optJSONArray("sg")?.let { a -> (0 until a.length()).mapNotNull { a.optJSONObject(it)?.let(Saga::deJson) } } ?: emptyList(),
                 o.optJSONObject("sgb")?.let { x -> x.keys().asSequence().associateWith { x.optLong(it) } } ?: emptyMap(),
@@ -124,7 +125,7 @@ object Mezcla {
 
     private fun unir(l: Libro, rs: List<Pair<String, LibroSync>>): Libro {
         val g = rs.maxByOrNull { it.second.mod }!!.second
-        val base = if (g.mod > l.mod) l.copy(titulo = g.titulo.ifBlank { l.titulo }, autor = g.autor, favorito = g.favorito, estado = g.estado, mod = g.mod) else l
+        val base = if (g.mod > l.mod) l.copy(titulo = g.titulo.ifBlank { l.titulo }, autor = g.autor, favorito = g.favorito, estado = g.estado, mod = g.mod, portadaUrl = g.portadaUrl.ifBlank { l.portadaUrl }) else l
         val ms = l.ajenosMs + rs.associate { it.first to it.second.msp }
         val anadidos = (listOf(l.anadido) + rs.map { it.second.anadido }).filter { it > 0 }
         val pg = mejorPaginas(listOf(l.paginasOrigen to l.paginas) + rs.map { it.second.po to it.second.paginas })
@@ -137,7 +138,7 @@ object Mezcla {
     private fun crear(rs: List<Pair<String, LibroSync>>, id: String): Libro {
         val g = rs.maxByOrNull { it.second.mod }!!.second
         return Libro(
-            id = id, titulo = g.titulo, autor = g.autor, clave = g.clave, uri = "", archivo = g.archivo, favorito = g.favorito, estado = g.estado,
+            id = id, titulo = g.titulo, autor = g.autor, clave = g.clave, uri = "", archivo = g.archivo, favorito = g.favorito, estado = g.estado, portadaUrl = g.portadaUrl,
             anadido = rs.map { it.second.anadido }.filter { it > 0 }.minOrNull() ?: g.anadido, ultima = rs.maxOf { it.second.ultima },
             fraccion = rs.maxOf { it.second.fraccion }, mod = g.mod, msPropios = 0L, ajenosMs = rs.associate { it.first to it.second.msp },
             terminados = juntarFechas(*rs.map { it.second.terminados }.toTypedArray()), paginas = mejorPaginas(rs.map { it.second.po to it.second.paginas })?.second ?: 0, paginasOrigen = mejorPaginas(rs.map { it.second.po to it.second.paginas })?.first.orEmpty()

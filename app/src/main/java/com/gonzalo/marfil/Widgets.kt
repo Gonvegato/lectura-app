@@ -304,7 +304,7 @@ class CitaW(val libro: Libro, val texto: String, val nota: String, val value: St
 
 /** Lo que hay guardado en la app, como lo ven los widgets. */
 class WDatos(val ctx: Context) {
-    val todos: List<Libro> = Biblioteca.libros.toList()
+    val todos: List<Libro> = Biblioteca.propios()
     private fun porReciente(l: List<Libro>) = l.sortedWith(compareByDescending<Libro> { it.ultima }.thenByDescending { it.anadido })
     /** Lo que estás leyendo, lo último abierto primero. */
     val leyendo: List<Libro> = porReciente(todos.filter { it.estado == Estado.LEYENDO })

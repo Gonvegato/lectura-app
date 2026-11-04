@@ -166,7 +166,7 @@ object Actualizador {
     /** Se llama nada más abrir la app y luego cada minuto mientras está abierta (siempre en segundo plano). */
     fun comprueba(ctx: Context, manual: Boolean = false, forzar: Boolean = false) {
         if (!activo(ctx) && !forzar) { if (manual) anota(ctx, "apagada (interruptor de arriba)"); return }
-        if (!KDrive.on(ctx)) { anota(ctx, "kDrive sin conectar (Ajustes → Actualizaciones)"); return }
+        if (!KDrive.on(ctx)) { anota(ctx, "kDrive sin conectar (Ajustes → Avanzado)"); return }
         if (!hayInternet(ctx)) { anota(ctx, "sin internet"); return }
         if (!ocupado.compareAndSet(false, true)) return
         try { compruebaYa(ctx) } catch (e: Throwable) { anota(ctx, "error: ${e.message ?: e.javaClass.simpleName}") } finally { ocupado.set(false) }

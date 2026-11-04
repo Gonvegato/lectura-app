@@ -103,7 +103,7 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
     }
     fun bajar(leer: Boolean) {
         if (trabajando != null) return
-        if (!KDrive.on(ctx)) { dice("Conecta tu kDrive (Ajustes → Actualizaciones) para bajarlo."); return }
+        if (!KDrive.on(ctx)) { dice("Conecta tu kDrive (Ajustes → Avanzado) para bajarlo."); return }
         trabajando = "Bajando de tu kDrive…"
         ambito.launch {
             val r = withContext(Dispatchers.IO) { runCatching { NubeLibros.leerIndice(ctx); NubeLibros.bajar(ctx, Biblioteca.por(l.id) ?: l) } }

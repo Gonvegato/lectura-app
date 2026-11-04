@@ -73,7 +73,7 @@ object Portadas {
     }
 
     /** Guarda una imagen como portada de un libro (reducida) con un nombre nuevo y borra las anteriores. Devuelve el libro con su portada, o null si la imagen no vale. */
-    fun poner(ctx: Context, l: Libro, bytes: ByteArray): Libro? {
+    fun poner(ctx: Context, l: Libro, bytes: ByteArray, url: String = ""): Libro? {
         if (!esImagen(bytes)) return null
         val o = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, o)
@@ -85,7 +85,7 @@ object Portadas {
         f.outputStream().use { b.compress(Bitmap.CompressFormat.JPEG, 92, it) }
         dir.listFiles { x -> x.name.startsWith(l.id) && x != f }?.forEach { it.delete() }
         NubeLibros.portadaCambiada(ctx, l)
-        return (Biblioteca.por(l.id) ?: l).copy(portada = f.absolutePath).also { Biblioteca.poner(it) }
+        return (Biblioteca.por(l.id) ?: l).copy(portada = f.absolutePath, portadaUrl = url).also { Biblioteca.poner(it) }
     }
 
     /** Quita la portada elegida: el libro vuelve a su tapa de color con la letra (y se quita también en tus otros dispositivos). */
@@ -93,7 +93,7 @@ object Portadas {
         val dir = Metadatos.dirPortadas(ctx)
         dir.listFiles { x -> x.name.startsWith(l.id) }?.forEach { it.delete() }
         NubeLibros.portadaQuitada(ctx, l)
-        return (Biblioteca.por(l.id) ?: l).copy(portada = "").also { Biblioteca.poner(it) }
+        return (Biblioteca.por(l.id) ?: l).copy(portada = "", portadaUrl = "").also { Biblioteca.poner(it) }
     }
 
     /** Pone la portada que lleva el propio archivo del libro, si la lleva (solo los EPUB; solo si lo pides tú desde «Portada»). */
@@ -107,6 +107,6 @@ object Portadas {
     fun cachear(ctx: Context, l: Libro): Libro? {
         if (!l.portada.startsWith("http")) return null
         val bytes = descargar(l.portada) ?: return null
-        return poner(ctx, l, bytes)
+        return poner(ctx, l, bytes, url = l.portada)
     }
 }

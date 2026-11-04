@@ -35,14 +35,14 @@ import java.util.Locale
 @Composable
 fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -> Unit, alIr: (Destino) -> Unit, alBuscar: () -> Unit, alAbrirSaga: (Saga) -> Unit = {}) {
     val hoy = remember { Calendar.getInstance() }
-    val libros = Biblioteca.libros.toList()
+    val libros = Biblioteca.propios()
     val ahora = libros.filter { it.estado == Estado.LEYENDO }.maxByOrNull { it.ultima } ?: libros.firstOrNull { it.estado == Estado.LEYENDO }
     // En la mesilla: lo que estás leyendo, menos lo último que abriste (eso es «Ahora»). En la estantería: lo pendiente.
     val mesilla = libros.filter { it.estado == Estado.LEYENDO && it.id != ahora?.id }.sortedByDescending { it.ultima }.take(6)
     val estanteria = libros.filter { it.estado == Estado.PENDIENTE }.sortedByDescending { it.anadido }.take(6)
     val secciones = listOf<Pair<String, () -> Unit>>(
         "Leyendo" to { alIr(Destino.Leyendo) }, "Pendientes" to { alIr(Destino.Pendientes) }, "Leídos" to { alIr(Destino.Leidos) },
-        "Abandonados" to { alIr(Destino.Abandonados) }, "Autores" to { alIr(Destino.Autores) }, "Sagas" to { alIr(Destino.Sagas) }
+        "Abandonados" to { alIr(Destino.Abandonados) }, "Autores" to { alIr(Destino.Autores) }, "Sagas" to { alIr(Destino.Sagas) }, "Escritos" to { alIr(Destino.Escritos) }
     )
 
     // La cabecera y el menú, exactamente como en la portada de Atrio (RevistaHome): mismos márgenes, mismo tamaño de cabecera, de filetes y de letra

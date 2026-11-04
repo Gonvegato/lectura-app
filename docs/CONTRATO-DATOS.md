@@ -13,7 +13,7 @@ Las valoraciones de Azabache deben enlazarse por esta misma clave.
 
 | Nodo | Contenido | Quién escribe |
 |---|---|---|
-| `dev/<dispositivo>/data` | La biblioteca de ese dispositivo (texto JSON `v:1`): por libro `k` (clave), `t` título, `a` autor, `ar` archivo, `f` favorito, `e` estado (`PENDIENTE`/`LEYENDO`/`LEIDO`), `an` añadido, `ul` última lectura, `fr` fracción (0–1), `mod`, `msp` ms leídos en ese dispositivo, `pg`/`po` páginas y su origen, `tm` fechas (ms) en que se terminó; `borrados` (clave → hora). | cada Marfil, solo el suyo |
+| `dev/<dispositivo>/data` | La biblioteca de ese dispositivo (texto JSON `v:1`): por libro `k` (clave), `t` título, `a` autor, `ar` archivo, `f` favorito, `e` estado (`PENDIENTE`/`LEYENDO`/`LEIDO`), `an` añadido, `ul` última lectura, `fr` fracción (0–1), `mod`, `msp` ms leídos en ese dispositivo, `pg`/`po` páginas y su origen, `tm` fechas (ms) en que se terminó, `pu` dirección de la portada si se eligió de internet (vacío si es de la galería: esa va por kDrive); `borrados` (clave → hora). | cada Marfil, solo el suyo |
 | `stamps/<dispositivo>` | Hora de la última subida de ese dispositivo (servidor). | cada Marfil |
 | `lec/<kid>/<dispositivo>` | `{t, u, s}`: `s` es el estado de lectura entero (posición, subrayados, notas, marcadores, ajustes, tiempo). **Pesado**: no leerlo para listados. | cada Marfil |
 | `lstamps/<kid>/<dispositivo>` | Hora de la última subida de ese libro en ese dispositivo. | cada Marfil |
