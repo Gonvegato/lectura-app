@@ -288,6 +288,13 @@ img, svg, video { max-width: 100%; ${dark ? 'filter: brightness(.86);' : ''} }
 pre { white-space: pre-wrap !important; }
 aside[epub|type~="footnote"], aside[epub|type~="endnote"], aside[epub|type~="rearnote"] { display: none; }
 html, body, body * { -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
+/* Leyendo hacia abajo: al final de cada capítulo un botón al siguiente (y al principio, al anterior). Solo se ven con el desplazamiento continuo. */
+.atrio-cap { display: none; margin: 3em 0 3.4em !important; padding: 0 !important; text-indent: 0 !important; }
+html.atrio-abajo .atrio-cap { display: block; }
+.atrio-cap button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 1.15em 1em; border: 2px solid ${fg}; text-align: center; cursor: pointer; }
+.atrio-cap .arriba { display: block; font: 800 .7em system-ui, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: ${accent} !important; }
+.atrio-cap .titulo { display: block; margin-top: .4em; font-size: 1.2em; font-weight: 600; line-height: 1.25; }
+.atrio-cap .titulo:empty { display: none; }
 html.atrio-reflow h2 { text-align: center !important; font-size: 1.3em; line-height: 1.25; margin: 2.4em 0 1.3em; -webkit-hyphens: manual; hyphens: manual; font-weight: 700; }
 html.atrio-reflow p { text-indent: 1.4em; margin: 0; }
 html.atrio-reflow h2 + p, html.atrio-reflow p.sep + p { text-indent: 0; }
@@ -319,6 +326,7 @@ function applySettings() {
     } else {
         view.renderer.setStyles?.(css())
         view.renderer.setAttribute('flow', S.flow)
+        for (const d of docs.values()) d.documentElement?.classList.toggle('atrio-abajo', S.flow === 'scrolled')
         view.renderer.setAttribute('gap', { s: '4%', m: '7%', l: '11%' }[S.margin])
         // Arriba y abajo: lo que ocupen la cámara y las barras del móvil, más el margen elegido
         const rs = getComputedStyle(document.documentElement)
@@ -599,6 +607,60 @@ function irA(target) { saltoDesde(); closePanel(); return view.goTo(target) }
 // La app avisa cuando sabe cuánto ocupan las barras del móvil
 window.atrioInsets = () => applySettings()
 
+// ---------------------------------------------------------------- Capítulo siguiente / anterior (leyendo hacia abajo)
+/** El capítulo de al lado (saltando lo que no se lee seguido), o null. */
+function adyacente(i, dir) {
+    const secs = view?.book?.sections || []
+    for (let j = i + dir; j >= 0 && j < secs.length; j += dir) if (secs[j].linear !== 'no') return j
+    return null
+}
+let titulosCap = null
+/** El nombre de cada capítulo (el del índice del libro), por número de sección. */
+async function titulosDeCapitulos() {
+    if (titulosCap) return titulosCap
+    const m = new Map(), b = view?.book, secs = b?.sections || []
+    const walk = async items => {
+        for (const it of items || []) {
+            try {
+                const r = await b.splitTOCHref?.(it.href)
+                const id = Array.isArray(r) ? r[0] : r
+                const i = typeof id === 'number' ? id : secs.findIndex(s => s.id === id)
+                const t = String(it.label || '').replace(/\s+/g, ' ').trim()
+                if (i >= 0 && t && !m.has(i)) m.set(i, t)
+            } catch (e) { }
+            if (it.subitems?.length) await walk(it.subitems)
+        }
+    }
+    await walk(b?.toc)
+    return (titulosCap = m)
+}
+/** Pasar de capítulo con el botón: se llega al principio del siguiente (o al final del anterior) y se dice cuál es. */
+async function irCapitulo(dir, i) {
+    const t = (await titulosDeCapitulos()).get(i)
+    try { await view.renderer.goTo({ index: i, anchor: dir > 0 ? () => 0 : () => 1 }) } catch (e) { console.error('Lector: no se pudo cambiar de capítulo', e) }
+    aviso(t || (dir > 0 ? 'Capítulo siguiente' : 'Capítulo anterior'))
+}
+/** Los botones de capítulo de un documento (solo texto: EPUB y PDF adaptado). Se ven con el desplazamiento continuo. */
+function botonesDeCapitulo(doc, index) {
+    doc.documentElement.classList.toggle('atrio-abajo', S.flow === 'scrolled')
+    for (const x of doc.querySelectorAll('.atrio-cap')) x.remove()
+    if (!doc.body) return
+    const crea = (dir, i) => {
+        const d = doc.createElement('div'); d.className = 'atrio-cap ' + (dir > 0 ? 'sig' : 'ant')
+        const b = doc.createElement('button'); b.type = 'button'
+        const a = doc.createElement('span'); a.className = 'arriba'; a.textContent = dir > 0 ? 'Siguiente capítulo →' : '← Capítulo anterior'
+        const t = doc.createElement('span'); t.className = 'titulo'
+        b.append(a, t); d.append(b)
+        titulosDeCapitulos().then(m => { t.textContent = m.get(i) || '' })
+        // (el toque del botón es del botón: no abre el menú ni pasa de página)
+        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); irCapitulo(dir, i) })
+        return d
+    }
+    const sig = adyacente(index, 1), ant = adyacente(index, -1)
+    if (sig != null) doc.body.append(crea(1, sig))
+    if (ant != null) doc.body.prepend(crea(-1, ant))
+}
+
 function onLoad({ detail: { doc, index } }) {
     // Para las pruebas automáticas (el libro va en un shadow DOM cerrado)
     ;(window.__docs ||= []).push({ doc, index })
@@ -736,6 +798,8 @@ function onLoad({ detail: { doc, index } }) {
         pend = { doc, index, start: a }
         finishRange(doc, index, b)
     }, true)
+
+    if (!isPDF || reflow) botonesDeCapitulo(doc, index)
 
     // Los subrayados de este capítulo (o página). En PDF la página se dibuja después: se repinta cuando aparece.
     paint(index)
@@ -940,6 +1004,8 @@ function yOf(doc, r) {
 }
 
 function onHold(doc, index, x, y) {
+    // Un botón de capítulo no es una palabra
+    if (doc.elementFromPoint(x, y)?.closest?.('.atrio-cap')) return
     const w = wordAt(doc, x, y)
     if (!w) return
     A.buzz()

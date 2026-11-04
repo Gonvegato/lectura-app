@@ -181,3 +181,10 @@ Además de la biblioteca, cada libro sincroniza su estado de lectura por la cuen
 - **«En Azabache»** en la ficha: la valoración (solo se ve) y «Abrir en Azabache →».
 - **Portadas que en Atrio eran fotos tuyas**: al importar se enlazan con su archivo de tu kDrive y se bajan a todos tus dispositivos.
 - El botón de un libro ya leído dice «Volver a leer».
+
+## Marfil 0.9.1: pasar de capítulo con un botón
+
+- Leyendo deslizando («Desplazamiento continuo», EPUB y PDF adaptado), **ya no se pasa de capítulo solo** (el salto parpadeaba y no se sabía dónde se llegaba). Al final de cada capítulo hay un botón **«Siguiente capítulo → nombre del capítulo»** y al principio **«← Capítulo anterior»** (que lleva al final del anterior). Al pasar, un aviso dice el capítulo al que se llega.
+- En el modo de páginas los botones no se ven. En el último capítulo no hay botón de siguiente.
+- Probado con un navegador táctil: `herramientas/lector-prueba/botones.js`.
+- **Icono nuevo**: la flor de líneas sobre el degradado crema (fondo, primer plano y monocromo para los iconos con tema). Se genera con `herramientas/icono-marfil.py` a partir de `docs/iconos/marfil-original.jpg`.
