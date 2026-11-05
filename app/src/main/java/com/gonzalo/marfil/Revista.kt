@@ -218,15 +218,30 @@ fun MagFact(label: String, value: String) {
         val v = ms[2].measure(Constraints())
         val hueco = 6.dp.roundToPx()
         val ancho = if (c.hasBoundedWidth) c.maxWidth else null
-        val l = ms[0].measure(Constraints(maxWidth = ancho?.let { ((it - v.width) * 0.75f).toInt().coerceAtLeast(0) } ?: Constraints.Infinity))
-        val w = ancho ?: (l.width + v.width + hueco * 6)
-        val puntos = (w - l.width - v.width - hueco * 2).coerceAtLeast(0)
-        val h = maxOf(l.height, v.height)
-        val d = ms[1].measure(Constraints.fixed(puntos, 12.dp.roundToPx().coerceAtMost(h)))
-        layout(w, h) {
-            l.place(0, h - l.height)
-            d.place(l.width + hueco, h - d.height - 3.dp.roundToPx())
-            v.place(w - v.width, h - v.height)
+        val anchoEtiqueta = ms[0].maxIntrinsicWidth(Constraints.Infinity)
+        if (ancho == null || anchoEtiqueta + v.width + hueco * 2 <= ancho) {
+            // Cabe en una línea: etiqueta, puntos y cifra
+            val l = ms[0].measure(Constraints(maxWidth = ancho?.let { (it - v.width - hueco * 2).coerceAtLeast(0) } ?: Constraints.Infinity))
+            val w = ancho ?: (l.width + v.width + hueco * 6)
+            val puntos = (w - l.width - v.width - hueco * 2).coerceAtLeast(0)
+            val h = maxOf(l.height, v.height)
+            val d = ms[1].measure(Constraints.fixed(puntos, 12.dp.roundToPx().coerceAtMost(h)))
+            layout(w, h) {
+                l.place(0, h - l.height)
+                d.place(l.width + hueco, h - d.height - 3.dp.roundToPx())
+                v.place(w - v.width, h - v.height)
+            }
+        } else {
+            // En una casilla estrecha no cabe todo: la etiqueta entera arriba (nada de «Termin…») y, debajo, los puntos y la cifra a la derecha
+            val l = ms[0].measure(Constraints(maxWidth = ancho))
+            val puntos = (ancho - v.width - hueco).coerceAtLeast(0)
+            val d = ms[1].measure(Constraints.fixed(puntos, 12.dp.roundToPx().coerceAtMost(v.height)))
+            val h = l.height + v.height
+            layout(ancho, h) {
+                l.place(0, 0)
+                d.place(0, h - d.height - 3.dp.roundToPx())
+                v.place(ancho - v.width, h - v.height)
+            }
         }
     }
 }

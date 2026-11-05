@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.15
+
+- En las filas de datos (etiqueta · puntos · cifra), si no cabe todo en una línea, la etiqueta va entera arriba y la cifra debajo, en vez
+  de cortar la etiqueta con puntos suspensivos (como en Azabache 1.2.8).
+
 ## 0.12.14
 
 - El widget «Sigue leyendo» alto y estrecho ya no corta su rótulo («SIGUE LE…»): ahí dice «Leyendo».
