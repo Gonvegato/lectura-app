@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.12.3"
+const val VERSION = "0.12.4"
 
 /** «Ajustes» en pestañas, como Atrio: Apariencia · Lectura · Cuenta (Atrio y libros en la nube) · Avanzado (actualizaciones y copias). */
 @OptIn(ExperimentalLayoutApi::class)
@@ -106,7 +106,7 @@ fun PantEstilo(alVolver: () -> Unit) {
         Filete(3.dp)
         Spacer(Modifier.height(10.dp))
         Etiqueta("Marfil $VERSION")
-        Text("Marfil es hermana de Atrio. El lector usa foliate-js (MIT) y pdf.js (Apache 2.0); sus licencias van en la app.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 13.sp, lineHeight = 18.sp)
+        Text("Marfil es hermana de Azabache, Hiedra y Cobalto. El lector usa foliate-js (MIT) y pdf.js (Apache 2.0); sus licencias van en la app.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 13.sp, lineHeight = 18.sp)
         Spacer(Modifier.height(30.dp))
     }
 }

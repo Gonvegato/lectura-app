@@ -49,7 +49,7 @@ fun PantInicio(alAbrir: (Libro) -> Unit, alLeer: (Libro) -> Unit, alAnadir: () -
     Column(Modifier.fillMaxSize().background(Paper).verticalScroll(rememberScrollState()).statusBarsPadding().padding(horizontal = 28.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             EnlaceRevista("Buscar") { alBuscar() }
-            EnlaceRevista("Añadir", Modifier.padding(start = 14.dp)) { alAnadir() }
+            EnlaceRevista("+ Añadir", Modifier.padding(start = 14.dp), acento = true) { alAnadir() }
             Spacer(Modifier.weight(1f))
             Icon(Icons.Filled.Settings, "Ajustes", tint = Charcoal, modifier = Modifier.padding(start = 6.dp).combinedClickable(onClick = { alIr(Destino.Ajustes) }).padding(8.dp).size(22.dp))
         }

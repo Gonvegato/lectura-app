@@ -79,6 +79,10 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.4
+
+- En la portada, «+ Añadir» en el acento, como en las listas y como en Hiedra y Cobalto; el pie de Ajustes dice de quién es hermana.
+
 ## 0.12.3: Azabache abre el libro exacto, y la obra exacta de Cobalto
 
 - Marfil entiende el extra `clave` (la clave del libro, la misma en todos tus Marfiles): «Leer» en Azabache abre Marfil en la ficha de ese libro.
