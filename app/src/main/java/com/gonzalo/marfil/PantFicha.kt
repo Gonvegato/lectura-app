@@ -152,13 +152,17 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
         Row(Modifier.fillMaxWidth().height(220.dp)) {
             PortadaLibro(l, Modifier.width(150.dp).height(220.dp).clickable { portada = true })
             Column(Modifier.weight(1f).padding(start = 18.dp).fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
-                Row(verticalAlignment = Alignment.Bottom) {
+                // Terminado: lo pone en grande, en el acento, en vez del porcentaje (y las páginas debajo, que al lado no caben)
+                if (l.estado == Estado.LEIDO) {
+                    Paginas.texto(l).takeIf { it.isNotBlank() }?.let { Text(it, color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 14.sp, letterSpacing = 0.6.sp, maxLines = 1) }
+                    Text("Terminado", color = Acento, fontFamily = Display, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = 36.sp, maxLines = 1, softWrap = false, modifier = Modifier.padding(bottom = 6.dp))
+                } else Row(verticalAlignment = Alignment.Bottom) {
                     Text("${(frac * 100).toInt().coerceIn(0, 100)}", color = Acento, fontFamily = Display, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = 62.sp)
                     Text(" %", color = Muted, fontFamily = Body, fontSize = 14.sp, modifier = Modifier.padding(bottom = 10.dp))
                     Spacer(Modifier.weight(1f))
                     Paginas.texto(l).takeIf { it.isNotBlank() }?.let { Text(it, color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 14.sp, letterSpacing = 0.6.sp, modifier = Modifier.padding(bottom = 12.dp)) }
                 }
-                Barra(l.fraccion)
+                Barra(if (l.estado == Estado.LEIDO) 1f else l.fraccion)
                 if (frac <= 0.001f && l.estado == Estado.PENDIENTE) Text("sin empezar", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 8.dp))
                 st.optString("label").takeIf { it.isNotBlank() }?.let { Text(it, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, maxLines = 2, modifier = Modifier.padding(top = 8.dp)) }
             }
@@ -219,7 +223,7 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
                 Spacer(Modifier.height(6.dp))
                 val notas = st.optJSONArray("notes")?.length() ?: 0
                 val min = l.msLeidos / 60_000L
-                Text(listOfNotNull("${(frac * 100).toInt()} % leído", if (min >= 1) (if (frac >= 0.99f) "leído en ${readTime(min)}" else "${readTime(min)} leyendo") else null, st.optString("label").ifBlank { null }, if (notas > 0) "$notas subrayados" else null).joinToString(" · "),
+                Text(listOfNotNull(if (l.estado == Estado.LEIDO) "terminado" else "${(frac * 100).toInt()} % leído", if (min >= 1) (if (frac >= 0.99f) "leído en ${readTime(min)}" else "${readTime(min)} leyendo") else null, st.optString("label").ifBlank { null }, if (notas > 0) "$notas subrayados" else null).joinToString(" · "),
                     color = Muted, fontFamily = Body, fontSize = 12.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 if (frac in 0.02f..0.97f && min >= 5) Text("Te quedan unas ${readTime((min * (1 - frac) / frac).toLong().coerceAtLeast(1))} a tu ritmo", color = Acento, fontFamily = Body, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
             }

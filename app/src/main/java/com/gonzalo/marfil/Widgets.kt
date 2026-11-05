@@ -322,7 +322,7 @@ class WDatos(val ctx: Context) {
     /** «37 % · 3 h 20 min», «Pendiente», «Leído»… */
     fun estado(l: Libro): String = when (l.estado) {
         Estado.LEYENDO -> listOfNotNull(porcentaje(l.fraccion), Paginas.texto(l).ifBlank { null }).joinToString(" · ")
-        Estado.LEIDO -> "Leído"
+        Estado.LEIDO -> "Terminado"
         Estado.PENDIENTE -> "Pendiente"
         Estado.ABANDONADO -> "Abandonado"
     }
@@ -460,7 +460,13 @@ object Widgets {
     }
 
     /** Algo cambió en la app (un juego, el tema, los colores de Atrio): se repintan los widgets que haya, sin prisa. */
+    /** Con el lector abierto los widgets no se repintan (cada repintado decodifica portadas y quita fluidez al pasar página): se hace al cerrarlo. */
+    @Volatile var lectorAbierto = false
+    @Volatile private var pedidoLeyendo = false
+    fun lectorCerrado(ctx: Context) { lectorAbierto = false; if (pedidoLeyendo) { pedidoLeyendo = false; pedir(ctx) } }
+
     fun pedir(ctx: Context) {
+        if (lectorAbierto) { pedidoLeyendo = true; return }
         val app = ctx.applicationContext
         val mgr = runCatching { AppWidgetManager.getInstance(app) }.getOrNull() ?: return
         val hay = WTipo.entries.mapNotNull { t ->
@@ -640,7 +646,7 @@ object Widgets {
                     seccion("Sigue leyendo", pad, pad, w - 2 * pad, 0xFFFFFFFF.toInt(), acentoFoto)
                     val bottom = h - pad - 4f
                     ante(accion, pad, bottom - 8f, w * 0.6f, acentoFoto, 8.5f)
-                    ante(porcentaje(e.fraccion), w - pad - 60f, bottom - 8f, 60f, 0xCCFFFFFF.toInt(), 8.5f, Layout.Alignment.ALIGN_OPPOSITE)
+                    ante(avance(e), w - pad - 60f, bottom - 8f, 60f, 0xCCFFFFFF.toInt(), 8.5f, Layout.Alignment.ALIGN_OPPOSITE)
                     val l = titular(e.titulo, w - 2 * pad, h * 0.42f, 24f, 12f, 3, 0xFFFFFFFF.toInt())
                     pon(l, pad, bottom - 20f - l.height)
                 }
@@ -652,12 +658,12 @@ object Widgets {
                     val cw = min(ch * 0.66f, w * 0.55f)
                     portada(img, RectF(pad, top, pad + cw, top + ch), e.titulo, autor = e.autor)
                     val x0 = pad + cw + 10f
-                    pon(capa(porcentaje(e.fraccion), tp(fTitular, min(30f, (w - x0 - pad) / 3f), acento), w - x0 - pad + 4f, 1), x0, top + ch - 34f)
+                    pon(capa(avance(e), tp(fTitular, min(30f, (w - x0 - pad) / 3f), acento), w - x0 - pad + 4f, 1), x0, top + ch - 34f)
                     var y = top + ch + 12f
                     val l = titular(e.titulo, w - 2 * pad, h - y - pad - 26f - 16f, 30f, 13f, 4)
                     y += pon(l, pad, y) + 3f
                     pon(capa(d.origen(e), tp(fCursiva, 12f, gris), w - 2 * pad, 1), pad, y)
-                    barra(this, pad, h - pad - 30f, w - 2 * pad, e.fraccion)
+                    barra(this, pad, h - pad - 30f, w - 2 * pad, if (e.estado == Estado.LEIDO) 1f else e.fraccion)
                     ante(accion, pad, h - pad - 11f, w - 2 * pad, acento)
                 }
                 else -> {
@@ -679,7 +685,7 @@ object Widgets {
                     val hueco = pieY - arriba - 2 * aire - if (bajo) 0f else 4f
                     // Lo que llevas, en grande y con su barra (si hay sitio)
                     val conPct = h >= 130f
-                    val pct = if (conPct) capa(porcentaje(e.fraccion), tp(fTitular, 24f, acento), rw, 1) else null
+                    val pct = if (conPct) capa(avance(e), tp(fTitular, 24f, acento), rw, 1) else null
                     val altoPct = pct?.let { it.height + 8f } ?: 0f
                     val autor = if (h >= 130f) capa(d.origen(e), tp(fCursiva, 12.5f, gris), rw, 1) else null
                     val altoAutor = autor?.let { it.height + 4f } ?: 0f
@@ -687,7 +693,7 @@ object Widgets {
                     val y = arriba + (pieY - arriba - l.height - altoAutor - altoPct) / 2
                     pon(l, x0, y)
                     autor?.let { pon(it, x0, y + l.height + 4f) }
-                    pct?.let { pon(it, x0, y + l.height + altoAutor + 6f); barra(this, x0 + it.getLineWidth(0) + 10f, y + l.height + altoAutor + 6f + it.height / 2f, rw - it.getLineWidth(0) - 10f, e.fraccion) }
+                    pct?.let { pon(it, x0, y + l.height + altoAutor + 6f); barra(this, x0 + it.getLineWidth(0) + 10f, y + l.height + altoAutor + 6f + it.height / 2f, rw - it.getLineWidth(0) - 10f, if (e.estado == Estado.LEIDO) 1f else e.fraccion) }
                 }
             }
         }

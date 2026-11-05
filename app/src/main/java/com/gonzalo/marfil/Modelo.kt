@@ -183,3 +183,5 @@ fun tiempoDe(ms: Long): String {
 
 /** «Leído 37 %». */
 fun porcentaje(f: Float) = "${(f * 100).toInt().coerceIn(0, 100)} %"
+/** Lo que llevas de un libro: «37 %» o, si lo has terminado, «Terminado» (en vez de un 98 % o un 100 %). */
+fun avance(l: Libro) = if (l.estado == Estado.LEIDO) "Terminado" else porcentaje(l.fraccion)

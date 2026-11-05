@@ -64,7 +64,8 @@ body.menu .reloj, body.sin-estado .reloj { opacity: 0; }
 
 /* Barras */
 /* Encima del texto, sin moverlo: aparecen y se van con un fundido corto (sin deslizarse) */
-.barra { position: fixed; left: 0; right: 0; z-index: 20; background: var(--bg); transition: opacity .12s ease-out; }
+/* (cada barra en su propia capa: aparecer y desaparecer no obliga a repintar la página del libro que hay debajo) */
+.barra { position: fixed; left: 0; right: 0; z-index: 20; background: var(--bg); transition: opacity .12s ease-out; will-change: opacity; transform: translateZ(0); contain: layout paint; }
 .barra.oculta { display: flex !important; opacity: 0; pointer-events: none; }
 #arriba { top: 0; padding: calc(var(--safe-top) + 6px) 8px 8px; display: flex; align-items: center; gap: 2px; border-bottom: 2px solid var(--fg); }
 #abajo { bottom: 0; padding: 10px 14px calc(var(--safe-bottom) + 8px); border-top: 2px solid var(--fg); flex-direction: column; display: flex; }

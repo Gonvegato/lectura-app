@@ -367,6 +367,7 @@ class LectorActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        Widgets.lectorAbierto = true
         if (!batteryOn) { batteryOn = true; registerReceiver(battery, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED)) }
     }
 
@@ -374,6 +375,9 @@ class LectorActivity : ComponentActivity() {
         super.onStop()
         if (batteryOn) { batteryOn = false; runCatching { unregisterReceiver(battery) } }
         confirmarMasLejos()
+        // La ficha al día y, ahora sí, los widgets (con el libro abierto no se repintan, para no quitar fluidez)
+        runCatching { EstadoLectura.alCerrar(applicationContext, id) }
+        Widgets.lectorCerrado(applicationContext)
         // Al dejar de leer, lo leído sube ya: en la tablet sigues por la misma página sin tocar nada
         SincroP.cambio(applicationContext, 0)
         SincroP.cambioLectura(applicationContext, id, 0)

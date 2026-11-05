@@ -79,6 +79,18 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.19
+
+- **El lector, más fluido.** Mientras leías, cada poco (cada 0,4 % avanzado) Marfil reescribía la biblioteca entera y, un segundo
+  después, repintaba todos los widgets (decodificando portadas) justo mientras pasabas página o abrías el menú. Ahora, con el libro
+  abierto, los widgets no se repintan (se hace al cerrarlo) y la ficha se pone al día cada 2 % o cada 20 s, y siempre al cerrar. Las
+  barras del menú van en su propia capa: aparecer ya no obliga a repintar la página que hay debajo.
+- **Cambiar qué libro sigue un widget sin quitarlo**: déjalo pulsado en el escritorio y sale «Reconfigurar» (Android 12 o más, en los
+  lanzadores que lo ofrecen, como el de Pixel): abre la misma lista que al ponerlo («Sigue leyendo» y «En portada»: el que toque o uno fijo). El menú del dedo pulsado es del escritorio,
+  no de la app: lo único que una app puede hacer es decir que su widget se puede reconfigurar, y eso es lo que se ha hecho.
+- **Un libro terminado dice «Terminado»**, en el acento, en vez de su porcentaje: en su ficha (en grande, con la barra llena), en las
+  listas (a la derecha, donde van las páginas) y en los widgets.
+
 ## 0.12.18
 
 - **Arreglo de las portadas que se perdían.** Al abrir Marfil se mezcla tu biblioteca con la de tus otros dispositivos y, a la vez, se bajan

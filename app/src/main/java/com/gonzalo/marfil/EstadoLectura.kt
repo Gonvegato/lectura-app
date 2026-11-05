@@ -36,6 +36,9 @@ object EstadoLectura {
     }
 
     /** Lo que llega de otro dispositivo: se guarda sin volver a subirlo. */
+    /** Al cerrar el libro: la ficha, exactamente como queda (lo leído al día aunque no haya pasado el 2 %). */
+    fun alCerrar(ctx: Context, id: String) { alDia(ctx, id, estado(ctx, id), forzar = true) }
+
     fun ponerSinAvisar(ctx: Context, id: String, o: JSONObject) { prefs(ctx).edit().putString(id, o.toString()).apply(); alDia(ctx, id, o, forzar = true) }
 
     /** El archivo del libro (su dirección) o null. */
@@ -69,7 +72,8 @@ object EstadoLectura {
             else -> l.estado
         }
         val ahora = System.currentTimeMillis()
-        val cambioGrande = fijada != null || estado != l.estado || kotlin.math.abs(fr - l.fraccion) >= 0.004f || ajenos != l.ajenosMs
+        // (leyendo, la ficha se pone al día cada 2 % o cada 20 s: reescribir la biblioteca en cada página quitaba fluidez; al cerrar el libro, siempre)
+        val cambioGrande = fijada != null || estado != l.estado || kotlin.math.abs(fr - l.fraccion) >= 0.02f || ajenos != l.ajenosMs
         // No se reescribe la biblioteca en cada página: solo si cambia algo de peso o han pasado 20 s
         if (!forzar && !cambioGrande && ahora - (ultimaVez[id] ?: 0L) < 20_000L) return
         ultimaVez[id] = ahora

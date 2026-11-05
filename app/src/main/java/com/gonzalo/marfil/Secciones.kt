@@ -56,7 +56,7 @@ object OrdenGuardado {
 /** Lo que dice debajo del título de un libro: autor y cómo va. */
 fun metaLibro(l: Libro, conEstado: Boolean = false): String = listOf(
     l.autor,
-    when (l.estado) { Estado.LEYENDO -> porcentaje(l.fraccion); Estado.LEIDO -> if (conEstado) "leído" else ""; Estado.PENDIENTE -> if (conEstado) "pendiente" else ""; Estado.ABANDONADO -> if (conEstado) "abandonado" else "" },
+    when (l.estado) { Estado.LEYENDO -> porcentaje(l.fraccion); Estado.LEIDO -> ""; Estado.PENDIENTE -> if (conEstado) "pendiente" else ""; Estado.ABANDONADO -> if (conEstado) "abandonado" else "" },
     if (l.enOtroDispositivo) "en otro dispositivo" else ""
 ).filter { it.isNotBlank() }.joinToString(" · ")
 
@@ -74,8 +74,9 @@ fun FilaLibro(l: Libro, alAbrir: (Libro) -> Unit, modifier: Modifier = Modifier,
             val meta = listOf(metaLibro(l, conEstado), extra).filter { it.isNotBlank() }.joinToString(" · ")
             if (meta.isNotBlank()) Text(meta.uppercase(), color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, maxLines = 2, modifier = Modifier.padding(top = 2.dp))
         }
-        val pag = Paginas.texto(l)
-        if (pag.isNotBlank()) Text(pag, color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 0.6.sp, maxLines = 1)
+        // A la derecha, en el acento: «TERMINADO» si lo has terminado; si no, sus páginas
+        val pag = if (l.estado == Estado.LEIDO) "TERMINADO" else Paginas.texto(l)
+        if (pag.isNotBlank()) Text(pag, color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = if (l.estado == Estado.LEIDO) 1.sp else 0.6.sp, maxLines = 1)
     }
 }
 

@@ -9,4 +9,5 @@
     android:previewImage="@drawable/w_prev_leyendo"
     android:description="@string/w_leyendo_d"
     android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable"
     android:configure="com.gonzalo.marfil.ConfigWidgetActivity" />
