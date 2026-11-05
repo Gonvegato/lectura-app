@@ -11,8 +11,8 @@ android {
         applicationId = "com.gonzalo.marfil"
         minSdk = 29
         targetSdk = 34
-        versionCode = 33
-        versionName = "0.12.15"
+        versionCode = 34
+        versionName = "0.12.16"
         // Solo los procesadores que se usan (el traductor del diccionario pesa ~16 MB por cada uno): móviles y tablets (arm64) y Waydroid en el PC (x86_64)
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }

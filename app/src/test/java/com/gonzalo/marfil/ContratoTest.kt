@@ -28,6 +28,7 @@ class ContratoTest {
         val out = JSONObject().put("app", "marfil").put("version", VERSION).put("claveDune", dune.clave).put("kidDune", kid)
             .put("dev", JSONObject().put("marfil-A", JSONObject().put("data", data)))
             .put("tiempo", tiempo).put("subrayados", subr)
+            .put("objetivos", Objetivos.Valor(30, 24, 2026, 1_700_000_000_000L).aJson())
         assertEquals("https://covers.openlibrary.org/b/id/1-L.jpg", JSONObject(data).getJSONArray("libros").getJSONObject(0).getString("pu"))
         val f = File("build/outputs/contrato/marfil.json").apply { parentFile.mkdirs() }
         f.writeText(out.toString(2))

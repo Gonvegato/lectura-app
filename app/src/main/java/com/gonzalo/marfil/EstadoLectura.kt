@@ -11,8 +11,9 @@ object Ajustes {
     fun metaLectura(c: Context): Int = c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).getInt("meta_lectura", 0)
     /** El reto del año: cuántos libros quieres terminar (0 = sin reto). */
     fun metaAnual(c: Context): Int = c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).getInt("meta_anual", 0)
-    fun ponMetaAnual(c: Context, n: Int) { c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).edit().putInt("meta_anual", n.coerceIn(0, 999)).apply() }
-    fun ponMetaLectura(c: Context, min: Int) { c.getSharedPreferences("marfil_ajustes", Context.MODE_PRIVATE).edit().putInt("meta_lectura", min.coerceIn(0, 600)).apply() }
+    /** Cambiar un objetivo lo apunta y lo sube a tu cuenta (ver [Objetivos]: lo leen tus otros Marfil y Azabache). */
+    fun ponMetaAnual(c: Context, n: Int) = Objetivos.cambiado(c, metaLectura(c), n)
+    fun ponMetaLectura(c: Context, min: Int) = Objetivos.cambiado(c, min, metaAnual(c))
 }
 
 /**

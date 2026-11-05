@@ -19,6 +19,7 @@ Las valoraciones de Azabache deben enlazarse por esta misma clave.
 | `lstamps/<kid>/<dispositivo>` | Hora de la última subida de ese libro en ese dispositivo. | cada Marfil |
 | `tiempo/<kid>/<escritor>` | `{t, a, dev}`: título, autor y el tiempo leído: `dev[<dispositivo>] = {total (ms), days: {"AAAA-MM-DD": ms}, best}`. **Ligero**: es lo que debe leer un Diario. | cada Marfil |
 | `subrayados/<kid>/<escritor>` | `{t, a, n}`: título, autor y `n` = lista de `{x: texto, o: nota, c: creado (ms), l: etiqueta, k: sitio}`; **ligero** y sin el estado del lector. Cada escritor trae los subrayados de todos los dispositivos: une por `k`+`c`. Sin subrayados, el nodo no existe. | cada Marfil |
+| `objetivos` | `{dia, ano, anio, mod}`: tus objetivos de lectura, los minutos al día (`dia`, 0 = sin objetivo) y los libros del año (`ano`, 0 = sin reto; `anio`, el año en que se fijó), y cuándo se cambiaron (`mod`, ms). **Los fija Marfil**: Azabache los enseña y no los cambia. Manda el `mod` más alto. Al cambiarlos, se sella `stamps/<dispositivo>`. | cada Marfil |
 | `nube/<kid>` | `{f, n, s, u}`: id del archivo en kDrive, nombre, tamaño, hora. | cualquier Marfil |
 
 ## Cómo leer el tiempo para un Diario

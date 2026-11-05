@@ -79,6 +79,12 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.16
+
+- **Un solo objetivo de lectura**: los minutos al día y los libros del año los fija Marfil (Ajustes → Lectura) y viajan con tu cuenta
+  (`marfil/objetivos`) a tus otros Marfil y a Azabache, que los enseña sin poder cambiarlos. Antes cada Marfil tenía el suyo y Azabache
+  otro, y podían no coincidir. La primera vez, si Marfil no tenía ninguno, se traen los que tenías puestos en Azabache.
+
 ## 0.12.15
 
 - En las filas de datos (etiqueta · puntos · cifra), si no cabe todo en una línea, la etiqueta va entera arriba y la cifra debajo, en vez

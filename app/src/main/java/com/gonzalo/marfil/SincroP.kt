@@ -213,6 +213,8 @@ object SincroP {
                 if (rs.cambio) { Sagas.aplicarMezcla(rs.sagas, rs.borradas); cambio = true }
             }
             guardaVistos(c, vistosNuevos)
+            // Los objetivos de lectura (si los cambiaste en otro Marfil)
+            if (runCatching { Objetivos.sincronizar(c) }.getOrDefault(false)) { cambio = true; Widgets.pedir(c) }
             // Un subrayado hecho en otro dispositivo no cambia la biblioteca (que ya avisa sola): los widgets («La cita») se repintan aquí
             if (runCatching { bajarLecturaYa(c) }.getOrDefault(false)) { cambio = true; Widgets.pedir(c) }
             bien(c)
