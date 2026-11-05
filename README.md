@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.11
+
+- Lo leído llega a tu cuenta aunque no haya red al cerrar el libro o Android congele Marfil nada más salir: queda un trabajo de fondo
+  (SubidaWorker) que sube lo pendiente en cuanto hay red, aunque la app siga congelada. Si Marfil ya lo subió, no hace nada.
+
 ## 0.12.10
 
 - Textos al día: lo que seguía diciendo «Atrio» para hablar del móvil (seguir sus colores en directo, copiar su apariencia de tu cuenta,

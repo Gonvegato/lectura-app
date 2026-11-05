@@ -64,7 +64,11 @@ class MainActivity : ComponentActivity() {
         SincroP.escuchar(c)
     }
 
-    override fun onStop() { super.onStop(); SincroP.parar() }
+    override fun onStop() {
+        super.onStop(); SincroP.parar()
+        // Android congela la app al poco de dejar de verse: si quedaba algo por subir, lo sube un trabajo de fondo (que corre igual)
+        if (Cuenta.vinculada && SincroP.hayPendiente()) SubidaWorker.encolar(applicationContext)
+    }
 }
 
 /** La ficha que pide abrir un widget («ficha», por id) o Azabache («clave», la del libro: la misma en todos tus Marfiles). */

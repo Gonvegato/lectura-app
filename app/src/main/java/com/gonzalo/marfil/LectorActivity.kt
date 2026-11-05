@@ -374,6 +374,8 @@ class LectorActivity : ComponentActivity() {
         // Al dejar de leer, lo leído sube ya: en la tablet sigues por la misma página sin tocar nada
         SincroP.cambio(applicationContext, 0)
         SincroP.cambioLectura(applicationContext, id, 0)
+        // Y, por si Android congela la app antes de que acabe de subir (o no hay red), un trabajo de fondo que lo sube en cuanto pueda
+        if (Cuenta.vinculada) SubidaWorker.encolar(applicationContext)
         AtajoLectura.pon(applicationContext)
     }
 

@@ -285,7 +285,11 @@ object SincroP {
     private fun mal(c: Context, e: Exception) {
         fallos++
         estado = (e.message ?: "sin conexión").let { if (e is java.io.IOException) "Sin conexión: se reintenta solo." else it }
-        // Se reintenta solo: 5 s, 15 s, 45 s… hasta 5 minutos
+        // Se reintenta solo: 5 s, 15 s, 45 s… hasta 5 minutos; y, por si la app se congela antes, un trabajo de fondo para cuando haya red
         if (fallos <= 8 && Cuenta.vinculada) cambio(c, minOf(300_000L, 5_000L * Math.pow(3.0, (fallos - 1).toDouble()).toLong()))
+        if (Cuenta.vinculada) SubidaWorker.encolar(c)
     }
+
+    /** ¿Queda algo por subir (una subida programada o lo leído de algún libro)? Para dejar un trabajo de fondo al salir de la app. */
+    fun hayPendiente(): Boolean = programada?.isActive == true || pendientes.isNotEmpty()
 }
