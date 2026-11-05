@@ -59,7 +59,7 @@ private fun CabezaCasilla(texto: String, accion: Pair<String, () -> Unit>? = nul
     }
 }
 
-private fun fecha(ms: Long): String = DateFormat.getDateInstance(DateFormat.MEDIUM, java.util.Locale("es", "ES")).format(Date(ms))
+private fun fecha(ms: Long): String = Formato.fecha(ms)
 
 private fun haceCuando(ms: Long): String {
     if (ms <= 0) return "todavía no"
@@ -263,8 +263,12 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
                         Text(" /100", color = Muted, fontFamily = Body, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 10.dp))
                     }
                     if (nota!!.resena.isNotBlank()) Text(nota!!.resena, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, lineHeight = 21.sp, maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
-                } else Text("Sin valorar todavía.", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp)
-                if (NotaAzabache.instalado(ctx)) EnlaceRevista(if (nota != null) "Abrir en Azabache →" else "Valorar en Azabache →", acento = true) { NotaAzabache.abrir(ctx, nota) }
+                    if (NotaAzabache.instalado(ctx)) EnlaceRevista("Abrir en Azabache →", acento = true) { NotaAzabache.abrir(ctx, nota) }
+                } else Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Una línea: lo que hay y qué hacer
+                    Text(if (NotaAzabache.instalado(ctx)) "Sin valorar aún · " else "Sin valorar aún", color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 16.sp)
+                    if (NotaAzabache.instalado(ctx)) EnlaceRevista("Valorar en Azabache →", acento = true) { NotaAzabache.abrir(ctx, null) }
+                }
             }
             Filete(2.dp)
         }

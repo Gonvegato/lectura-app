@@ -93,4 +93,12 @@ class EscritosTest {
         Biblioteca.quitar("escrito_novela")
         assertNull(Biblioteca.por("escrito_novela")); assertFalse(Biblioteca.borrados.containsKey("escrito:novela"))
     }
+
+    @Test fun capitulosNuevosDesdeLaUltimaLectura() {
+        fun cap(u: Long) = Escritos.Capitulo("o", "c$u", "Obra", "Yo", "Cap $u", u.toInt(), "", 100, "x", u)
+        val o = Escritos.Obra("o", "Obra", "Yo", listOf(cap(10), cap(20), cap(30)))
+        org.junit.Assert.assertEquals(2, Escritos.nuevosDesde(o, 15))
+        org.junit.Assert.assertEquals(0, Escritos.nuevosDesde(o, 30))
+        org.junit.Assert.assertEquals("sin abrir nunca: nada marcado como nuevo", 0, Escritos.nuevosDesde(o, 0))
+    }
 }

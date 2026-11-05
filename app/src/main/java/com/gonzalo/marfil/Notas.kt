@@ -59,7 +59,7 @@ fun SeccionNotas(l: Libro) {
         Column(Modifier.fillMaxWidth().clickable { Lector.abrir(ctx, l, goto = n.value) }.padding(vertical = 10.dp)) {
             Text("«${n.texto}»", color = Charcoal, fontFamily = Display, fontSize = 17.sp, lineHeight = 23.sp, maxLines = if (todas) 12 else 5, overflow = TextOverflow.Ellipsis)
             if (n.nota.isNotBlank()) Text(n.nota, color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 14.sp, lineHeight = 19.sp, modifier = Modifier.padding(top = 4.dp))
-            Text(listOfNotNull(n.etiqueta.ifBlank { null }, if (n.creada > 0) DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(n.creada)) else null).joinToString(" · ").uppercase(),
+            Text(listOfNotNull(n.etiqueta.ifBlank { null }, if (n.creada > 0) Formato.fecha(n.creada) else null).joinToString(" · ").uppercase(),
                 color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(top = 4.dp))
         }
     }

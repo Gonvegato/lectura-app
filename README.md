@@ -79,6 +79,17 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.20
+
+- **Fechas y cifras como en las otras tres** (`Formato.kt`, con las mismas pruebas en las cuatro): «16 oct 2026» en fichas y textos, «16/10/2026» en las tablas de datos y siempre con punto de millar («4.010»). Los meses van escritos en la app (Android, según la versión, les ponía punto: «oct.»).
+- **Escritos: «N capítulos nuevos»** en el acento cuando Cobalto ha publicado capítulos desde la última vez que abriste la obra, y debajo, por dónde vas («vas por el 34 % · Capítulo 5»).
+- «En Azabache» sin nota: una línea, «Sin valorar aún · Valorar en Azabache →».
+- Al elegir el libro de un widget, los terminados dicen «TERMINADO».
+- Los contadores de las pestañas van en tinta (más oscura la de la pestaña elegida), no en rojo: el rojo queda para lo que se toca.
+- En las listas, la línea de debajo del título un punto más grande y más legible.
+- **La cabecera de la portada se pliega al bajar**: arriba solo se quedan el nombre y «Buscar · + Añadir»; el número, la fecha, las barras y el menú se van con la página.
+- Debajo de «Marfil · hecho en casa», en gris, la versión instalada.
+
 ## 0.12.19
 
 - **El lector, más fluido.** Mientras leías, cada poco (cada 0,4 % avanzado) Marfil reescribía la biblioteca entera y, un segundo

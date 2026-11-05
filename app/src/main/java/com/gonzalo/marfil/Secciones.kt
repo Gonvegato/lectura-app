@@ -72,7 +72,7 @@ fun FilaLibro(l: Libro, alAbrir: (Libro) -> Unit, modifier: Modifier = Modifier,
         Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
             Text(l.titulo, color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = if (portada >= 54.dp) 20.sp else 18.sp, lineHeight = if (portada >= 54.dp) 22.sp else 20.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             val meta = listOf(metaLibro(l, conEstado), extra).filter { it.isNotBlank() }.joinToString(" · ")
-            if (meta.isNotBlank()) Text(meta.uppercase(), color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, maxLines = 2, modifier = Modifier.padding(top = 2.dp))
+            if (meta.isNotBlank()) Text(meta.uppercase(), color = Muted, fontFamily = Body, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.8.sp, maxLines = 2, lineHeight = 15.sp, modifier = Modifier.padding(top = 3.dp))
         }
         // A la derecha, en el acento: «TERMINADO» si lo has terminado; si no, sus páginas
         val pag = if (l.estado == Estado.LEIDO) "TERMINADO" else Paginas.texto(l)

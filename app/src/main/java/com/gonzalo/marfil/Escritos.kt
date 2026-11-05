@@ -40,6 +40,9 @@ object Escritos {
     fun idDe(obra: String) = "escrito_$obra"
 
     class Capitulo(val obra: String, val id: String, val titulo: String, val autor: String, val nombre: String, val numero: Int, val parte: String, val palabras: Int, val texto: String, val u: Long)
+    /** Cuántos capítulos de [o] publicó Cobalto después de [ultimaLectura] (ms; 0 = nunca la has abierto: entonces no se marca nada). Pura. */
+    fun nuevosDesde(o: Obra, ultimaLectura: Long): Int = if (ultimaLectura <= 0L) 0 else o.capitulos.count { it.u > ultimaLectura }
+
     class Obra(val id: String, val titulo: String, val autor: String, val capitulos: List<Capitulo>) {
         val palabras: Int get() = capitulos.sumOf { it.palabras }
         /** La última edición de cualquiera de sus capítulos: si cambia, el EPUB se rehace. */
@@ -210,11 +213,18 @@ fun PantEscritos(alVolver: () -> Unit, alLeer: (Libro) -> Unit, abrir: String? =
         )
         obras.forEach { o ->
             val libro = Biblioteca.por(Escritos.idDe(o.id))
+            // Lo nuevo desde la última vez que la leíste (los capítulos que Cobalto publicó después) y por dónde vas
+            val nuevos = Escritos.nuevosDesde(o, libro?.ultima ?: 0L)
+            val porDonde = remember(libro?.id, libro?.ultima) { libro?.let { EstadoLectura.estado(ctx, it.id).optString("label").trim() }.orEmpty() }
             Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                if (nuevos > 0) Text(if (nuevos == 1) "1 CAPÍTULO NUEVO" else "$nuevos CAPÍTULOS NUEVOS", color = Acento, fontFamily = Body, fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.4.sp, modifier = Modifier.padding(bottom = 4.dp))
                 Text(o.titulo, fontFamily = Display, fontWeight = FontWeight.Bold, fontSize = 26.sp, lineHeight = 30.sp, color = Charcoal)
-                Text(listOfNotNull(o.autor.ifBlank { null }, "${o.capitulos.size} ${if (o.capitulos.size == 1) "capítulo terminado" else "capítulos terminados"}", "${o.palabras} palabras",
-                    libro?.takeIf { it.fraccion > 0.005f }?.let { "vas por el ${(it.fraccion * 100).toInt()} %" }).joinToString(" · "),
+                Text(listOfNotNull(o.autor.ifBlank { null }, "${o.capitulos.size} ${if (o.capitulos.size == 1) "capítulo terminado" else "capítulos terminados"}", "${Formato.cifra(o.palabras)} palabras").joinToString(" · "),
                     color = Muted, fontFamily = Body, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+                libro?.takeIf { it.fraccion > 0.005f }?.let { l ->
+                    Text(listOfNotNull("vas por el ${(l.fraccion * 100).toInt()} %", porDonde.ifBlank { null }).joinToString(" · "),
+                        color = Charcoal, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 2.dp))
+                }
                 Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
                     EnlaceRevista(if (libro != null && libro.fraccion > 0.005f) "Seguir leyendo →" else "Leer →", acento = true) {
                         ambito.launch { val l = withContext(Dispatchers.IO) { runCatching { Escritos.preparar(ctx, o) }.getOrNull() }; if (l != null) alLeer(l) else mensaje = "No he podido preparar el libro." }

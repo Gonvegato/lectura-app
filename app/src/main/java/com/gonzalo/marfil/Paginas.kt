@@ -115,6 +115,6 @@ object Paginas {
     /** «118/320» (lo que llevas) o «320 págs» (lo que tiene): para ponerlo en acento a la derecha. Vacío si no se sabe. */
     fun texto(l: Libro): String {
         if (l.paginas <= 0) return ""
-        return if (l.estado == Estado.LEYENDO && l.fraccion > 0.001f) "${Math.round(l.fraccion * l.paginas).coerceIn(1, l.paginas)}/${l.paginas}" else "${l.paginas} págs"
+        return if (l.estado == Estado.LEYENDO && l.fraccion > 0.001f) "${Formato.cifra(Math.round(l.fraccion * l.paginas).coerceIn(1, l.paginas))}/${Formato.cifra(l.paginas)}" else "${Formato.cifra(l.paginas)} págs"
     }
 }

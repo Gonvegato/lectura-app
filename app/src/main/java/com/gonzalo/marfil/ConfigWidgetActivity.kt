@@ -60,6 +60,8 @@ fun ElegirLibroWidget(alElegir: (String?) -> Unit) {
                     Column(Modifier.weight(1f).padding(start = 12.dp)) {
                         Text(l.titulo, color = Charcoal, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, maxLines = 2)
                         Text(metaLibro(l, conEstado = true).uppercase(), color = Muted, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                        // Los terminados, como en las listas: «TERMINADO» en el acento
+                        if (l.estado == Estado.LEIDO) Text("TERMINADO", color = Acento, fontFamily = Body, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                     }
                 }
                 Filete(1.dp, Line)

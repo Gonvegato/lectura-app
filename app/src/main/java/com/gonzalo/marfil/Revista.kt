@@ -102,7 +102,8 @@ fun PestanasRevista(nombres: List<String>, sel: Int, modifier: Modifier = Modifi
                     .drawBehind { if (on) drawRect(Acento, topLeft = Offset(0f, size.height - 3.dp.toPx()), size = Size(size.width, 3.dp.toPx())) }
                     .padding(top = 12.dp, bottom = 10.dp), verticalAlignment = Alignment.Bottom) {
                     Text(n.uppercase(), color = if (on) Charcoal else Muted, fontFamily = Body, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp, maxLines = 1)
-                    cuentas?.getOrNull(i)?.let { c -> Text(" $c", color = Acento, fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, maxLines = 1) }
+                    cuentas?.getOrNull(i)?.let { c -> Text(" $c", color = if (on) Charcoal else Muted,  // (el rojo, solo para lo que se toca: la pestaña activa y los enlaces)
+                         fontFamily = Display, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, maxLines = 1) }
                 }
             }
         }
@@ -313,3 +314,21 @@ fun FitTitle(
     )
 }
 private val anchosFit = ConcurrentHashMap<String, Int>()
+
+/**
+ * La cabecera plegada de la portada: al bajar, el nombre y las acciones de arriba (buscar, añadir) se quedan fijos en una barra fina, y el
+ * resto de la cabecera (Nº, fecha, barras, menú) se va con la página. Igual en Hiedra, Marfil y Cobalto.
+ */
+@Composable
+fun BarraPlegada(nombre: String, visible: Boolean, acciones: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+    androidx.compose.animation.AnimatedVisibility(visible, enter = androidx.compose.animation.fadeIn(), exit = androidx.compose.animation.fadeOut()) {
+        Column(Modifier.fillMaxWidth().background(Paper).statusBarsPadding().padding(horizontal = 28.dp)) {
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(nombre.uppercase(), color = Charcoal, fontFamily = Display, fontWeight = FontWeight.Bold, fontSize = 22.sp, letterSpacing = 1.sp, maxLines = 1)
+                Spacer(Modifier.weight(1f))
+                acciones()
+            }
+            Filete(2.dp)
+        }
+    }
+}
