@@ -63,7 +63,7 @@ de kDrive se pega una vez en Ajustes → Avanzado y se guarda solo en este móvi
 
 ```
 gradle :app:assembleDebug
-gradle :app:testDebugUnitTest                                                   # 0 fallos
+gradle :app:testDebugUnitTest                                                   # 0 fallos; ContratoTest deja en app/build/outputs/contrato/marfil.json lo que sube Marfil, para la prueba ContratoHermanasTest de Azabache
 gradle :app:testDebugUnitTest --tests '*CapturasTest*' -Proborazzi.test.record=true   # capturas en app/build/outputs/roborazzi
 gradle :app:assembleRelease                                                     # firmado con app/marfil.keystore
 ```
