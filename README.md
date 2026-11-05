@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.10
+
+- Textos al día: lo que seguía diciendo «Atrio» para hablar del móvil (seguir sus colores en directo, copiar su apariencia de tu cuenta,
+  «los mismos que en Atrio») dice ahora Azabache, que es quien está en el móvil. La cuenta sigue siendo la cuenta de Atrio.
+
 ## 0.12.9
 
 - **Arreglo**: en Android 13 o más, los avisos del actualizador («Marfil tiene una versión nueva», «Marfil se ha actualizado, toca para abrirla»)

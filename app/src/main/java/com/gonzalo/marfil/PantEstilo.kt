@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val VERSION = "0.12.9"
+const val VERSION = "0.12.10"
 
 /** «Ajustes» en pestañas, como Atrio: Apariencia · Lectura · Cuenta (Atrio y libros en la nube) · Avanzado (actualizaciones y copias). */
 @OptIn(ExperimentalLayoutApi::class)
@@ -198,7 +198,7 @@ private fun SeccionActualizaciones() {
         if (!avisos) MagLink("Avisos de actualización: dar permiso", "Para avisarte cuando hay una versión nueva que Android no deja instalar sola, y para volver a abrir Marfil al terminar de actualizarla.") { pedirAvisos.launch(android.Manifest.permission.POST_NOTIFICATIONS) }
     }
     if (!conectado) {
-        Text("Pega tu token de kDrive y el número de tu kDrive (los mismos que en Atrio). Se guardan solo en este móvil.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
+        Text("Pega tu token de kDrive y el número de tu kDrive (los mismos que en Azabache). Se guardan solo en este móvil.", color = Muted, fontFamily = Body, fontSize = 12.sp, lineHeight = 17.sp, modifier = Modifier.padding(top = 4.dp))
         CampoRevista("Token", token, "token de kDrive", secreto = true) { token = it }
         CampoRevista("kDrive", unidad, "número o dirección") { unidad = it }
         MagLink(if (ocupado) "Comprobando…" else "Conectar", "Comprueba el token y busca tu «Mi carpeta»") {

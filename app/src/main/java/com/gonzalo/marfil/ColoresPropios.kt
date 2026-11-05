@@ -37,7 +37,7 @@ fun SelectorColor(nombre: String, valor: Long, actual: Color, onCambia: (Long) -
             Text(nombre, fontFamily = Display, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Charcoal)
             Text(if (valor == 0L) "Automático" else hexDe(Color(valor)), color = Muted, fontFamily = Body, fontSize = 12.sp)
         }
-        if (copiar != null) EnlaceRevista("Copiar de Atrio", Modifier.padding(end = 12.dp)) { copiar() }
+        if (copiar != null) EnlaceRevista("Copiar de Azabache", Modifier.padding(end = 12.dp)) { copiar() }
         if (valor != 0L) EnlaceRevista("Quitar", Modifier.padding(end = 12.dp)) { onCambia(0L); onGuarda(); abierto = false }
         Text(if (abierto) "▴" else "▾", color = Muted, fontSize = 16.sp)
     }

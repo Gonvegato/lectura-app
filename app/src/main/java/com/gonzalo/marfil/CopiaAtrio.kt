@@ -44,7 +44,7 @@ object CopiaAtrio {
         for ((id, nombre, clave) in listOf(Triple("c_fondo", "Color del fondo", "skin_fondo_propio"), Triple("c_texto", "Color del texto", "skin_tinta_propia"), Triple("c_acento", "Color del acento", "skin_acento_propio")))
             out += Fila(id, nombre, hex(colorEfectivo(a, id.removePrefix("c_"))) + if (largo(s, clave) != 0L) " (a tu manera)" else " (el de su tema)")
         val lt = s.optString("skin_letra_titulos"); val lx = s.optString("skin_letra_texto")
-        out += Fila("letras", "Letras", "títulos: ${lt.ifEmpty { "la de Atrio" }} · texto: ${lx.ifEmpty { "la de Atrio" }}")
+        out += Fila("letras", "Letras", "títulos: ${lt.ifEmpty { "la de Azabache" }} · texto: ${lx.ifEmpty { "la de Azabache" }}")
         if (s.has("skin_escala")) out += Fila("tamano", "Tamaño del texto", Skin.ESCALAS_NOMBRES[s.optInt("skin_escala", 100)] ?: "${s.optInt("skin_escala")} %")
         return out
     }

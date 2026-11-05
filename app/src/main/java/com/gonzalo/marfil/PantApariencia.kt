@@ -110,17 +110,17 @@ fun SeccionApariencia() {
     // ---- A tu manera
     Seccion("A tu manera")
     Text("El color que quieras para el fondo, el texto y el acento, y la letra de los títulos y del texto. Mandan sobre lo de arriba; «Quitar» vuelve a ello.", color = Muted, fontFamily = Body, fontSize = 13.sp)
-    // Cada color se puede copiar de Atrio por separado (el del fondo, el del texto o el del acento)
+    // Cada color se puede copiar de Azabache por separado (el del fondo, el del texto o el del acento)
     val ambito = rememberCoroutineScope()
     var avisoCopia by remember { mutableStateOf<String?>(null) }
     fun copiaDe(que: String, nombre: String) {
         if (!Cuenta.vinculada) { avisoCopia = "Primero vincula tu cuenta de Atrio (en «Cuenta de Atrio»)."; return }
-        avisoCopia = "Leyendo lo de Atrio…"
+        avisoCopia = "Leyendo lo de Azabache…"
         ambito.launch {
             avisoCopia = try {
                 val a = withContext(Dispatchers.IO) { CopiaAtrio.leer() }
-                if (a == null) "Atrio todavía no ha subido su apariencia a tu cuenta (ábrelo y espera a que sincronice)."
-                else "Copiado el color del $nombre de Atrio: " + "#%06X".format(CopiaAtrio.copiarColor(ctx, a, que) and 0xFFFFFF)
+                if (a == null) "Azabache todavía no ha subido su apariencia a tu cuenta (ábrelo y espera a que sincronice)."
+                else "Copiado el color del $nombre de Azabache: " + "#%06X".format(CopiaAtrio.copiarColor(ctx, a, que) and 0xFFFFFF)
             } catch (e: Exception) { e.message ?: "No se pudo leer" }
         }
     }
@@ -137,9 +137,9 @@ fun SeccionApariencia() {
     SelectorLetra("Letra del texto", Skin.body.takeIf { it != "Atrio" }.orEmpty(), remember { (BODY_FONTS + DISPLAY_FONTS).map { it.name }.distinct() }) { Skin.body = it.ifBlank { "Atrio" }; guarda() }
 
     // ---- Colores de Atrio (en directo)
-    Seccion("Colores de Atrio, en directo")
-    Text("Usa los colores que tienes ahora en la app de Atrio de este móvil (los que cambies allí cambian aquí), con la opción de ponerlos del revés.", color = Muted, fontFamily = Body, fontSize = 13.sp)
-    Etiqueta("Seguir a Atrio", Modifier.padding(top = 10.dp))
+    Seccion("Colores de Azabache, en directo")
+    Text("Usa los colores que tienes ahora en Azabache en este móvil (los que cambies allí cambian aquí), con la opción de ponerlos del revés.", color = Muted, fontFamily = Body, fontSize = 13.sp)
+    Etiqueta("Seguir a Azabache", Modifier.padding(top = 10.dp))
     MagChoice(listOf("No", "Sí"), if (Skin.origenAtrio) 1 else 0) { i -> Skin.origenAtrio = i == 1; if (i == 1) Skin.fondoId = ""; guarda() }
     if (Skin.origenAtrio) {
         Etiqueta("Invertir", Modifier.padding(top = 6.dp))
@@ -147,13 +147,13 @@ fun SeccionApariencia() {
         LaunchedEffect(Unit) { kotlin.concurrent.thread { TemaAtrio.refrescar(ctx.applicationContext) } }
         Text(
             if (TemaAtrio.aviso.isNotBlank()) TemaAtrio.aviso + (if (TemaAtrio.tonos != null) " Se usan los últimos colores que se leyeron." else " Mientras tanto, los de Marfil.")
-            else "Marfil lee los colores que tienes ahora en Atrio" + (if (Skin.invertido) " y los pone del revés: el fondo con el color del texto y el texto con el del fondo; el acento se mantiene." else "."),
+            else "Marfil lee los colores que tienes ahora en Azabache" + (if (Skin.invertido) " y los pone del revés: el fondo con el color del texto y el texto con el del fondo; el acento se mantiene." else "."),
             color = if (TemaAtrio.aviso.isNotBlank()) Acento else Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 14.sp, lineHeight = 19.sp, modifier = Modifier.padding(top = 4.dp)
         )
     }
 
-    // ---- Copiar de Atrio (lo guardado en tu cuenta)
-    Seccion("Copiar de Atrio")
+    // ---- Copiar de Azabache (lo guardado en tu cuenta)
+    Seccion("Copiar de Azabache")
     SeccionCopiar()
 }
 
@@ -166,12 +166,12 @@ private fun SeccionCopiar() {
     var aviso by remember { mutableStateOf<String?>(null) }
     var ajustes by remember { mutableStateOf<CopiaAtrio.Ajustes?>(null) }
     var marcadas by remember { mutableStateOf(setOf<String>()) }
-    Text("Atrio sube su apariencia a tu cuenta. Aquí la lees y copias solo lo que quieras (no se cambia nada en Atrio).", color = Muted, fontFamily = Body, fontSize = 13.sp)
+    Text("Azabache sube su apariencia a tu cuenta. Aquí la lees y copias solo lo que quieras (no se cambia nada en Azabache).", color = Muted, fontFamily = Body, fontSize = 13.sp)
     if (!Cuenta.vinculada) {
         Text("Primero vincula tu cuenta de Atrio (en «Cuenta de Atrio», más abajo).", color = Acento, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 15.sp, modifier = Modifier.padding(top = 6.dp))
         return
     }
-    MagLink(if (leyendo) "Leyendo…" else "Leer lo que tiene mi Atrio", accent = true) {
+    MagLink(if (leyendo) "Leyendo…" else "Leer lo que tiene mi Azabache", accent = true) {
         if (!leyendo) {
             leyendo = true; aviso = null
             ambito.launch {
@@ -179,7 +179,7 @@ private fun SeccionCopiar() {
                     val r = withContext(Dispatchers.IO) { CopiaAtrio.leer() }
                     ajustes = r
                     marcadas = r?.let { CopiaAtrio.filas(it).map { f -> f.id }.toSet() } ?: emptySet()
-                    if (r == null) aviso = "Atrio todavía no ha subido su apariencia a tu cuenta (ábrelo y espera a que sincronice)."
+                    if (r == null) aviso = "Azabache todavía no ha subido su apariencia a tu cuenta (ábrelo y espera a que sincronice)."
                 } catch (e: Exception) { aviso = (e.message ?: "No se pudo leer") }
                 leyendo = false
             }

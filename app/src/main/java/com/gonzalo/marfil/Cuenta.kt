@@ -103,7 +103,7 @@ object Cuenta {
         if (webKey.isNotBlank()) return webKey
         val r = try { http("GET", "$dbUrl/config/webKey.json", null) } catch (e: Exception) { throw Fail("No hay conexión con Firebase.") }
         val k = if (r.code == 200) (JSONTokener(r.text.trim()).nextValue() as? String ?: "") else ""
-        if (k.isBlank()) throw Fail("No encuentro la clave de Firebase de tu cuenta. Entra una vez en Atrio con ella y vuelve a intentarlo.")
+        if (k.isBlank()) throw Fail("No encuentro la clave de Firebase de tu cuenta. Entra una vez en Azabache con ella y vuelve a intentarlo.")
         webKey = k; p.edit().putString("webKey", k).apply()
         return k
     }
@@ -162,7 +162,7 @@ object Cuenta {
         }
         var r = go(false)
         if (r.code == 401) r = go(true)
-        if (r.code == 401 || r.code == 403) throw Fail("Firebase no deja hacer eso. Revisa las reglas de la base de datos (en Atrio: Ajustes → Cuenta).")
+        if (r.code == 401 || r.code == 403) throw Fail("Firebase no deja hacer eso. Revisa las reglas de la base de datos (en Azabache: Ajustes → Cuenta y pareja).")
         if (r.code == 404) throw Fail("No encuentro la base de datos. Revisa la dirección.")
         if (r.code !in 200..299) throw Fail("Firebase respondió ${r.code}.")
         if (r.text.trimStart().startsWith("<")) throw Fail("La dirección no es la de la base de datos (devuelve una página web).")
