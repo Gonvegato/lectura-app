@@ -3,9 +3,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Actualizarse sola desde tu kDrive (Actualizador.kt): instalar la versión nueva de sí misma, y reabrirse después -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Android 13 o más: sin este permiso no se ven los avisos del actualizador («tienes una versión nueva», «se ha actualizado») -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- Para leer los colores de Atrio (su ContentProvider de colores) -->
     <queries>
+        <!-- Desde Android 11 una app no ve a las demás si no las declara aquí: sin esto, «Leer en Marfil», «Jugar en Hiedra» o «Escribir en Cobalto» no salen nunca en un móvil de verdad (getLaunchIntentForPackage devuelve null) -->
+        <package android:name="com.gonzalo.hiedra" />
+        <package android:name="com.gonzalo.cobalto" />
         <package android:name="com.gonzalo.gamerate" />
         <provider android:authorities="com.gonzalo.gamerate.tema" />
     </queries>

@@ -33,3 +33,6 @@ Nada pendiente de Marfil. Las fechas de terminado van en `dev/<dispositivo>/data
 
 Con el intent de lanzamiento del paquete `com.gonzalo.marfil`: `go=escritos` abre la sección Escritos (con `obra=<id de Escribir>`, abre esa obra en el lector); `clave=<clave del libro>` abre la ficha
 de ese libro (la clave es la `k` de la biblioteca); `ficha=<id>` y `leer=<id>` (por id de este dispositivo) los usan los widgets.
+- **Verse entre hermanas**: desde Android 11 una app no ve a otra (`getLaunchIntentForPackage` da null) si no la declara en `<queries>` de su
+  manifiesto. Cada hermana declara a las demás (`com.gonzalo.hiedra`, `com.gonzalo.marfil`, `com.gonzalo.cobalto`, `com.gonzalo.gamerate`);
+  un test (`ManifiestoHermanasTest`) lo vigila. Sin esto, «Jugar en Hiedra», «Leer en Marfil» y «Escribir en Cobalto» no salen nunca en un móvil.

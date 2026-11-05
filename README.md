@@ -79,6 +79,14 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.9
+
+- **Arreglo**: en Android 13 o más, los avisos del actualizador («Marfil tiene una versión nueva», «Marfil se ha actualizado, toca para abrirla»)
+  no se veían nunca: faltaba el permiso de avisos. Ahora se declara y se concede desde Ajustes → Avanzado («Avisos de actualización»).
+- **Arreglo**: en Android 11 o más, «Escribir en Cobalto» no salía nunca (Marfil no declaraba que puede ver a Cobalto; los tests no lo
+  detectan porque Robolectric no filtra paquetes). Ahora el manifiesto declara a Hiedra y Cobalto, y un test lo vigila.
+- Un subrayado o una nota hechos en otro dispositivo repintan los widgets («La cita») en cuanto llegan, no solo cuando cambia la biblioteca.
+
 ## 0.12.8
 
 - Mientras lees, lo leído (posición, tiempo, subrayados) sube a tu cuenta como mucho una vez por minuto, no cada pocos segundos; al salir del

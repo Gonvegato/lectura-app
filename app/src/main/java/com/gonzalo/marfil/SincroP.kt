@@ -213,7 +213,8 @@ object SincroP {
                 if (rs.cambio) { Sagas.aplicarMezcla(rs.sagas, rs.borradas); cambio = true }
             }
             guardaVistos(c, vistosNuevos)
-            if (runCatching { bajarLecturaYa(c) }.getOrDefault(false)) cambio = true
+            // Un subrayado hecho en otro dispositivo no cambia la biblioteca (que ya avisa sola): los widgets («La cita») se repintan aquí
+            if (runCatching { bajarLecturaYa(c) }.getOrDefault(false)) { cambio = true; Widgets.pedir(c) }
             bien(c)
             cambio
         } catch (e: Exception) { mal(c, e); false }
