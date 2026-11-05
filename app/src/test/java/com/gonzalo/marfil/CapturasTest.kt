@@ -120,10 +120,10 @@ class CapturasTest {
         org.junit.Assume.assumeTrue(System.getProperty("roborazzi.test.record") == "true")
         siembra(); montar(false)
         rule.onNodeWithText("LEÍDOS").performClick(); rule.waitForIdle(); foto("3e_leidos")
-        rule.onAllNodesWithText("ABANDONADOS")[0].performClick(); rule.waitForIdle(); foto("3f_abandonados")
-        rule.onAllNodesWithText("AUTORES")[0].performClick(); rule.waitForIdle()
+        rule.onAllNodesWithText("ABANDONADOS")[0].performScrollTo().performClick(); rule.waitForIdle(); foto("3f_abandonados")
+        rule.onAllNodesWithText("AUTORES")[0].performScrollTo().performClick(); rule.waitForIdle()
         rule.onNodeWithText("Frank Herbert", useUnmergedTree = true).performClick(); foto("3g_autores")
-        rule.onAllNodesWithText("SAGAS")[0].performClick(); rule.waitForIdle(); foto("3h_sagas")
+        rule.onAllNodesWithText("SAGAS")[0].performScrollTo().performClick(); rule.waitForIdle(); foto("3h_sagas")
         rule.onAllNodesWithText("Crónicas de Dune", useUnmergedTree = true).onLast().performClick(); rule.waitForIdle(); foto("3i_sagas_abierta")
     }
 
@@ -197,7 +197,7 @@ class CapturasTest {
             .put("relatos", org.json.JSONObject().put("c1", org.json.JSONObject().put("t", "Relatos de invierno").put("a", "Gonzalo").put("c", "Nieve").put("n", 1).put("pa", "").put("p", 950).put("x", "Nevaba.").put("u", System.currentTimeMillis() - 20 * 86_400_000L)))
         ctx.getSharedPreferences("marfil_escritos", Context.MODE_PRIVATE).edit().putString("lectura", lectura.toString()).putLong("ultima", System.currentTimeMillis() - 600_000L).commit()
         montar(false)
-        rule.onNodeWithText("ESCRITOS").performClick(); rule.waitForIdle(); foto("9_escritos")
+        rule.onNodeWithText("ESCRITOS").performScrollTo().performClick(); rule.waitForIdle(); foto("9_escritos")
     }
 
     @Test fun fichaDeUnLeido() {

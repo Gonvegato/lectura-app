@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.12
+
+- Las pestañas (secciones, Ajustes) se desplazan solas solo cuando la elegida no se ve entera, y entonces la centran: antes se
+  pegaba al borde izquierdo y la de al lado salía cortada.
+
 ## 0.12.11
 
 - Lo leído llega a tu cuenta aunque no haya red al cerrar el libro o Android congele Marfil nada más salir: queda un trabajo de fondo
