@@ -36,6 +36,8 @@ import java.util.concurrent.ConcurrentHashMap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import kotlin.math.roundToInt
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
 
 /*
  * Las piezas de la interfaz «Revista» de Atrio (RevistaUI.kt, Revista.kt, Ediciones.kt, Vitrina.kt), tal cual y con los mismos
@@ -86,7 +88,13 @@ fun PestanasRevista(nombres: List<String>, sel: Int, modifier: Modifier = Modifi
         if (x < desplazamiento.value || x + w > desplazamiento.value + anchoFila) desplazamiento.animateScrollTo((x + w / 2 - anchoFila / 2).coerceIn(0, desplazamiento.maxValue))
     }
     Column(modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().onGloballyPositioned { anchoFila = it.size.width }.horizontalScroll(desplazamiento), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Bottom) {
+        Row(Modifier.fillMaxWidth().onGloballyPositioned { anchoFila = it.size.width }.drawWithContent {
+                // Un degradado en los bordes cuando hay más pestañas por un lado o por otro (para que no parezcan cortadas)
+                drawContent()
+                val f = 28.dp.toPx()
+                if (desplazamiento.value > 0) drawRect(Brush.horizontalGradient(listOf(Paper, Color.Transparent), 0f, f), Offset.Zero, Size(f, size.height))
+                if (desplazamiento.value < desplazamiento.maxValue) drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Paper), size.width - f, size.width), Offset(size.width - f, 0f), Size(f, size.height))
+            }.horizontalScroll(desplazamiento), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.Bottom) {
             nombres.forEachIndexed { i, n ->
                 val on = i == sel
                 Row(Modifier.onGloballyPositioned { c -> sitios[i] = (c.positionInParent().x + desplazamiento.value).roundToInt() to c.size.width }
@@ -105,7 +113,14 @@ fun PestanasRevista(nombres: List<String>, sel: Int, modifier: Modifier = Modifi
 /** Filtros u opciones de una sola elección, en una fila que se desliza: versalitas; el elegido en acento y subrayado. */
 @Composable
 fun FiltrosRevista(opciones: List<String>, sel: Int, modifier: Modifier = Modifier, onSel: (Int) -> Unit) {
-    Row(modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    val desplazamiento = rememberScrollState()
+    Row(modifier.fillMaxWidth().drawWithContent {
+            // Un degradado en los bordes cuando hay más opciones por un lado o por otro (para que no parezcan cortadas)
+            drawContent()
+            val f = 28.dp.toPx()
+            if (desplazamiento.value > 0) drawRect(Brush.horizontalGradient(listOf(Paper, Color.Transparent), 0f, f), Offset.Zero, Size(f, size.height))
+            if (desplazamiento.value < desplazamiento.maxValue) drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Paper), size.width - f, size.width), Offset(size.width - f, 0f), Size(f, size.height))
+        }.horizontalScroll(desplazamiento), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         opciones.forEachIndexed { i, o -> FiltroRevista(o, i == sel) { onSel(i) } }
     }
 }
