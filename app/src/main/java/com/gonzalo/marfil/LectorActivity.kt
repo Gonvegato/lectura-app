@@ -330,6 +330,9 @@ class LectorActivity : ComponentActivity() {
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     @Volatile private var candidata: Triple<String, Double, String>? = null
+    /** Por dónde ibas leyendo antes de un salto largo (y si ya se preguntó por ese salto). */
+    @Volatile private var ancla: Double? = null
+    @Volatile private var preguntado = false
     private val confirmar = Runnable { confirmarMasLejos() }
     /** Lo más lejos que has llegado en este libro (en cualquiera de tus dispositivos): todos se ponen ahí. */
     private fun confirmarMasLejos() {
@@ -404,6 +407,8 @@ class LectorActivity : ComponentActivity() {
         @JavascriptInterface
         fun state(): String {
             val o = EstadoLectura.estado(this@LectorActivity, id)
+            // Donde se abre el libro es el sitio de referencia para saber si luego das un salto largo
+            ancla = empiezaEn(o).second; preguntado = false
             val name = o.optString("name").ifBlank { "libro" }
             return JSONObject()
                 .put("title", Biblioteca.por(id)?.titulo.orEmpty())
@@ -428,12 +433,40 @@ class LectorActivity : ComponentActivity() {
             val o = EstadoLectura.estado(this@LectorActivity, id)
             // Al abrir el libro el lector «llega» a la posición guardada y avisa igualmente: eso no es leer
             if (o.has("cfi") && kotlin.math.abs(o.optDouble("fraction", -1.0) - fraction) < 0.0005) return
+            val antes = ancla ?: o.optDouble("fraction", fraction).also { ancla = it }
             o.put("cfi", cfi).put("fraction", fraction).put("label", label).put("read", System.currentTimeMillis())
+            // Un salto largo (del 98 % al 2 %, o al revés: la barra, el índice…): no cuenta como «lo más lejos» hasta que digas que vas por ahí
+            val salto = Salto.hay(antes, fraction)
+            // (mientras estás en un salto sin confirmar, lo leído de la ficha no se mueve)
+            if (salto) o.put("enSalto", true) else o.remove("enSalto")
             EstadoLectura.poner(this@LectorActivity, id, o)
+            if (salto) {
+                candidata = null; handler.removeCallbacks(confirmar)
+                if (!preguntado) { preguntado = true; val de = (antes * 100).toInt(); val a = (fraction * 100).toInt()
+                    runOnUiThread { web.evaluateJavascript("window.atrioSalto && atrioSalto($de, $a)", null) } }
+                return
+            }
+            // Leyendo normal (o de vuelta cerca de donde ibas): el sitio de referencia avanza contigo
+            ancla = fraction; preguntado = false
             // Si es lo más lejos que has llegado, se apunta como candidata: cuenta si te quedas ahí unos segundos o
             // al salir (un salto sin querer por la barra no cuenta si sigues leyendo desde otro sitio)
             if (fraction > o.optDouble("bestFrac", 0.0)) { candidata = Triple(cfi, fraction, label); handler.removeCallbacks(confirmar); handler.postDelayed(confirmar, 6000) }
             else { candidata = null; handler.removeCallbacks(confirmar) }
+        }
+
+        /** «Voy por aquí» (tras un salto largo): esta es tu posición de verdad, aunque sea menos de lo que llegaste. Viaja a tus otros dispositivos. */
+        @JavascriptInterface
+        fun fijarPosicion(cfi: String, fraction: Double, label: String) {
+            val o = EstadoLectura.estado(this@LectorActivity, id)
+            val ahora = System.currentTimeMillis()
+            o.put("cfi", cfi).put("fraction", fraction).put("label", label).put("read", ahora)
+                .put("bestCfi", cfi).put("bestFrac", fraction).put("bestLabel", label).put("bestSet", ahora)
+            o.remove("enSalto")
+            candidata = null; handler.removeCallbacks(confirmar)
+            ancla = fraction; preguntado = false
+            EstadoLectura.poner(this@LectorActivity, id, o)
+            SincroP.cambioLectura(applicationContext, id, 0)
+            subirEnSeguida()
         }
 
         /** Los ajustes valen para este libro y como punto de partida para los siguientes. */

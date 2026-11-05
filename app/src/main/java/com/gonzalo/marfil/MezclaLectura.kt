@@ -87,8 +87,10 @@ object MezclaLectura {
         (if (sb > sa) y else x).optJSONObject("settings")?.let { out.put("settings", it) } ?: (if (sb > sa) x else y).optJSONObject("settings")?.let { out.put("settings", it) }
         out.put("settingsAt", maxOf(sa, sb))
         // Lo más lejos que has llegado: el que más lejos llegó (con su sitio y su etiqueta)
-        val lejos = if (y.optDouble("bestFrac", 0.0) > x.optDouble("bestFrac", 0.0)) y else x
-        for (k in listOf("bestCfi", "bestFrac", "bestLabel")) if (lejos.has(k)) out.put(k, lejos.get(k))
+        // (salvo que en uno marcaras a mano por dónde vas, «bestSet»: manda la marca más reciente)
+        val sx = x.optLong("bestSet"); val sy = y.optLong("bestSet")
+        val lejos = if (sx != sy) (if (sy > sx) y else x) else if (y.optDouble("bestFrac", 0.0) > x.optDouble("bestFrac", 0.0)) y else x
+        for (k in listOf("bestCfi", "bestFrac", "bestLabel", "bestSet")) if (lejos.has(k)) out.put(k, lejos.get(k))
         out.put("read", maxOf(x.optLong("read"), y.optLong("read")))
         // Tiempo leído, por dispositivo
         val st = ReadStats.merge(x.optJSONObject("stats"), y.optJSONObject("stats"), yo, "legacy")

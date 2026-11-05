@@ -82,7 +82,7 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 const pct = f => Math.round((f || 0) * 100) + '%'
 const fecha = t => new Date(t).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 /** Un aviso corto abajo. Con [deshacer], lleva su botón y dura más. */
-function aviso(t, deshacer, etiqueta = 'Deshacer') {
+function aviso(t, deshacer, etiqueta = 'Deshacer', ms) {
     const a = $('#aviso')
     a.replaceChildren(document.createTextNode(t))
     a.classList.toggle('con-boton', !!deshacer)
@@ -92,8 +92,14 @@ function aviso(t, deshacer, etiqueta = 'Deshacer') {
         b.onclick = e => { e.stopPropagation(); a.classList.remove('on'); deshacer() }
         a.append(b)
     }
-    a.classList.add('on'); clearTimeout(aviso.t); aviso.t = setTimeout(() => a.classList.remove('on'), deshacer ? 5000 : 1800)
+    a.classList.add('on'); clearTimeout(aviso.t); aviso.t = setTimeout(() => a.classList.remove('on'), ms || (deshacer ? 5000 : 1800))
 }
+/**
+ * La app avisa de un salto largo (del 98 % al 2 %, o al revés): «¿vas por aquí?». Con «Voy por aquí», esta posición pasa a ser la tuya
+ * de verdad (aunque sea menos de lo que llegaste) en todos tus dispositivos. Si no, se queda como estaba y el salto no cuenta.
+ */
+window.atrioSalto = (de, a) => aviso(`Has saltado del ${de} % al ${a} %. ¿Vas por aquí de verdad?`,
+    () => { if (last) { A.fijarPosicion(last.cfi || '', last.fraction || 0, label()); aviso('Marcado: vas por el ' + pct(last.fraction)) } }, 'Voy por aquí', 12000)
 const saveSettings = () => A.saveSettings(JSON.stringify(S))
 // Atrio 6.63: el lector ya no tiene brillo propio: usa el del móvil. Deslizar por el borde izquierdo cambia el brillo
 // del móvil de verdad (con el permiso «Modificar ajustes del sistema»); sin ese permiso, solo mientras tienes el libro abierto.

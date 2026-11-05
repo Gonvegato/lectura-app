@@ -79,6 +79,19 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.18
+
+- **Arreglo de las portadas que se perdían.** Al abrir Marfil se mezcla tu biblioteca con la de tus otros dispositivos y, a la vez, se bajan
+  las portadas. La mezcla se hacía con una copia de la biblioteca de unos segundos antes y, al aplicarla, quitaba la portada que acababa
+  de llegar (y el archivo de un libro recién bajado). Ahora la portada y el archivo se toman de como están en ese momento.
+- Las portadas que ya estaban bajadas en el móvil pero el libro había dejado de apuntar a ellas **se vuelven a poner solas** al abrir
+  Marfil (sin bajar nada). Las que no estén en el móvil se bajan de tu kDrive como siempre.
+- **«¿Vas por aquí?» tras un salto largo** en el lector (un cuarto del libro o más de golpe: del 98 % al 2 %, o al revés, con la barra o el
+  índice): sale un aviso con «Voy por aquí». Si lo pulsas, esa es tu posición de verdad aunque sea menos de lo que llegaste: el libro
+  abre ahí, el porcentaje de la ficha baja (y vuelve a crecer al leer) y lo mismo en tus otros dispositivos y en Azabache. Marcar el
+  principio deja el libro en Pendientes; marcar antes del final uno que salía Leído lo pasa a Leyendo.
+- Mientras no lo confirmes, un salto largo **ya no cuenta como leído**: mirar el final no sube el porcentaje ni se queda como «lo más lejos».
+
 ## 0.12.17
 
 - Los «días seguidos» leyendo siguen la misma regla en Hiedra, Marfil, Cobalto y Azabache (`Racha.kt`, con las mismas pruebas en las cuatro, y en el contrato): cuenta un día con al menos un minuto leído; si hoy aún no, desde ayer. Para ti no cambia nada (era la misma).

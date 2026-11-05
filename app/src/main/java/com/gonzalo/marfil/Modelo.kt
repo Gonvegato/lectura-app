@@ -40,6 +40,8 @@ data class Libro(
     val ultima: Long = 0L,
     /** Lo leído: de 0 a 1 (el punto más lejano de todos tus dispositivos). */
     val fraccion: Float = 0f,
+    /** Cuándo marcaste a mano por dónde vas (ms; 0 = nunca): esa posición manda sobre «lo más lejos», también en tus otros dispositivos. */
+    val fraccionFijada: Long = 0L,
     /** Última vez que se cambió la ficha (milisegundos): gana el más reciente. */
     val mod: Long = 0L,
     /** Tiempo leído (ms): el de ESTE dispositivo y el de los demás (por dispositivo); el total es la suma. */
@@ -145,14 +147,18 @@ object Biblioteca {
 
     /** Pone en la biblioteca lo que ha salido de mezclar con tus otros dispositivos (sin tocar la hora de cambio de nadie). */
     fun aplicarMezcla(nuevos: List<Libro>, borr: Map<String, Long>) {
-        libros.clear(); libros.addAll(nuevos)
+        // La mezcla se hizo con una copia de la biblioteca de hace un momento: lo que es solo de este móvil (la portada y el archivo) se
+        // toma de como está AHORA, por si mientras tanto se bajó una portada o un libro (si no, se perdían al aplicar la mezcla)
+        val ahora = libros.associateBy { it.id }
+        val unidos = nuevos.map { n -> ahora[n.id]?.let { cur -> n.copy(portada = cur.portada, uri = cur.uri.ifBlank { n.uri }) } ?: n }
+        libros.clear(); libros.addAll(unidos)
         borrados.clear(); borrados.putAll(borr)
         guardar()
     }
 
     fun aJson(l: Libro) = JSONObject().apply {
         put("id", l.id); put("clave", l.clave); put("titulo", l.titulo); put("autor", l.autor); put("portada", l.portada); put("pu", l.portadaUrl); put("uri", l.uri); put("archivo", l.archivo)
-        put("favorito", l.favorito); put("estado", l.estado.name); put("anadido", l.anadido); put("ultima", l.ultima); put("fraccion", l.fraccion.toDouble())
+        put("favorito", l.favorito); put("estado", l.estado.name); put("anadido", l.anadido); put("ultima", l.ultima); put("fraccion", l.fraccion.toDouble()); put("ff", l.fraccionFijada)
         put("mod", l.mod); put("msp", l.msPropios); put("pg", l.paginas); put("po", l.paginasOrigen)
         put("tm", JSONArray().also { a -> l.terminados.forEach { a.put(it) } })
         put("ajms", JSONObject().also { o -> l.ajenosMs.forEach { (k, v) -> o.put(k, v) } })
@@ -162,7 +168,7 @@ object Biblioteca {
         id = o.optString("id").ifBlank { nuevoId() }, titulo = o.optString("titulo"), autor = o.optString("autor"), clave = o.optString("clave").ifBlank { claveDe(o.optString("titulo"), o.optString("autor")) }, portada = o.optString("portada"), portadaUrl = o.optString("pu"),
         uri = o.optString("uri"), archivo = o.optString("archivo"), favorito = o.optBoolean("favorito"),
         estado = Estado.entries.firstOrNull { it.name == o.optString("estado") } ?: Estado.PENDIENTE,
-        anadido = o.optLong("anadido"), ultima = o.optLong("ultima"), fraccion = o.optDouble("fraccion", 0.0).toFloat(), mod = o.optLong("mod"),
+        anadido = o.optLong("anadido"), ultima = o.optLong("ultima"), fraccion = o.optDouble("fraccion", 0.0).toFloat(), fraccionFijada = o.optLong("ff"), mod = o.optLong("mod"),
         msPropios = o.optLong("msp"), ajenosMs = o.optJSONObject("ajms")?.let { a -> a.keys().asSequence().associateWith { k -> a.optLong(k) } } ?: emptyMap(),
         paginas = o.optInt("pg"), paginasOrigen = o.optString("po"),
         terminados = o.optJSONArray("tm")?.let { a -> (0 until a.length()).map { a.optLong(it) }.filter { it > 0 } } ?: emptyList()

@@ -208,7 +208,7 @@ object SincroP {
             nuevos.map { it.lector }.filter { it.isNotBlank() }.maxByOrNull { runCatching { JSONObject(it).optLong("at") }.getOrDefault(0L) }?.let { if (AjustesLector.aplicar(c, it)) cambio = true }
             if (nuevos.isNotEmpty()) {
                 val r = Mezcla.mezclar(Biblioteca.libros.toList(), HashMap(Biblioteca.borrados), nuevos, Cuenta.dispositivo)
-                if (r.cambio) { Biblioteca.aplicarMezcla(r.libros, r.borrados); cambio = true }
+                if (r.cambio) { Biblioteca.aplicarMezcla(r.libros, r.borrados); cambio = true; runCatching { Portadas.reenlazar(c) } }
                 val rs = Mezcla.mezclarSagas(Sagas.lista.toList(), HashMap(Sagas.borradas), nuevos, Cuenta.dispositivo)
                 if (rs.cambio) { Sagas.aplicarMezcla(rs.sagas, rs.borradas); cambio = true }
             }

@@ -175,6 +175,8 @@ object NubeLibros {
         if (!KDrive.on(c) || !Cuenta.vinculada || !sincPortadas.compareAndSet(false, true)) return 0
         var hechas = 0
         try {
+            // Las que ya están en el móvil aunque el libro no apunte a ellas: se vuelven a poner (no hace falta bajarlas)
+            runCatching { Portadas.reenlazar(c) }
             // El índice de la cuenta
             val raw = Cuenta.db("GET", "${Cuenta.raiz}/portadas", null)
             val o = raw?.let { runCatching { JSONObject(it) }.getOrNull() } ?: JSONObject()

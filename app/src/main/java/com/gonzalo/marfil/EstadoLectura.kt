@@ -48,26 +48,32 @@ object EstadoLectura {
     /** Pone al día la ficha: lo leído (el punto más lejano), la última vez, el tiempo de este dispositivo y, si toca, «Leyendo» o «Leído». */
     private fun alDia(ctx: Context, id: String, o: JSONObject, forzar: Boolean = false) {
         val l = Biblioteca.por(id) ?: return
-        val fr = maxOf(o.optDouble("fraction", 0.0), o.optDouble("bestFrac", 0.0)).toFloat().coerceIn(0f, 1f)
+        // Lo leído: donde estás o lo más lejos que llegaste; donde estás no cuenta si es un salto largo sin confirmar (mirar el final no es leerlo)
+        val fr = maxOf(if (o.optBoolean("enSalto")) 0.0 else o.optDouble("fraction", 0.0), o.optDouble("bestFrac", 0.0)).toFloat().coerceIn(0f, 1f)
         val ms = o.optJSONObject("stats")?.optJSONObject("dev")?.optJSONObject(Cuenta.dispositivo)?.optLong("total", 0L) ?: 0L
         // El tiempo de los demás dispositivos (y el que trajo la importación de Atrio) viaja dentro del estado: se muestra sumado
         val dev = o.optJSONObject("stats")?.optJSONObject("dev")
         val ajenos = HashMap(l.ajenosMs)
         if (dev != null) for (k in dev.keys()) if (k != Cuenta.dispositivo) ajenos[k] = maxOf(ajenos[k] ?: 0L, dev.optJSONObject(k)?.optLong("total", 0L) ?: 0L)
         val ultima = o.optLong("read", l.ultima).coerceAtLeast(l.ultima)
+        // Si marcaste a mano por dónde vas (y es más nuevo que lo que sabe la ficha), lo leído es eso, aunque sea menos
+        val fijada = o.optLong("bestSet", 0L).takeIf { it > l.fraccionFijada }
         val estado = when {
             fr >= 0.985f -> Estado.LEIDO
+            fijada != null && l.estado == Estado.LEIDO -> Estado.LEYENDO
+            // Marcar que vas por el principio: es que aún no lo has empezado
+            fijada != null && fr <= 0.003f && l.estado == Estado.LEYENDO -> Estado.PENDIENTE
             l.estado == Estado.PENDIENTE && (fr > 0.003f || ms >= 60_000L) -> Estado.LEYENDO
             // Un abandonado que vuelves a leer (avanzas) pasa otra vez a «Leyendo»
             l.estado == Estado.ABANDONADO && fr > l.fraccion + 0.003f -> Estado.LEYENDO
             else -> l.estado
         }
         val ahora = System.currentTimeMillis()
-        val cambioGrande = estado != l.estado || kotlin.math.abs(fr - l.fraccion) >= 0.004f || ajenos != l.ajenosMs
+        val cambioGrande = fijada != null || estado != l.estado || kotlin.math.abs(fr - l.fraccion) >= 0.004f || ajenos != l.ajenosMs
         // No se reescribe la biblioteca en cada página: solo si cambia algo de peso o han pasado 20 s
         if (!forzar && !cambioGrande && ahora - (ultimaVez[id] ?: 0L) < 20_000L) return
         ultimaVez[id] = ahora
-        val n = l.copy(fraccion = maxOf(fr, l.fraccion), ultima = ultima, msPropios = maxOf(ms, 0L).takeIf { it > 0 } ?: l.msPropios, ajenosMs = ajenos, estado = estado)
+        val n = l.copy(fraccion = if (fijada != null) fr else maxOf(fr, l.fraccion), fraccionFijada = fijada ?: l.fraccionFijada, ultima = ultima, msPropios = maxOf(ms, 0L).takeIf { it > 0 } ?: l.msPropios, ajenosMs = ajenos, estado = estado)
         if (n != l) Biblioteca.poner(n)
     }
 

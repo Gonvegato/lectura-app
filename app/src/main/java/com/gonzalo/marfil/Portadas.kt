@@ -103,6 +103,28 @@ object Portadas {
         return poner(ctx, l, bytes)
     }
 
+    /**
+     * Las portadas que están en el móvil pero el libro ya no apunta a ellas (pasaba al mezclar con tus otros dispositivos mientras se
+     * bajaba una): se vuelven a poner, sin bajar nada. Devuelve cuántas.
+     */
+    fun reenlazar(ctx: Context): Int {
+        val archivos = Metadatos.dirPortadas(ctx).listFiles()?.filter { it.isFile && it.length() > 0 }.orEmpty()
+        if (archivos.isEmpty()) return 0
+        var n = 0
+        for (l0 in Biblioteca.propios()) {
+            val l = Biblioteca.por(l0.id) ?: continue
+            if (l.portada.startsWith("http") || (l.portada.isNotBlank() && File(l.portada).exists())) continue
+            val f = archivoDe(l.id, archivos) ?: continue
+            Biblioteca.poner(l.copy(portada = f.absolutePath)); n++
+        }
+        return n
+    }
+
+    /** La portada guardada de un libro: `<id>-<versión>.jpg` (la más nueva) o `<id>.jpg`. Pura (se prueba). */
+    fun archivoDe(id: String, archivos: List<File>): File? =
+        archivos.filter { it.name == "$id.jpg" || (it.name.startsWith("$id-") && it.name.endsWith(".jpg")) }
+            .maxByOrNull { it.name.removePrefix("$id-").removeSuffix(".jpg").toLongOrNull() ?: 0L }
+
     /** Las portadas con una dirección de internet (las que trajo Atrio) se guardan en el móvil para que no dependan de la red ni de que esa web siga ahí. */
     fun cachear(ctx: Context, l: Libro): Libro? {
         if (!l.portada.startsWith("http")) return null

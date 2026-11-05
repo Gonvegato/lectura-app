@@ -10,3 +10,9 @@ object Lector {
         LectorActivity.abrir(ctx, l.id, goto)
     }
 }
+
+/** Qué es un salto largo en el lector: un cuarto del libro o más de golpe (del 98 % al 2 %, o al revés). Puro (se prueba). */
+object Salto {
+    const val MINIMO = 0.25
+    fun hay(desde: Double, hasta: Double): Boolean = kotlin.math.abs(hasta - desde) >= MINIMO - 1e-9
+}
