@@ -79,6 +79,10 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.14
+
+- El widget «Sigue leyendo» alto y estrecho ya no corta su rótulo («SIGUE LE…»): ahí dice «Leyendo».
+
 ## 0.12.13
 
 - La fila de orden y filtros (Recientes · Nombre · …) lleva el mismo degradado en los bordes que las pestañas.

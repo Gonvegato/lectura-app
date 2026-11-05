@@ -646,7 +646,7 @@ object Widgets {
                 }
                 h > w * 1.15f -> {
                     fondo()
-                    seccion("Sigue leyendo", pad, pad, w - 2 * pad - (if (lista.size > 1) 50f else 0f), tinta, acento)
+                    seccion(if (w < 200f) "Leyendo" else "Sigue leyendo", pad, pad, w - 2 * pad - (if (lista.size > 1) 50f else 0f), tinta, acento)   // (en el estrecho no cabe «Sigue leyendo»)
                     val top = pad + 20f
                     val ch = h * 0.5f - top
                     val cw = min(ch * 0.66f, w * 0.55f)
