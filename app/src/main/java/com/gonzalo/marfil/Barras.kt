@@ -25,13 +25,9 @@ fun diasLeidos(ctx: android.content.Context, libros: List<Libro>): Map<String, L
     return out
 }
 
-/** Días seguidos leyendo (al menos un minuto), hasta hoy o hasta ayer. */
-fun rachaDeLectura(dias: Map<String, Long>, hoy: LocalDate = LocalDate.now()): Int {
-    var d = if ((dias[hoy.toString()] ?: 0L) >= 60_000L) hoy else hoy.minusDays(1)
-    var n = 0
-    while ((dias[d.toString()] ?: 0L) >= 60_000L) { n++; d = d.minusDays(1) }
-    return n
-}
+/** Días seguidos leyendo, con la regla común de la familia ([Racha]: al menos un minuto; hasta hoy o hasta ayer). */
+fun rachaDeLectura(dias: Map<String, Long>, hoy: LocalDate = LocalDate.now()): Int =
+    Racha.dias(hoy.toEpochDay()) { Racha.cuentaTiempo(dias[LocalDate.ofEpochDay(it).toString()] ?: 0L) }
 
 /**
  * Entre la fecha y el menú, como en la portada de Atrio: lo leído hoy (y tu objetivo, si tienes), los días seguidos

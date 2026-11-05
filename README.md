@@ -79,6 +79,10 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.17
+
+- Los «días seguidos» leyendo siguen la misma regla en Hiedra, Marfil, Cobalto y Azabache (`Racha.kt`, con las mismas pruebas en las cuatro, y en el contrato): cuenta un día con al menos un minuto leído; si hoy aún no, desde ayer. Para ti no cambia nada (era la misma).
+
 ## 0.12.16
 
 - **Un solo objetivo de lectura**: los minutos al día y los libros del año los fija Marfil (Ajustes → Lectura) y viajan con tu cuenta
