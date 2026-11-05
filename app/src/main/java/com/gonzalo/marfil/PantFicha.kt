@@ -59,7 +59,7 @@ private fun CabezaCasilla(texto: String, accion: Pair<String, () -> Unit>? = nul
     }
 }
 
-private fun fecha(ms: Long): String = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(ms))
+private fun fecha(ms: Long): String = DateFormat.getDateInstance(DateFormat.MEDIUM, java.util.Locale("es", "ES")).format(Date(ms))
 
 private fun haceCuando(ms: Long): String {
     if (ms <= 0) return "todavía no"
