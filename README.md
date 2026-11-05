@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.8
+
+- Mientras lees, lo leído (posición, tiempo, subrayados) sube a tu cuenta como mucho una vez por minuto, no cada pocos segundos; al salir del
+  lector sube al momento, como antes. Azabache y tus otros Marfiles lo escuchan, así que con eso basta y se gasta mucho menos.
+
 ## 0.12.7
 
 - Lo que Azabache sube (sus fichas, para «En Azabache» y para traer libros) no se vuelve a bajar si sus sellos no han cambiado.

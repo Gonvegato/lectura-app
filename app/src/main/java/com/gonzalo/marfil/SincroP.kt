@@ -51,8 +51,11 @@ object SincroP {
     // ---- el estado de lectura de cada libro: /lec/<libro>/<dispositivo> (el estado entero) y /lstamps/<libro>/<dispositivo> (su hora)
     private fun vistosLec(c: Context): JSONObject = runCatching { JSONObject(prefs(c).getString("vistosLec", "{}")!!) }.getOrDefault(JSONObject())
 
+    /** Mientras lees, lo leído sube como mucho cada minuto (cada página guardada avisa; al salir del lector sube ya). Azabache y tus otros Marfiles lo escuchan: no hace falta más. */
+    const val ESPERA_LECTURA = 60_000L
+
     /** Ha cambiado lo leído de un libro: se sube en [ms] (varias páginas seguidas se juntan en una sola subida). */
-    fun cambioLectura(c: Context, id: String, ms: Long = 4000L) {
+    fun cambioLectura(c: Context, id: String, ms: Long = ESPERA_LECTURA) {
         val a = app ?: run { iniciar(c); app }
         if (a == null || !Cuenta.vinculada) return
         if (!pendientes.add(id)) { if (ms > 0) return }
