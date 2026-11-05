@@ -104,17 +104,23 @@ object ImportarAtrio {
     fun leer(): Hallazgo? = blobs()?.let { b -> candidatos(b).let { Hallazgo(it, sagasDe(b, it)) } }
 
     /** Los datos que subieron los dispositivos más recientes de Atrio (uno por dispositivo), o null si no hay. Bloqueante (red). */
+    /** Lo último bajado, con los sellos de entonces: si Azabache no ha subido nada nuevo, no se vuelve a bajar (son blobs grandes). */
+    @Volatile private var cache: Pair<String, List<JSONObject>>? = null
+    fun olvidarCache() { cache = null }
+
     fun blobs(): List<JSONObject>? {
         if (!Cuenta.vinculada) return null
         val st = Cuenta.db("GET", "/users/${Cuenta.uid}/stamps", null)?.let { JSONObject(it) } ?: return null
         val devs = st.keys().asSequence().map { it to st.optLong(it) }.sortedByDescending { it.second }.take(4).toList()
+        val llave = "${Cuenta.uid}|" + devs.joinToString(",") { "${it.first}=${it.second}" }
+        cache?.let { (k, b) -> if (k == llave) return b }
         val blobs = ArrayList<JSONObject>()
         for ((dev, _) in devs) {
             val raw = Cuenta.db("GET", "/users/${Cuenta.uid}/dev/$dev/data", null) ?: continue
             val datos = (JSONTokener(raw).nextValue() as? String) ?: continue
             runCatching { JSONObject(datos) }.getOrNull()?.let { blobs += it }
         }
-        return blobs.ifEmpty { null }
+        return blobs.ifEmpty { null }.also { if (it != null) cache = llave to it }
     }
 
     class Resultado(val nuevos: Int, val yaEstaban: Int, val conArchivo: Int, val sagas: Int = 0)

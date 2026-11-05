@@ -79,6 +79,10 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.7
+
+- Lo que Azabache sube (sus fichas, para «En Azabache» y para traer libros) no se vuelve a bajar si sus sellos no han cambiado.
+
 ## 0.12.6: la ficha de un escrito
 
 - La ficha de una obra de Cobalto (Escritos) no ofrece portada, editar, borrar, estante, saga, favorito ni «En Azabache» (nada de eso es
