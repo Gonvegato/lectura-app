@@ -89,5 +89,8 @@ class EscritosTest {
         Escritos.preparar(ctx, o2)
         assertTrue(zipDe(f.readBytes())["OEBPS/p4.xhtml"]!!.contains("Nuevo texto"))
         assertEquals("sigue siendo la misma ficha", 1, Biblioteca.libros.count { it.esEscrito })
+        // Quitarlo de aquí no deja rastro en los borrados que viajan (volverá la próxima vez que lo leas)
+        Biblioteca.quitar("escrito_novela")
+        assertNull(Biblioteca.por("escrito_novela")); assertFalse(Biblioteca.borrados.containsKey("escrito:novela"))
     }
 }

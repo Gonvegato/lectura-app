@@ -129,14 +129,20 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
     Column(Modifier.fillMaxSize().background(Paper).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = 20.dp)) {
         // Arriba, como en Atrio: Portada · Editar · Borrar
         RevistaTopBar(alCerrar, "Volver") {
-            EnlaceRevista("Portada") { portada = true }
-            EnlaceRevista("Editar") { renombrar = true }
-            EnlaceRevista("Borrar") { quitar = true }
+            // Un escrito de Cobalto se edita allí: aquí no se renombra, ni se le pone portada, ni se borra (volvería al refrescar)
+            if (l.esEscrito) { if (Escritos.instaladoCobalto(ctx)) EnlaceRevista("Escribir en Cobalto", acento = true) { Escritos.abrirCobalto(ctx, l.clave.removePrefix("escrito:")) } }
+            else {
+                EnlaceRevista("Portada") { portada = true }
+                EnlaceRevista("Editar") { renombrar = true }
+                EnlaceRevista("Borrar") { quitar = true }
+            }
         }
         Filete(3.dp)
-        // El estante, como las pestañas de estado de Atrio, pegado a la barra de arriba
-        FiltrosRevista(Estado.entries.map { it.nombre }, l.estado.ordinal, Modifier.padding(top = 4.dp)) { i -> Biblioteca.poner(l.copy(estado = Estado.entries[i])) }
-        Filete(1.dp)
+        // El estante, como las pestañas de estado de Atrio, pegado a la barra de arriba (un escrito no tiene estante)
+        if (!l.esEscrito) {
+            FiltrosRevista(Estado.entries.map { it.nombre }, l.estado.ordinal, Modifier.padding(top = 4.dp)) { i -> Biblioteca.poner(l.copy(estado = Estado.entries[i])) }
+            Filete(1.dp)
+        }
         Spacer(Modifier.height(14.dp))
         RevistaHeadline(l.titulo, listOfNotNull(l.formato.uppercase().ifBlank { null }, l.autor.ifBlank { null }).joinToString(" · "))
         if (deck.isNotBlank()) Text(deck, color = Muted, fontFamily = Display, fontStyle = FontStyle.Italic, fontSize = 17.sp, modifier = Modifier.padding(top = 6.dp))
@@ -159,13 +165,15 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
         }
         Spacer(Modifier.height(16.dp))
 
-        // Las acciones: la saga y el favorito
-        Filete(1.dp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
-            EnlaceRevista(if (miSaga != null) "Saga: ${miSaga.nombre} →" else "Saga →", acento = miSaga != null) { saga = true }
-            EnlaceRevista(if (l.favorito) "★ Favorito" else "☆ Favorito", acento = l.favorito) { Biblioteca.poner(l.copy(favorito = !l.favorito)) }
+        // Las acciones: la saga y el favorito (un escrito de Cobalto no va en sagas ni es favorito)
+        if (!l.esEscrito) {
+            Filete(1.dp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
+                EnlaceRevista(if (miSaga != null) "Saga: ${miSaga.nombre} →" else "Saga →", acento = miSaga != null) { saga = true }
+                EnlaceRevista(if (l.favorito) "★ Favorito" else "☆ Favorito", acento = l.favorito) { Biblioteca.poner(l.copy(favorito = !l.favorito)) }
+            }
+            Filete(1.dp)
         }
-        Filete(1.dp)
         Spacer(Modifier.height(4.dp))
         Filete(2.dp)
 
@@ -237,8 +245,8 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
         )
         Filete(2.dp)
 
-        // La valoración de Azabache (solo se ve; se hace allí)
-        if (Cuenta.vinculada) {
+        // La valoración de Azabache (solo se ve; se hace allí). Un escrito de Cobalto no se valora.
+        if (Cuenta.vinculada && !l.esEscrito) {
             var nota by remember(l.clave, NotaAzabache.version) { mutableStateOf(NotaAzabache.cargar(ctx)[l.clave]) }
             LaunchedEffect(l.clave) {
                 if (NotaAzabache.vieja(ctx)) withContext(Dispatchers.IO) { NotaAzabache.refrescar(ctx) }.let { nota = NotaAzabache.cargar(ctx)[l.clave] }

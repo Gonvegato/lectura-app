@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.6: la ficha de un escrito
+
+- La ficha de una obra de Cobalto (Escritos) no ofrece portada, editar, borrar, estante, saga, favorito ni «En Azabache» (nada de eso es
+  suyo): arriba lleva «Escribir en Cobalto». Y quitarla de la biblioteca no deja rastro en lo que viaja a tus otros dispositivos.
+
 ## 0.12.5: la nota de Azabache, al momento
 
 - Marfil escucha el sello de Azabache: en cuanto valoras un libro allí, «En Azabache» en su ficha cambia sin salir ni esperar los 15 minutos.

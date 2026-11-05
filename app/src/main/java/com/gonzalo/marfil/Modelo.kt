@@ -139,7 +139,7 @@ object Biblioteca {
 
     fun cambiar(id: String, f: (Libro) -> Libro) { por(id)?.let { poner(f(it)) } }
 
-    fun quitar(id: String) { por(id)?.let { borrados[it.clave] = System.currentTimeMillis() }; libros.removeAll { it.id == id }; guardar() }
+    fun quitar(id: String) { por(id)?.takeIf { !it.esEscrito }?.let { borrados[it.clave] = System.currentTimeMillis() }; libros.removeAll { it.id == id }; guardar() }
     fun por(id: String): Libro? = libros.firstOrNull { it.id == id }
     fun existente(titulo: String, autor: String): Libro? = claveDe(titulo, autor).let { k -> libros.firstOrNull { it.clave == k } }
 
