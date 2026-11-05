@@ -1,0 +1,12 @@
+{
+  "app": "azabache",
+  "version": "1.2.3",
+  "idHades": 3989678356760,
+  "idDune": 3381559469635,
+  "idCeleste": 7231292299736,
+  "dev": {
+    "azabache-A": {
+      "data": "{\"games\":[{\"id\":7231292299736,\"name\":\"Celeste\",\"cover\":\"\",\"general\":0,\"gfx\":0,\"story\":0,\"music\":0,\"gameplay\":0,\"review\":\"\",\"hero\":\"\",\"start\":0,\"end\":19675,\"creator\":\"\",\"fav\":false,\"platform\":\"\",\"pages\":0,\"minutes\":0,\"updated\":1,\"ttbMain\":0,\"ttbExtra\":0,\"ttbFull\":0,\"ttbSrc\":\"\",\"logo\":\"\"},{\"id\":3989678356760,\"name\":\"Hades II\",\"cover\":\"\",\"general\":91,\"gfx\":90,\"story\":88,\"music\":95,\"gameplay\":92,\"review\":\"Mejor que el primero.\",\"hero\":\"\",\"start\":0,\"end\":20700,\"creator\":\"Supergiant\",\"fav\":false,\"platform\":\"\",\"pages\":0,\"minutes\":0,\"updated\":1700000000000,\"ttbMain\":0,\"ttbExtra\":0,\"ttbFull\":0,\"ttbSrc\":\"\",\"logo\":\"\"}],\"plays\":[],\"books\":[{\"id\":3381559469635,\"name\":\"Dune\",\"cover\":\"\",\"general\":89,\"gfx\":80,\"story\":95,\"music\":85,\"gameplay\":90,\"review\":\"La especia.\",\"hero\":\"\",\"start\":0,\"end\":20700,\"creator\":\"Frank Herbert\",\"fav\":false,\"platform\":\"\",\"pages\":0,\"minutes\":0,\"updated\":1700000000000,\"ttbMain\":0,\"ttbExtra\":0,\"ttbFull\":0,\"ttbSrc\":\"\",\"logo\":\"\"}],\"bplays\":[],\"sagas\":[],\"nube\":[],\"lectura\":[],\"maquetas\":[],\"diario\":[],\"negra\":[],\"kinds\":[],\"keys\":{\"sgdb\":\"\",\"rawg\":\"\",\"igdbId\":\"\",\"igdbSecret\":\"\",\"steamKey\":\"\",\"steamUser\":\"\",\"tmdb\":\"\"},\"tombs\":{},\"kindsAt\":0,\"recs\":[],\"reacts\":{},\"goals\":{\"g\":0,\"b\":0},\"likes\":{\"0\":[],\"1\":[]},\"quiz\":{},\"ajustes\":{\"at\":0,\"skin\":{},\"lector\":{},\"noCloud\":[]}}"
+    }
+  }
+}
