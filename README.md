@@ -79,6 +79,11 @@ Necesita JDK 17+ y el SDK de Android (`local.properties` con `sdk.dir`). Al saca
 
 ## Versiones
 
+## 0.12.5: la nota de Azabache, al momento
+
+- Marfil escucha el sello de Azabache: en cuanto valoras un libro allí, «En Azabache» en su ficha cambia sin salir ni esperar los 15 minutos.
+- Las fechas de la ficha salen siempre en español.
+
 ## 0.12.4
 
 - En la portada, «+ Añadir» en el acento, como en las listas y como en Hiedra y Cobalto; el pie de Ajustes dice de quién es hermana.

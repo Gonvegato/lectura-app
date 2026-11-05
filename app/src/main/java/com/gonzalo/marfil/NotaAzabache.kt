@@ -1,6 +1,8 @@
 package com.gonzalo.marfil
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import org.json.JSONObject
 
 /**
@@ -55,6 +57,19 @@ object NotaAzabache {
 
     /** ¿Hace más de 15 minutos que no se baja? */
     fun vieja(c: Context, ahora: Long = System.currentTimeMillis()) = ahora - prefs(c).getLong("en", 0L) > 15 * 60_000L
+
+    /** Sube cuando llegan notas nuevas (las fichas abiertas vuelven a leer). */
+    var version by androidx.compose.runtime.mutableIntStateOf(0)
+        private set
+    private val mirando = java.util.concurrent.atomic.AtomicBoolean(false)
+    /** Al oír el sello de Azabache: se bajan las notas dentro de poco (varios avisos seguidos, una sola bajada). */
+    fun pronto(c: Context) {
+        if (!Cuenta.vinculada || !mirando.compareAndSet(false, true)) return
+        val app = c.applicationContext
+        kotlin.concurrent.thread {
+            try { Thread.sleep(600); if (refrescar(app)) android.os.Handler(android.os.Looper.getMainLooper()).post { version++ } } finally { mirando.set(false) }
+        }
+    }
 
     /** Baja las valoraciones y las guarda. Devuelve false si no ha podido. Bloqueante (red). */
     fun refrescar(c: Context): Boolean {

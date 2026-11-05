@@ -46,6 +46,7 @@ object SincroP {
     private val pendientes = java.util.Collections.synchronizedSet(HashSet<String>())
     private var escuchaLec: FbStream? = null
     private var escuchaCobalto: FbStream? = null
+    private var escuchaAzabache: FbStream? = null
 
     // ---- el estado de lectura de cada libro: /lec/<libro>/<dispositivo> (el estado entero) y /lstamps/<libro>/<dispositivo> (su hora)
     private fun vistosLec(c: Context): JSONObject = runCatching { JSONObject(prefs(c).getString("vistosLec", "{}")!!) }.getOrDefault(JSONObject())
@@ -252,6 +253,10 @@ object SincroP {
         val h = FbStream("marfil-cobalto", { renovar -> Cuenta.urlFlujo("/users/${Cuenta.uid}/cobalto/stamps", renovar) }, { _, _ -> escritosPronto() }, { })
         escuchaCobalto = h
         h.start(scope)
+        // Azabache: en cuanto valoras un libro allí (sella su «stamps»), la nota se ve aquí al momento
+        val k = FbStream("marfil-azabache", { renovar -> Cuenta.urlFlujo("/users/${Cuenta.uid}/stamps", renovar) }, { _, _ -> NotaAzabache.pronto(c) }, { })
+        escuchaAzabache = k
+        k.start(scope)
     }
 
     private val mirandoEscritos = java.util.concurrent.atomic.AtomicBoolean(false)
@@ -264,7 +269,7 @@ object SincroP {
         }
     }
 
-    fun parar() { escucha?.stop(); escucha = null; escuchaLec?.stop(); escuchaLec = null; escuchaCobalto?.stop(); escuchaCobalto = null }
+    fun parar() { escucha?.stop(); escucha = null; escuchaLec?.stop(); escuchaLec = null; escuchaCobalto?.stop(); escuchaCobalto = null; escuchaAzabache?.stop(); escuchaAzabache = null }
 
     private fun bien(c: Context) {
         fallos = 0

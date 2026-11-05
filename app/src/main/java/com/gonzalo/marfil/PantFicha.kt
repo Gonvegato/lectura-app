@@ -239,7 +239,7 @@ fun PantFicha(id: String, alCerrar: () -> Unit, alLeer: (Libro) -> Unit) {
 
         // La valoración de Azabache (solo se ve; se hace allí)
         if (Cuenta.vinculada) {
-            var nota by remember(l.clave) { mutableStateOf(NotaAzabache.cargar(ctx)[l.clave]) }
+            var nota by remember(l.clave, NotaAzabache.version) { mutableStateOf(NotaAzabache.cargar(ctx)[l.clave]) }
             LaunchedEffect(l.clave) {
                 if (NotaAzabache.vieja(ctx)) withContext(Dispatchers.IO) { NotaAzabache.refrescar(ctx) }.let { nota = NotaAzabache.cargar(ctx)[l.clave] }
             }
